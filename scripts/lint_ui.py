@@ -104,24 +104,7 @@ RULES: List[Rule] = [
         pattern=re.compile(r"\bbg-black\b")
     ),
 
-    # 10. Naked Outline-None Without Focus Ring Replacement (WCAG 2.4.7)
-    Rule(
-        rule_id="a11y-naked-outline-none",
-        severity="ERROR",
-        message="outline-none detected without focus-visible:ring replacement. Ensure focus visibility (WCAG 2.4.7).",
-        pattern=re.compile(r"\b(?:outline-none|focus:outline-none)\b"),
-        exception_pattern=re.compile(r"\b(?:focus-visible:ring|focus:ring|focus-visible:outline)\b")
-    ),
-
-    # 11. Missing Image Alt Attribute (WCAG 1.1.1)
-    Rule(
-        rule_id="a11y-missing-alt",
-        severity="ERROR",
-        message="<img> tag missing alt attribute (WCAG 1.1.1). Provide informative alt text or alt=\"\" for decorative images.",
-        pattern=re.compile(r"<img\s+(?![^>]*\balt=)[^>]*>")
-    ),
-
-    # 12. Excessive Micro-Interaction Duration (>350ms)
+    # 10. Excessive Micro-Interaction Duration (>350ms)
     Rule(
         rule_id="excessive-micro-duration",
         severity="WARN",
@@ -132,6 +115,44 @@ RULES: List[Rule] = [
 
 def is_line_ignored(line: str) -> bool:
     return bool(re.search(r"lint-ui-(?:disable|ignore)|@lint-ignore", line))
+
+def strip_comments_preserving_lines(text: str) -> str:
+    """
+    Strips single-line (//), multi-line (/* */, {/* */}), and HTML (<!-- -->) comments.
+    Preserves exact newline counts and character offsets by substituting non-newline characters with spaces.
+    Prevents false positives on commented-out reference code or documentation.
+    """
+    def repl_block(m):
+        return re.sub(r"[^\r\n]", " ", m.group(0))
+
+    # Strip block comments (/* ... */, <!-- ... -->, {/* ... */})
+    text = re.sub(r"/\*[\s\S]*?\*/|<!--[\s\S]*?-->", repl_block, text)
+    text = re.sub(r"\{/\*[\s\S]*?\*/\}", repl_block, text)
+
+    # Strip single-line comments (// ...)
+    def repl_single(m):
+        prefix = m.group(1)
+        comment = m.group(2)
+        return prefix + (" " * len(comment))
+
+    text = re.sub(r"(^|[^\w:])(//[^\r\n]*)", repl_single, text, flags=re.MULTILINE)
+    return text
+
+def extract_tag_blocks(content: str) -> List[Tuple[int, str, str]]:
+    """
+    Extracts HTML/JSX start-tags and self-closing tags across multiple lines.
+    Returns list of (line_number, tag_name, full_tag_content).
+    Enables DOM-element scoped attribute analysis (mimicking impeccable's Dom trait).
+    """
+    tag_blocks = []
+    pattern = re.compile(r"<([a-zA-Z][a-zA-Z0-9_\-\.:]*)([^>]*?)>", re.DOTALL)
+    for m in pattern.finditer(content):
+        start_pos = m.start()
+        line_num = content[:start_pos].count("\n") + 1
+        tag_name = m.group(1)
+        full_tag = m.group(0)
+        tag_blocks.append((line_num, tag_name, full_tag))
+    return tag_blocks
 
 def check_file_contracts(file_path: str, full_content: str) -> List[Dict]:
     violations = []
@@ -166,24 +187,56 @@ def scan_file(file_path: str) -> List[Dict]:
     violations = []
     try:
         with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-            full_content = f.read()
-            lines = full_content.splitlines()
+            raw_content = f.read()
     except Exception as e:
         print(f"Warning: Failed to read {file_path}: {e}", file=sys.stderr)
         return []
 
     # 1. Whole-file contract validation (Hobson 4-State Completeness)
-    violations.extend(check_file_contracts(file_path, full_content))
+    violations.extend(check_file_contracts(file_path, raw_content))
 
-    # 2. Line-by-line regex rule scanning
-    for line_num, line in enumerate(lines, start=1):
+    # 2. Preprocess: Strip comments while preserving line numbers (eliminates comment false positives)
+    clean_content = strip_comments_preserving_lines(raw_content)
+    clean_lines = clean_content.splitlines()
+
+    # 3. DOM-Element Scoped Rules (Tag Blocks across multiple lines)
+    tag_blocks = extract_tag_blocks(clean_content)
+    for line_num, tag_name, full_tag in tag_blocks:
+        if is_line_ignored(full_tag):
+            continue
+
+        # Rule 10: a11y-naked-outline-none (WCAG 2.4.7)
+        if re.search(r"\b(?:outline-none|focus:outline-none)\b", full_tag):
+            if not re.search(r"\b(?:focus-visible:ring|focus:ring|focus-visible:outline)\b", full_tag):
+                violations.append({
+                    "file": file_path,
+                    "line": line_num,
+                    "rule_id": "a11y-naked-outline-none",
+                    "severity": "ERROR",
+                    "message": "outline-none detected on element without focus-visible:ring replacement (WCAG 2.4.7).",
+                    "snippet": full_tag.strip().splitlines()[0]
+                })
+
+        # Rule 11: a11y-missing-alt (WCAG 1.1.1)
+        if tag_name.lower() == "img":
+            if not re.search(r"\balt=", full_tag, re.I):
+                violations.append({
+                    "file": file_path,
+                    "line": line_num,
+                    "rule_id": "a11y-missing-alt",
+                    "severity": "ERROR",
+                    "message": "<img> tag missing alt attribute (WCAG 1.1.1). Provide informative alt text or alt=\"\" for decorative images.",
+                    "snippet": full_tag.strip().splitlines()[0]
+                })
+
+    # 4. Line-by-line regex rule scanning on uncommented code
+    for line_num, line in enumerate(clean_lines, start=1):
         if is_line_ignored(line):
             continue
 
         for rule in RULES:
             match = rule.pattern.search(line)
             if match:
-                matched_str = match.group(0)
                 if rule.exception_pattern and rule.exception_pattern.search(line):
                     continue
 

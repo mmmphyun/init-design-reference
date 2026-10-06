@@ -177,10 +177,18 @@ def check_linter_behavior():
         with open(bad_file, "w", encoding="utf-8") as f:
             f.write('<span className="uppercase tracking-widest text-[#6366f1]">BAD</span>\n')
 
-        # Create a clean file
+        # Create a clean file with multiline JSX and commented-out hex (must NOT trigger false positives)
         good_file = os.path.join(temp_dir, "good_component.tsx")
         with open(good_file, "w", encoding="utf-8") as f:
-            f.write('<span className="text-sm font-medium text-foreground">GOOD</span>\n')
+            f.write(
+                '// Legacy note mentioning #6366f1 in comment\n'
+                '/* Block comment with #123456 */\n'
+                '<input\n'
+                '  className="outline-none"\n'
+                '  focus-visible:ring-2\n'
+                '/>\n'
+                '<span className="text-sm font-medium text-foreground">GOOD</span>\n'
+            )
 
         # Run linter on bad file (must fail with exit code 1)
         res_bad = subprocess.run([sys.executable, linter_path, bad_file], capture_output=True, text=True)
@@ -194,7 +202,7 @@ def check_linter_behavior():
             log(f"Linter falsely flagged clean file:\n{res_good.stdout}", "FAIL")
             return False
 
-        log("Linter correctly caught anti-patterns and passed clean code.", "PASS")
+        log("Linter correctly caught anti-patterns and passed clean code (including multiline & comments).", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
