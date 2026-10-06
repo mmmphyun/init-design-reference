@@ -1,108 +1,127 @@
 # init-design-reference
 
-[한국어](README.md) | English
+English | [한국어](README.md)
 
-Production-grade UI design reference and token architecture scaffolder for agentic AI coding assistants (Google Antigravity, Claude Code, Cursor, Codex).
+A next-generation design reference and engineering framework that stops AI UI style drift through **Closed-Loop Vision Verification** and **Deterministic Anti-Slop Engineering** for AI coding agents (Google Antigravity, Claude Code, Cursor, etc.).
 
-## Overview
+---
 
-AI coding assistants frequently produce generic, cookie-cutter interfaces (identical rounded cards, meaningless gradient fills, low-contrast text). `init-design-reference` combats this by generating a deterministic `/reference` directory inside your project root, establishing a Single Source of Truth (SSOT) for design tokens, typography fallbacks, accessibility standards, and strict anti-cliché constraints.
+## 1. Motivation & Core Mechanism
 
-## Features
+### Why AI-Generated UIs Always Look the Same (Attention Drift & Prior Regression)
+When tasked with frontend code, LLMs routinely converge toward generic purple/indigo gradients, rounded SaaS card soup, and habit-driven `tracking-widest uppercase` labels. As conversations grow, prompt instructions suffer attention drift, regressing to the statistical median of training data.
 
-- **Decoupled Architecture**: All templates are pure, readable Markdown and JSON files—no obfuscated string literals inside scripts.
-- **Strict Anti-Cliché Rules**: Directly incorporates the latest anti-tell principles from Anthropic's `frontend-design` specification (`notes/do-not-copy.md`).
-- **Bilingual Typography Stack**: Built-in support for Korean and English mixed text rendering with robust system fallbacks (`Pretendard` + `Space Grotesk` + `JetBrains Mono`).
-- **Safe & Idempotent**: Never overwrites existing user modifications unless `--force` is explicitly provided.
-- **Git Bloat Protection**: Automatically configures `.gitignore` to prevent committing raw screenshot binaries and webfont files.
-- **Framework Aware**: Inspects `package.json` to detect style engines (Tailwind v3, Tailwind v4, CSS Modules) and suggests zero-drift integration strategies.
+`init-design-reference` eliminates this at the foundational level across **4 Engineering Pillars**:
+1. **Tokens & 3-Dial Taste Knobs (`DESIGN.md`, `tokens/*.json`)**: Adopts `leonxlnx/taste-skill` numeric dials (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`, scaled 1–10).
+2. **Proven Component Recipes (`patterns/*.md`)**: Production React/TSX + Tailwind blocks for dense data tables, shells, forms, and spring physics.
+3. **Deterministic Linter (`scripts/lint_ui.py`)**: Complete port of `pbakaus/impeccable` rules, mechanically blocking AI clichés, hardcoded hex, and layout thrashing offline.
+4. **Closed-Loop Vision Feedback (`scripts/capture_ui.py`)**: Uses Playwright to capture desktop/mobile viewports and collect console errors for vision-model self-correction.
 
-## Directory Layout
+---
+
+## 2. Directory Layout
 
 ```
 reference/
-  screenshots/          # UI target captures (.gitignore applied)
+  screenshots/          # UI target captures & audit runs (.gitignore applied)
+    audit/              # Output from scripts/capture_ui.py
   notes/
-    do-not-copy.md      # AI cliché bans (SaaS card kits, ALL-CAPS eyebrows, etc.)
+    do-not-copy.md      # Strict AI cliché bans (no generic gradients, cards, or labels)
     layout.md           # Breakpoints & spacing rhythm
-    interaction.md      # Transitions & modal focus traps
-    visual-direction.md # Surface hierarchy & signature element rules
-    accessibility.md    # WCAG 2.1 AA mandates
+    interaction.md      # Transition timing & modal focus rules
+    visual-direction.md # Surface hierarchy & signature elements
+    accessibility.md    # WCAG 2.1 AA & contrast mandates
   tokens/
     colors.json         # Hex values for surface, text, accents
-    spacing.json        # Rem-based rhythm
-    typography.json     # Role-based font metrics
+    spacing.json        # Rem-based vertical & horizontal rhythm
+    typography.json     # Role-based typography & bilingual fallbacks
     radii.json          # Border radius tokens
-    shadows.json        # Surface depth tokens
-    motion.json         # Durations and easing curves
+    shadows.json        # Depth tokens
+    motion.json         # Durations, easing, and Emil Kowalski spring physics
+  patterns/             # Production React/TSX + Tailwind component blocks
+    layout-shells.md    # High-density cockpit & asymmetric hero layouts
+    data-display.md     # Full-state data tables & anti-cliché telemetry cards
+    forms-inputs.md     # Accessible validated inputs & filter toolbars
+    micro-interactions.md # Tactile scale(0.98) press, sheet physics, acceleration
   fonts/
-    README.md           # Web font guidelines
-    font-license.md     # Font licensing terms
-    preview.html        # Interactive multilingual rendering test
-  DESIGN.md             # Core design system constitution
-  COMPONENTS.md         # Component states (loading, empty, error, populated)
+    README.md           # Local font handling guidelines
+    font-license.md     # Licensing documentation
+    preview.html        # Bilingual font stack rendering test
+  DESIGN.md             # Core design principles & 3-Dial Taste Configuration
+  COMPONENTS.md         # Component 4-state completeness rules
   REVIEW_CHECKLIST.md   # Pre-commit UI verification checklist
 ```
 
-## Installation
+---
 
-### One-Liner Install (No Clone Required)
+## 3. Installation & Presets
 
-#### Windows (PowerShell)
+### Global Agent Installation
 ```powershell
-# Default: Google Antigravity ($env:USERPROFILE/.gemini/config/skills/init-design-reference)
+# Windows (PowerShell)
 irm https://raw.githubusercontent.com/mmmphyun/init-design-reference/main/install.ps1 | iex
 
-# Local repository execution
-.\install.ps1 -Agent antigravity
-.\install.ps1 -Agent claude
-.\install.ps1 -Agent cursor
-.\install.ps1 -TargetDir "C:/path/to/custom/skills/init-design-reference" -Force
-```
-
-#### macOS / Linux (Bash)
-```bash
-# Default: Google Antigravity (~/.gemini/config/skills/init-design-reference)
+# macOS / Linux (Bash)
 curl -fsSL https://raw.githubusercontent.com/mmmphyun/init-design-reference/main/install.sh | bash
-
-# Install for Claude Code or Cursor
-curl -fsSL https://raw.githubusercontent.com/mmmphyun/init-design-reference/main/install.sh | bash -s -- --agent claude
-curl -fsSL https://raw.githubusercontent.com/mmmphyun/init-design-reference/main/install.sh | bash -s -- --agent cursor
-
-# Local execution
-chmod +x ./install.sh
-./install.sh --agent antigravity
 ```
 
-### Agent Paths Reference
-
-| Agent | OS | Installation Path |
-| :--- | :--- | :--- |
-| **Google Antigravity** | Windows | `$env:USERPROFILE/.gemini/config/skills/init-design-reference` |
-| **Google Antigravity** | Linux/macOS | `~/.gemini/config/skills/init-design-reference` |
-| **Claude Code** | Windows | `$env:USERPROFILE/.claude/skills/init-design-reference` |
-| **Claude Code** | Linux/macOS | `~/.claude/skills/init-design-reference` |
-| **Cursor** | All | `~/.cursor/skills/init-design-reference` (or workspace local) |
-
-### Direct CLI Usage
+### Domain Presets (`--preset`)
 ```powershell
+# Default Modern SaaS (Variance: 5, Density: 7, Motion: 4)
 python "scripts/adapter.py" "reference"
 
-# Overwrite existing files
-python "scripts/adapter.py" "reference" --force
+# B2B High-Density Telemetry (Variance: 3, Density: 9, Motion: 2)
+python "scripts/adapter.py" "reference" --preset b2b-dense
+
+# Asymmetric Editorial Showcase (Variance: 8, Density: 3, Motion: 5)
+python "scripts/adapter.py" "reference" --preset editorial-minimal
+
+# Technical Developer Tool (Variance: 4, Density: 8, Motion: 1)
+python "scripts/adapter.py" "reference" --preset technical-mono
+
+# Fluid Tactile Spring Motion (Variance: 6, Density: 5, Motion: 9)
+python "scripts/adapter.py" "reference" --preset apple-fluid
 ```
 
-## Recommended Workflow
+---
 
-1. **Scaffold**: Run `init-design-reference` to build the `/reference` structure.
-2. **Refine**: Invoke your assistant with the `frontend-design` skill to establish domain-specific color palettes and typography roles in `tokens/`.
-3. **Build**: Write frontend components, strictly adhering to `/reference` as the SSOT.
-4. **Audit**: Verify compliance against `reference/REVIEW_CHECKLIST.md` prior to committing.
+## 4. The 4-Phase Implementation Lifecycle
 
-## Contributing
+All frontend work must execute through 4 deterministic gates:
 
-For guidelines on reporting bugs, proposing new AI anti-patterns, or adding framework detections, see [CONTRIBUTING.md](CONTRIBUTING.en.md).
+1. **Gate 1: `/craft` (Semantic Skeleton)**: Semantic DOM hierarchy without aesthetic color styling. ARIA roles and responsive layout slots only.
+2. **Gate 2: `/bind` (Tokens & Patterns Binding)**: Map only semantic classes from `tokens/*.json` and `patterns/*.md`. Zero hardcoded hex codes.
+3. **Gate 3: `/critique` (Deterministic Audit)**:
+   ```powershell
+   python scripts/lint_ui.py src/
+   ```
+   Requires 0 errors before proceeding.
+4. **Gate 4: `/harden` (State Coverage & Vision Verification)**:
+   - Full 4-state coverage (Loading Skeleton, Empty State, Error Alert, Populated).
+   - Playwright headless audit:
+     ```powershell
+     python scripts/capture_ui.py --url http://localhost:3000
+     ```
+   - Vision inspection of captured screens in `reference/screenshots/audit/`.
 
-## License
+---
 
-[MIT License](LICENSE).
+## 5. Companion Bridges & Ecosystem
+
+- **UI Linter (`scripts/lint_ui.py`)**: Offline anti-pattern detector ported from `pbakaus/impeccable`.
+- **Headless Capture (`scripts/capture_ui.py`)**: Playwright screenshot & console error auditor.
+- **Figma Sync Bridge (`scripts/sync_figma.py`)**: Synchronizes Figma Variables into `reference/tokens/*.json`.
+
+### Recommended Companion Skills
+- **Advanced Motion Auditing**: [`emilkowalski/skills`](https://github.com/emilkowalski/skills)
+- **Live Figma Node Context**: [`figma-mcp-server`](https://github.com/GLips/Figma-Context-MCP)
+
+---
+
+## License & Credits
+
+- Distributed under the [MIT License](LICENSE).
+- Rules, motion parameters, and dial architecture draw from pioneering open-source work by:
+  - **Emil Kowalski** ([emilkowalski/skills](https://github.com/emilkowalski/skills), MIT) - Micro-motion & spring physics
+  - **Paul Bakaus** ([pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache 2.0) - Deterministic anti-pattern rules & lifecycle
+  - **Leon Linz** ([leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), MIT) - 3-Dial Taste framework
