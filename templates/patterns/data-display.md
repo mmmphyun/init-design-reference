@@ -1,10 +1,11 @@
 # Pattern: Data Display
+<!-- Derived from shadcn-ui/ui (MIT License) & wshobson/agents (MIT License) -->
 
 Deterministic components for tabular metrics, telemetry, and structured records without artificial AI ornamentation.
 
-## 1. High-Density Data Table with Full State Coverage
+## 1. High-Density Data Table with Full 4-State Coverage
 
-Avoids bloated table padding. Implements strict state guards: Loading Skeleton, Empty State, and Populated Records.
+Implements strict state guards satisfying Hobson's 4-State Contract: Loading Skeleton, Empty State, Error Recovery State, and Populated Records.
 
 ```tsx
 import React from "react";
@@ -20,6 +21,8 @@ export interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   emptyTitle?: string;
   emptyDescription?: string;
 }
@@ -28,11 +31,13 @@ export function DataTable<T extends Record<string, any>>({
   columns,
   data,
   isLoading = false,
+  error = null,
+  onRetry,
   emptyTitle = "No records found",
   emptyDescription = "There are no entries available for this view.",
 }: DataTableProps<T>) {
   return (
-    <div className="w-full border border-border rounded-card bg-surface overflow-hidden">
+    <div className="w-full border border-border rounded-card bg-surface overflow-hidden shadow-elevation-1">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm font-sans border-collapse">
           <thead>
@@ -49,9 +54,9 @@ export function DataTable<T extends Record<string, any>>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border" aria-busy={isLoading}>
             {isLoading ? (
-              // Loading State Skeleton
+              // 1. Loading State (Accessible Skeleton)
               Array.from({ length: 4 }).map((_, i) => (
                 <tr key={i} className="animate-pulse">
                   {columns.map((col) => (
@@ -61,8 +66,23 @@ export function DataTable<T extends Record<string, any>>({
                   ))}
                 </tr>
               ))
+            ) : error ? (
+              // 2. Error State (Actionable Recovery)
+              <tr role="alert">
+                <td colSpan={columns.length} className="py-10 px-4 text-center">
+                  <p className="text-sm font-semibold text-danger">{error}</p>
+                  {onRetry && (
+                    <button
+                      onClick={onRetry}
+                      className="mt-3 px-3 py-1.5 text-xs font-medium rounded-btn bg-surface border border-border text-foreground hover:bg-background active:scale-[0.98] transition-all"
+                    >
+                      Retry Request
+                    </button>
+                  )}
+                </td>
+              </tr>
             ) : data.length === 0 ? (
-              // Empty State
+              // 3. Empty State (Actionable Zero-Data)
               <tr>
                 <td colSpan={columns.length} className="py-12 px-4 text-center">
                   <p className="text-sm font-medium text-foreground">{emptyTitle}</p>
@@ -70,7 +90,7 @@ export function DataTable<T extends Record<string, any>>({
                 </td>
               </tr>
             ) : (
-              // Populated Records
+              // 4. Populated Records
               data.map((row, idx) => (
                 <tr
                   key={row.id || idx}
@@ -97,9 +117,9 @@ export function DataTable<T extends Record<string, any>>({
 }
 ```
 
-## 2. Telemetry Metric Card (Anti-Cliche)
+## 2. Telemetry Metric Card (Anti-Cliche & Multi-Layer Depth)
 
-Avoids decorative gradient borders, meaningless colored pills, and generic SaaS hero stats. Prioritizes baseline alignment and delta context.
+Avoids decorative gradient borders, meaningless colored pills, and generic SaaS hero stats. Uses Meng To ambient depth models and clean numeric typography.
 
 ```tsx
 import React from "react";
@@ -116,7 +136,7 @@ export interface MetricCardProps {
 
 export function MetricCard({ label, value, unit, delta }: MetricCardProps) {
   return (
-    <div className="p-4 border border-border rounded-card bg-surface flex flex-col justify-between">
+    <div className="p-4 border border-border rounded-card bg-surface shadow-elevation-1 hover:shadow-elevation-2 transition-shadow duration-normal flex flex-col justify-between">
       <div className="text-xs font-sans text-muted tracking-tight">{label}</div>
       <div className="mt-2 flex items-baseline gap-2">
         <span className="text-2xl font-mono font-bold text-foreground tracking-tight">

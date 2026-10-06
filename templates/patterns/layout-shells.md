@@ -85,7 +85,7 @@ export function EditorialHero({
 
         {/* Right Anchor Showcase: 5 Columns with offset surface */}
         <div className="lg:col-span-5 relative">
-          <div className="rounded-card border border-border bg-surface p-6 shadow-depth overflow-hidden">
+          <div className="rounded-card border border-border bg-surface p-6 shadow-elevation-3 overflow-hidden">
             {showcaseVisual}
           </div>
         </div>

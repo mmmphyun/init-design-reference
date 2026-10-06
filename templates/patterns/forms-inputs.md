@@ -1,6 +1,7 @@
 # Pattern: Forms & Inputs
+<!-- Derived from shadcn-ui/ui (MIT License) & addyosmani/web-quality-skills (MIT License) -->
 
-Form controls designed for keyboard accessibility (WCAG 2.1 AA), deterministic validation states, and zero layout shifting.
+Form controls designed for keyboard accessibility (WCAG 2.1 AA/AAA), deterministic validation states, and zero layout shifting.
 
 ## 1. Validated Form Field Group
 
@@ -63,9 +64,9 @@ export function FormInput({
 }
 ```
 
-## 2. Filter Toolbar with Status Select
+## 2. Accessible Filter Toolbar with Status Select
 
-Standard compact action bar for data querying without over-nested card wrappers.
+Standard compact action bar for data querying with explicit ARIA labels and keyboard focus contracts.
 
 ```tsx
 import React from "react";
@@ -86,10 +87,11 @@ export function FilterToolbar({
   statusOptions,
 }: FilterToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-surface border border-border rounded-card">
+    <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-surface border border-border rounded-card shadow-elevation-1">
       <div className="flex items-center gap-2 flex-1 min-w-[240px]">
         <input
           type="search"
+          aria-label="Filter records"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Filter records by identifier or name..."
@@ -99,6 +101,7 @@ export function FilterToolbar({
 
       <div className="flex items-center gap-2">
         <select
+          aria-label="Filter by status"
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
           className="px-2.5 py-1.5 text-xs font-sans bg-background border border-border rounded-btn text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"

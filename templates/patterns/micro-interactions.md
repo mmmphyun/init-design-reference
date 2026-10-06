@@ -1,13 +1,16 @@
 # Pattern: Micro-Interactions & Motion
-<!-- Derived from emilkowalski/skills (MIT License, Copyright (c) 2025 Emil Kowalski) -->
+<!-- Derived from emilkowalski/skills (MIT License) & pbakaus/impeccable (Apache 2.0) -->
 
-Derived from `emilkowalski/skills` motion engineering principles. Enforces hardware-accelerated animations and spring physics while prohibiting layout thrashing.
+Derived from `emilkowalski/skills` and `pbakaus/impeccable` motion engineering principles. Enforces hardware-accelerated animations, spring physics, and haptic feedback while strictly prohibiting layout thrashing.
 
 ## 1. Golden Rules of Interface Motion
 
 1. **Transform & Opacity Only**: Never animate layout geometry properties (`width`, `height`, `top`, `left`, `margin`, `padding`). Animate ONLY `transform` and `opacity` to avoid sub-pixel layout thrashing and maintain 60/120fps.
-2. **Spring Physics for Physical Reality**: Use non-linear springs for interactive surfaces. Avoid mechanical linear or uniform cubic-bezier transitions on pressable components.
-3. **Interruptibility**: Animations must not block subsequent user interaction. Exit transitions must be faster (~150ms) than enter transitions (~250-300ms).
+2. **Spring Physics for Physical Reality**: Use non-linear springs for interactive surfaces. Avoid mechanical linear transitions on pressable components.
+3. **Interruptibility & Timing Budget**:
+   - Micro-interaction duration MUST NOT exceed 350ms (`maxMicroInteractionDuration`).
+   - Exit transitions must be faster (~100-150ms) than enter transitions (~200-250ms).
+   - Press feedback must execute within 100ms (`active:scale-[0.98]`).
 
 ## 2. Interactive Tactile Button (Tactile Press Feedback)
 
@@ -30,9 +33,9 @@ export function TactileButton({
   ...props
 }: TactileButtonProps) {
   const variantStyles = {
-    primary: "bg-primary text-primary-foreground hover:brightness-105 active:brightness-95",
-    secondary: "bg-surface text-foreground border border-border hover:bg-background active:bg-surface",
-    danger: "bg-danger text-danger-foreground hover:brightness-105 active:brightness-95",
+    primary: "bg-primary text-primary-foreground shadow-elevation-1 hover:shadow-elevation-2 active:shadow-elevation-1 hover:brightness-105 active:brightness-95",
+    secondary: "bg-surface text-foreground border border-border shadow-elevation-1 hover:bg-background active:bg-surface",
+    danger: "bg-danger text-danger-foreground shadow-elevation-1 hover:brightness-105 active:brightness-95",
   }[variant];
 
   const sizeStyles = {
@@ -43,7 +46,7 @@ export function TactileButton({
   return (
     <button
       disabled={disabled}
-      className={`inline-flex items-center justify-center font-sans font-medium rounded-btn select-none transition-transform duration-fast ease-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none will-change-transform ${variantStyles} ${sizeStyles} ${className}`}
+      className={`inline-flex items-center justify-center font-sans font-medium rounded-btn select-none transition-all duration-fast ease-apple-snappy active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none will-change-transform ${variantStyles} ${sizeStyles} ${className}`}
       {...props}
     >
       {children}
@@ -97,7 +100,7 @@ export function Sheet({ isOpen, onClose, title, children }: SheetProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full max-w-md h-full bg-surface border-l border-border shadow-depth z-10 flex flex-col transition-transform duration-normal ease-out will-change-transform animate-in slide-in-from-right"
+        className="relative w-full max-w-md h-full bg-surface border-l border-border shadow-elevation-4 z-10 flex flex-col transition-transform duration-normal ease-apple-spring will-change-transform animate-in slide-in-from-right"
       >
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-sm font-sans font-semibold text-foreground tracking-tight">
@@ -105,7 +108,7 @@ export function Sheet({ isOpen, onClose, title, children }: SheetProps) {
           </h2>
           <button
             onClick={onClose}
-            className="text-xs font-mono text-muted hover:text-foreground p-1"
+            className="text-xs font-mono text-muted hover:text-foreground p-1 rounded-btn focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Close dialog"
           >
             ESC
