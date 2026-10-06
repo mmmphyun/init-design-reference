@@ -17,7 +17,7 @@ reference/
     do-not-copy.md      # Strict AI cliché bans (no generic gradients, cards, or labels)
     layout.md           # Breakpoints & spacing rhythm
     interaction.md      # Transition timing & modal focus rules
-    visual-direction.md # Surface hierarchy & signature elements
+    visual-direction.md # Gate 0 brief intake & curated aesthetic palettes
     accessibility.md    # WCAG 2.1 AA & contrast mandates
   tokens/
     colors.json         # Hex values for surface, text, accents
@@ -37,7 +37,7 @@ reference/
     preview.html        # Bilingual font stack rendering test
   DESIGN.md             # Core design principles & 3-Dial Taste Configuration
   COMPONENTS.md         # Component 4-state completeness rules
-  REVIEW_CHECKLIST.md   # Pre-commit UI verification checklist
+  REVIEW_CHECKLIST.md   # Pre-commit UI verification & Feedback Translation Dictionary
 ```
 
 ## 2. Initialization & Preset Scaffolding
@@ -63,9 +63,16 @@ Use `--force` or `-f` to overwrite existing templates.
 
 ---
 
-## 3. The 4-Phase Implementation Lifecycle
+## 3. The 5-Gate Implementation Lifecycle
 
-To eliminate context gaps and prevent regression into default AI aesthetics, all frontend generation MUST execute through 4 deterministic gates:
+To eliminate context gaps and prevent regression into default AI aesthetics, all frontend generation MUST execute through 5 deterministic gates:
+
+### Gate 0: Brief Intake & Token Synthesis (Derived from `frontend-design`)
+Before coding, if no design specification exists, the agent MUST confirm 3 anchor points with the user:
+1. **Concrete Subject & Audience**: (e.g., senior clinical researcher vs retail mobile buyer).
+2. **Primary Job of the Screen**: (e.g., high-throughput scanning vs single-action checkout).
+3. **Single Signature Anchor**: (Spend boldness in ONE place; keep everything else quiet).
+*Output*: Populate `reference/DESIGN.md` dials and choose a curated palette from `reference/notes/visual-direction.md` into `reference/tokens/colors.json`.
 
 ### Gate 1: `/craft` (Semantic Skeleton)
 - Construct semantic DOM hierarchy (`<header>`, `<main>`, `<aside>`, `<table>`) without aesthetic styling.
@@ -83,7 +90,7 @@ To eliminate context gaps and prevent regression into default AI aesthetics, all
   ```
 - Must resolve all reported `[ERROR]` findings (AI gradients, uppercase tracking, layout thrashing) before proceeding.
 
-### Gate 4: `/harden` (States & Vision Verification)
+### Gate 4: `/harden` (States, Vision Verification & Feedback Iteration)
 1. **Mandatory 4-State Coverage**: Verify Loading Skeleton, Empty State, Error Message, and Populated View are explicitly implemented.
 2. **Motion Guardrails**: Animate ONLY `transform` and `opacity`. Apply `scale-[0.98]` tactile press physics.
 3. **Closed-Loop Vision Verification**:
@@ -93,12 +100,14 @@ To eliminate context gaps and prevent regression into default AI aesthetics, all
      ```powershell
      python scripts/capture_ui.py --url http://localhost:3000
      ```
-   - Visually inspect `reference/screenshots/audit/desktop_1440.png` and `mobile_375.png` using agent vision tools to confirm layout balance and contrast.
+   - Inspect captured screens in `reference/screenshots/audit/` using agent vision tools.
+4. **Natural Language Feedback Iteration**:
+   - When the user gives vague aesthetic feedback ("너무 휑해", "장난감 같아"), consult the **Feedback Translation Dictionary** in `reference/REVIEW_CHECKLIST.md` to deterministically adjust tokens and dials.
 
 ---
 
 ## 4. Companion Bridges & Tools
 
 - `scripts/lint_ui.py`: Fast offline anti-pattern detector (ported from `pbakaus/impeccable`).
-- `scripts/capture_ui.py`: Playwright headless screenshot & console error collector.
+- `scripts/capture_ui.py`: Playwright headless screenshot & console error auditor.
 - `scripts/sync_figma.py`: Synchronizes remote Figma Variables directly into `reference/tokens/*.json`.
