@@ -102,6 +102,31 @@ RULES: List[Rule] = [
         severity="WARN",
         message="Pure black surface (bg-black) detected. Use dark neutral surface token from reference/tokens/colors.json.",
         pattern=re.compile(r"\bbg-black\b")
+    ),
+
+    # 10. Naked Outline-None Without Focus Ring Replacement (WCAG 2.4.7)
+    Rule(
+        rule_id="a11y-naked-outline-none",
+        severity="ERROR",
+        message="outline-none detected without focus-visible:ring replacement. Ensure focus visibility (WCAG 2.4.7).",
+        pattern=re.compile(r"\b(?:outline-none|focus:outline-none)\b"),
+        exception_pattern=re.compile(r"\b(?:focus-visible:ring|focus:ring|focus-visible:outline)\b")
+    ),
+
+    # 11. Missing Image Alt Attribute (WCAG 1.1.1)
+    Rule(
+        rule_id="a11y-missing-alt",
+        severity="ERROR",
+        message="<img> tag missing alt attribute (WCAG 1.1.1). Provide informative alt text or alt=\"\" for decorative images.",
+        pattern=re.compile(r"<img\s+(?![^>]*\balt=)[^>]*>")
+    ),
+
+    # 12. Excessive Micro-Interaction Duration (>350ms)
+    Rule(
+        rule_id="excessive-micro-duration",
+        severity="WARN",
+        message="Micro-interaction animation duration exceeds 350ms budget (duration-500/700/1000). Use duration-fast or duration-normal.",
+        pattern=re.compile(r"\b(?:transition|animate)[^\"'>]*\bduration-(?:500|700|1000)\b")
     )
 ]
 
