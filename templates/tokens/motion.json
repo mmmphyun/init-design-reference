@@ -9,5 +9,22 @@
     "standard": "cubic-bezier(0.4, 0.0, 0.2, 1)",
     "decelerate": "cubic-bezier(0.0, 0.0, 0.2, 1)",
     "accelerate": "cubic-bezier(0.4, 0.0, 1, 1)"
+  },
+  "springs": {
+    "snappy": {
+      "stiffness": 400,
+      "damping": 30,
+      "mass": 1
+    },
+    "gentle": {
+      "stiffness": 200,
+      "damping": 20,
+      "mass": 1
+    },
+    "bouncy": {
+      "stiffness": 300,
+      "damping": 15,
+      "mass": 1
+    }
   }
 }
