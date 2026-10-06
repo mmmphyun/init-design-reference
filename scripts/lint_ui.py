@@ -133,15 +133,49 @@ RULES: List[Rule] = [
 def is_line_ignored(line: str) -> bool:
     return bool(re.search(r"lint-ui-(?:disable|ignore)|@lint-ignore", line))
 
+def check_file_contracts(file_path: str, full_content: str) -> List[Dict]:
+    violations = []
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext not in {".tsx", ".jsx", ".vue", ".svelte"}:
+        return violations
+
+    has_collection = bool(re.search(r"\b(?:data|items|records|rows|list)\.map\s*\(", full_content))
+    is_component = bool(re.search(r"export\s+(?:default\s+)?(?:function|const)\s+[A-Z]\w+", full_content))
+
+    if has_collection and is_component:
+        missing = []
+        if not re.search(r"\b(?:loading|isLoading|aria-busy|skeleton|animate-pulse|Spinner)\b", full_content, re.I):
+            missing.append("Loading")
+        if not re.search(r"\b(?:error|isError|role=[\"']alert[\"']|retry|onRetry)\b", full_content, re.I):
+            missing.append("Error")
+        if not re.search(r"\b(?:empty|length\s*===?\s*0|no records|zero-data)\b", full_content, re.I):
+            missing.append("Empty")
+
+        if missing:
+            violations.append({
+                "file": file_path,
+                "line": 1,
+                "rule_id": "component-4state-incomplete",
+                "severity": "WARN",
+                "message": f"Data collection component missing explicit state guards: {', '.join(missing)}. Enforce 4-state contract (COMPONENTS.md).",
+                "snippet": f"Missing states: {', '.join(missing)}"
+            })
+    return violations
+
 def scan_file(file_path: str) -> List[Dict]:
     violations = []
     try:
         with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-            lines = f.readlines()
+            full_content = f.read()
+            lines = full_content.splitlines()
     except Exception as e:
         print(f"Warning: Failed to read {file_path}: {e}", file=sys.stderr)
         return []
 
+    # 1. Whole-file contract validation (Hobson 4-State Completeness)
+    violations.extend(check_file_contracts(file_path, full_content))
+
+    # 2. Line-by-line regex rule scanning
     for line_num, line in enumerate(lines, start=1):
         if is_line_ignored(line):
             continue
