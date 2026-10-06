@@ -1,6 +1,6 @@
 # Third-Party Notices & Licenses
 
-This project incorporates and builds upon ideas, architectures, specifications, and code from the open-source community. We gratefully acknowledge the following works in accordance with their respective licenses.
+This project incorporates, adapts, and builds upon ideas, architectures, specifications, and code from the open-source community. We gratefully acknowledge the following works in accordance with their respective licenses.
 
 ---
 
@@ -9,7 +9,7 @@ This project incorporates and builds upon ideas, architectures, specifications, 
 - **Repository**: [https://github.com/pbakaus/impeccable](https://github.com/pbakaus/impeccable)
 - **License**: Apache License, Version 2.0
 - **Usage in this project**:
-  - The deterministic rule concepts, anti-cliché detector logic, and command lifecycle architecture are ported in `scripts/lint_ui.py` and referenced in `SKILL.md`.
+  - Deterministic rule concepts, anti-cliché detector logic, micro-interaction craft standards, and command lifecycle architecture incorporated into `scripts/lint_ui.py`, `templates/patterns/micro-interactions.md`, and `SKILL.md`.
 - **Notice**:
   ```
   Copyright 2025 Paul Bakaus
@@ -29,12 +29,12 @@ This project incorporates and builds upon ideas, architectures, specifications, 
 
 ---
 
-## 2. emilkowalski/skills
+## 2. emilkowalski/skills (apple-design)
 - **Author**: Emil Kowalski
 - **Repository**: [https://github.com/emilkowalski/skills](https://github.com/emilkowalski/skills)
 - **License**: MIT License
 - **Usage in this project**:
-  - Micro-interaction motion principles (spring physics, layout thrashing avoidance, active press feedback) incorporated into `templates/tokens/motion.json` and `templates/patterns/micro-interactions.md`.
+  - Apple HIG motion parameters, spring physics curves (stiffness/damping), tactile press feedback, and layout-thrashing prevention rules incorporated into `templates/tokens/motion.json` and `templates/patterns/micro-interactions.md`.
 - **Notice**:
   ```
   MIT License
@@ -54,12 +54,162 @@ This project incorporates and builds upon ideas, architectures, specifications, 
 
 ---
 
-## 3. leonxlnx/taste-skill
+## 3. MengTo/Skills (beautiful-shadows)
+- **Author**: Meng To
+- **Repository**: [https://github.com/MengTo/Skills](https://github.com/MengTo/Skills)
+- **License**: MIT License
+- **Usage in this project**:
+  - Multi-layered ambient occlusion shadow models and elevation light physics incorporated into `templates/tokens/shadows.json` and `templates/patterns/layout-shells.md`.
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2025 Meng To
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 4. addyosmani/web-quality-skills (accessibility)
+- **Author**: Addy Osmani
+- **Repository**: [https://github.com/addyosmani/web-quality-skills](https://github.com/addyosmani/web-quality-skills)
+- **License**: MIT License
+- **Usage in this project**:
+  - WCAG 2.1 AA/AAA contrast ratios, keyboard trap prevention, ARIA contracts, and focus ring standards incorporated into `templates/notes/accessibility.md` and `scripts/lint_ui.py`.
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2025 Addy Osmani
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 5. Superfuture/design-review
+- **Author**: Superfuture
+- **Repository**: [https://github.com/Superfuture/design-review](https://github.com/Superfuture/design-review)
+- **License**: MIT License (Core Open-Source Skill)
+- **Usage in this project**:
+  - Heuristic design review criteria, visual hierarchy audit checklists, and typography scale inspection rubrics incorporated into `templates/root/REVIEW_CHECKLIST.md`. (Commercial Pro-tier features are excluded).
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2025 Superfuture
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 6. shadcn-ui/ui
+- **Author**: shadcn
+- **Repository**: [https://github.com/shadcn-ui/ui](https://github.com/shadcn-ui/ui)
+- **License**: MIT License
+- **Usage in this project**:
+  - Unstyled semantic layout slots, Radix primitive bindings, and data/form component architectural skeletons incorporated into `templates/patterns/layout-shells.md`, `templates/patterns/data-display.md`, and `templates/patterns/forms-inputs.md`.
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2023 shadcn
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 7. jakubkrehel/skills
+- **Author**: Jakub Krehel
+- **Repository**: [https://github.com/jakubkrehel/skills](https://github.com/jakubkrehel/skills)
+- **License**: MIT License
+- **Usage in this project**:
+  - Design specification interview framing and domain requirement extraction patterns incorporated into `templates/notes/visual-direction.md` (Gate 0 Brief Intake).
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2025 Jakub Krehel
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 8. wshobson/agents (interaction-design)
+- **Author**: William Hobson
+- **Repository**: [https://github.com/wshobson/agents](https://github.com/wshobson/agents)
+- **License**: MIT License
+- **Usage in this project**:
+  - Component 4-state completeness contracts (Default, Hover, Active, Focus) and tactile interaction feedback states incorporated into `templates/root/COMPONENTS.md` and `templates/patterns/micro-interactions.md`.
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2025 William Hobson
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 9. leonxlnx/taste-skill
 - **Author**: Leon Linz
 - **Repository**: [https://github.com/Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)
 - **License**: MIT License
 - **Usage in this project**:
-  - The 3-Dial Taste configuration framework (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`) incorporated into `templates/root/DESIGN.md` and `scripts/adapter.py`.
+  - 3-Dial Taste configuration framework (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`) incorporated into `templates/root/DESIGN.md` and `scripts/adapter.py`.
 - **Notice**:
   ```
   MIT License
@@ -79,16 +229,16 @@ This project incorporates and builds upon ideas, architectures, specifications, 
 
 ---
 
-## 4. frontend-design
+## 10. frontend-design
 - **Author**: Anthropic, PBC
 - **Repository / Source**: Anthropic Official Prompt & Skill Guidelines
 - **License**: Complete terms in Anthropic Skill Specification
 - **Usage in this project**:
-  - The Gate 0 brief intake interview protocol, anti-cliché rules, and single signature element principle incorporated into `templates/notes/do-not-copy.md`, `templates/notes/visual-direction.md`, and `SKILL.md`.
+  - Gate 0 brief intake interview protocol, anti-cliché rules, and single signature element principle incorporated into `templates/notes/do-not-copy.md`, `templates/notes/visual-direction.md`, and `SKILL.md`.
 
 ---
 
-## 5. Playwright
+## 11. Playwright
 - **Author**: Microsoft Corporation
 - **Repository**: [https://github.com/microsoft/playwright](https://github.com/microsoft/playwright)
 - **License**: Apache License, Version 2.0
@@ -103,7 +253,7 @@ This project incorporates and builds upon ideas, architectures, specifications, 
 
 ---
 
-## 6. Figma REST API / Figma MCP
+## 12. Figma REST API / Figma MCP
 - **Platform**: Figma, Inc.
 - **Reference**: Figma Developer Platform & Model Context Protocol Specifications
 - **Usage in this project**:
