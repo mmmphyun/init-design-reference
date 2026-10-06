@@ -1,12 +1,13 @@
 # Visual Direction & Aesthetic Framework
+<!-- Derived from jakubkrehel/skills (MIT License) & frontend-design -->
 
-Synthesizes the design director methodology from `frontend-design` with deterministic token execution.
+Synthesizes Jakub Krehel's design brief extraction protocol with deterministic token execution and curated palette libraries.
 
 ---
 
 ## 1. Gate 0: Natural Language Brief Intake (Interview Protocol)
 
-Before touching layout or code, the agent MUST establish these three anchor points through brief confirmation with the user:
+Before touching layout or code, the agent MUST establish these four anchor points through brief confirmation with the user:
 
 1. **Concrete Subject & Audience**:
    - *Example*: "A clinical laboratory portal for senior pathologists" vs "A playful mobile gamification tool for students aged 10-14".
@@ -15,6 +16,13 @@ Before touching layout or code, the agent MUST establish these three anchor poin
    - High-throughput scanning and editing vs single-action focus and conversion vs exploratory browsing.
 3. **The Single Signature Element (Spend Boldness in One Place)**:
    - Identify the ONE memorable visual anchor (e.g., an oversized typographic ticker, an interactive timeline canvas, a dense data HUD). Keep all surrounding surfaces disciplined, quiet, and minimalist.
+4. **Taste Dial Mapping**:
+   - Select and write target dials to `reference/DESIGN.md`:
+     - **B2B High-Density Data Cockpit**: `DESIGN_VARIANCE=3`, `VISUAL_DENSITY=9`, `MOTION_INTENSITY=2`
+     - **Apple Fluid Tactile Experience**: `DESIGN_VARIANCE=6`, `VISUAL_DENSITY=5`, `MOTION_INTENSITY=9`
+     - **Editorial Minimalist Showcase**: `DESIGN_VARIANCE=8`, `VISUAL_DENSITY=3`, `MOTION_INTENSITY=5`
+     - **Technical Terminal / Developer HUD**: `DESIGN_VARIANCE=4`, `VISUAL_DENSITY=8`, `MOTION_INTENSITY=1`
+     - **Default Balanced SaaS**: `DESIGN_VARIANCE=5`, `VISUAL_DENSITY=7`, `MOTION_INTENSITY=4`
 
 ---
 

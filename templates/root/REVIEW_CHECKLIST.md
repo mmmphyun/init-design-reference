@@ -1,4 +1,5 @@
 # UI Review & Verification Checklist
+<!-- Derived from Superfuture/design-review (MIT License) & addyosmani/web-quality-skills (MIT License) -->
 
 Complete this checklist prior to submitting or committing UI code changes.
 
@@ -15,12 +16,26 @@ Complete this checklist prior to submitting or committing UI code changes.
   - [ ] Contrast ratio >= 4.5:1 for normal body text.
   - [ ] Visible focus rings on all interactive elements via `:focus-visible`.
   - [ ] Screen-reader accessible labels on icon-only buttons.
-- [ ] **State Handling**: Verified `loading`, `empty`, and `error` states on all data-driven components.
-- [ ] **Performance & Bundle**: No raw font binaries or high-resolution screenshots committed to source trees.
+- [ ] **Hobson 4-State Completeness**: Verified `Loading`, `Empty`, `Error`, and `Populated` states on all dynamic components.
+- [ ] **Performance & Motion**: Hardware-accelerated transitions only (`transform`, `opacity`), micro-interaction duration <= 350ms.
 
 ---
 
-## 2. Natural Language Feedback Translation Dictionary
+## 2. Superfuture Heuristic Visual Critique Rubric
+
+Evaluate headless Playwright captures against these 5 pillars during Gate 4 verification:
+
+| Pillar | Inspection Criteria | Pass Standard | Failure Mode & Remediation |
+| :--- | :--- | :--- | :--- |
+| **1. Typographic Hierarchy** | Font size scale & line height rhythm | Maximum 3 distinct type sizes per component view; line-height >= 1.4 for body | Font size soup; consolidate to `text-xs`, `text-sm`, `text-xl` |
+| **2. Spacing Rhythm** | Consistency of gap, padding, and margins | Strict adherence to `spacing.json` scale factors (multiples of 4px / 0.25rem) | Arbitrary spacing (`p-[13px]`, `gap-5` mixed with `gap-6`); normalize to token |
+| **3. Surface & Noise** | Card nesting and border cage density | Surfaces differentiated by tonal step (`bg-surface` vs `bg-background`), not 4 nested border boxes | "Card inside card inside card"; strip inner borders, use tonal contrast |
+| **4. Affordance & Contrast** | Primary vs Secondary action hierarchy | Exactly ONE primary prominent button per view; secondary actions use quiet surfaces | Competing colored buttons; convert secondary buttons to `variant="secondary"` |
+| **5. AI Cliché Residuals** | Unintentional generative AI artifacts | Zero purple gradients, no floating ambient blobs, no unnecessary trailing arrows (`->`) | AI default slop; replace with solid tokens and crisp architectural lines |
+
+---
+
+## 3. Natural Language Feedback Translation Dictionary
 *(Translates vague, emotional non-designer feedback into deterministic token and dial adjustments)*
 
 | User Natural Language Feedback | Root Cause Diagnosis | Deterministic Action in `/reference` |
