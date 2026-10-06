@@ -2,7 +2,8 @@
 """
 scripts/capture_ui.py - Headless Browser UI Capture & Runtime Console Auditor
 
-Uses Playwright to capture deterministic desktop & mobile screenshots and collect
+Integrates with Microsoft Playwright (Apache License 2.0, Copyright (c) Microsoft Corporation)
+to capture deterministic desktop & mobile screenshots and collect
 console errors from local development servers (e.g. http://localhost:3000).
 Enforces the visual feedback loop required to prevent generic AI style drift.
 """

@@ -1,4 +1,5 @@
 # Pattern: Micro-Interactions & Motion
+<!-- Derived from emilkowalski/skills (MIT License, Copyright (c) 2025 Emil Kowalski) -->
 
 Derived from `emilkowalski/skills` motion engineering principles. Enforces hardware-accelerated animations and spring physics while prohibiting layout thrashing.
 

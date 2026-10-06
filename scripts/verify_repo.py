@@ -59,6 +59,7 @@ def check_required_templates():
         "CONTRIBUTING.md",
         "CONTRIBUTING.en.md",
         "LICENSE",
+        "NOTICE.md",
         "templates/notes/do-not-copy.md",
         "templates/notes/layout.md",
         "templates/tokens/colors.json",

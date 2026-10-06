@@ -125,3 +125,5 @@ All frontend work must execute through 4 deterministic gates:
   - **Emil Kowalski** ([emilkowalski/skills](https://github.com/emilkowalski/skills), MIT) - Micro-motion & spring physics
   - **Paul Bakaus** ([pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache 2.0) - Deterministic anti-pattern rules & lifecycle
   - **Leon Linz** ([leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), MIT) - 3-Dial Taste framework
+
+For full third-party license texts and notices, see [NOTICE.md](NOTICE.md).

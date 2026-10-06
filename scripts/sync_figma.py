@@ -3,8 +3,8 @@
 scripts/sync_figma.py - Figma Variables to Design Tokens Sync Bridge
 
 Fetches Figma Variables (Design Tokens) via the official Figma REST API
-(GET /v1/files/{file_key}/variables/local) and synchronizes them directly into
-reference/tokens/*.json.
+(GET /v1/files/{file_key}/variables/local) in accordance with the Figma Developer Platform terms,
+and synchronizes them directly into reference/tokens/*.json.
 """
 
 import os

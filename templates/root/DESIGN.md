@@ -1,6 +1,7 @@
 # System Design Principles
 
 ## Taste Configuration (1-10 Scale)
+<!-- Architecture derived from leonxlnx/taste-skill (MIT License, Copyright (c) 2025 Leon Linz) -->
 <!-- Tune these knobs to govern visual output without ambiguous prose -->
 - `DESIGN_VARIANCE`: 5   # 1 (Strict/Symmetric) ~ 10 (Asymmetric/Experimental)
 - `VISUAL_DENSITY`: 7    # 1 (Airy/Minimalist) ~ 10 (Information-Dense Cockpit)
