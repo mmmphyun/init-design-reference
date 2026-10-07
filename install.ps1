@@ -93,7 +93,7 @@ if ($isLocal) {
     New-Item -ItemType Directory -Path $installPath -Force | Out-Null
 
     # Copy files and directories
-    $itemsToCopy = @("SKILL.md", "README.md", "scripts", "templates")
+    $itemsToCopy = @("SKILL.md", "README.md", "README.en.md", "CONTRIBUTING.md", "CONTRIBUTING.en.md", "LICENSE", "NOTICE.md", "scripts", "templates")
     foreach ($item in $itemsToCopy) {
         $src = Join-Path $scriptSourceDir $item
         if (Test-Path -LiteralPath $src) {
@@ -123,7 +123,7 @@ if ($isLocal) {
         }
         New-Item -ItemType Directory -Path $installPath -Force | Out-Null
 
-        $itemsToCopy = @("SKILL.md", "README.md", "scripts", "templates")
+        $itemsToCopy = @("SKILL.md", "README.md", "README.en.md", "CONTRIBUTING.md", "CONTRIBUTING.en.md", "LICENSE", "NOTICE.md", "scripts", "templates")
         foreach ($item in $itemsToCopy) {
             $src = Join-Path $extractedRoot.FullName $item
             if (Test-Path -LiteralPath $src) {
