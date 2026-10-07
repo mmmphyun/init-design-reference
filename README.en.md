@@ -4,6 +4,8 @@ English | [한국어](README.md)
 
 A next-generation design reference and engineering framework that stops AI UI style drift through **Closed-Loop Vision Verification** and **Deterministic Anti-Slop Engineering** for AI coding agents (Google Antigravity, Claude Code, Cursor, etc.).
 
+![A/B Showcase Comparison](assets/showcase.png)
+
 ---
 
 ## 1. Motivation & Core Mechanism

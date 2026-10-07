@@ -4,6 +4,8 @@
 
 AI 코딩 에이전트(Google Antigravity, Claude Code, Cursor 등)의 UI 스타일 드리프트를 방지하고, 텍스트 선언을 넘어 **시각 피드백 폐루프(Closed-Loop Vision Verification)**와 **결정론적 안티슬롭(Anti-Slop) 엔지니어링**을 제공하는 차세대 디자인 레퍼런스 프레임워크.
 
+![A/B Showcase Comparison](assets/showcase.png)
+
 ---
 
 ## 1. 개발 배경 및 핵심 메커니즘
