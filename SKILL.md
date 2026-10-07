@@ -99,7 +99,9 @@ The development lifecycle enforces a strict **Golden Boundary**:
      - AWS/엔터프라이즈 데이터 콕핏: `b2b-dense` (Variance 3, Density 9, Motion 2)
      - 노션/에디토리얼 타이포그래피: `editorial-minimal` (Variance 8, Density 3, Motion 5)
      - 개발자 터미널/CLI 툴: `technical-mono` (Variance 4, Density 8, Motion 1)
-3. **User Approval Gate**: Confirm preset selection and dial settings with the user before proceeding.
+3. **User Approval Gate (Strict Lock)**:
+   - Propose the matched preset, 3 dials, and visual rationale to the user, then request explicit confirmation.
+   - **MANDATORY**: Do NOT execute `adapter.py` or write files prior to receiving explicit user confirmation, even if the user provided clear domain keywords in their initial brief.
 4. **Deterministic Hard-Guard**:
    - Scaffold the design repository and run the specification hard-guard:
      ```powershell
