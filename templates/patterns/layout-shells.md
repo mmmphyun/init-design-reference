@@ -2,6 +2,12 @@
 
 Production-grade structural shells enforcing visual rhythm, responsive breakpoints, and purposeful whitespace.
 
+## Surface Hierarchy Convention
+- **Level 0 (Canvas/Base)**: `bg-background` - 최하단 페이지 캔버스 및 뷰포트 배경.
+- **Level 1 (Surface/Plate)**: `bg-surface` + `border border-border/60` - 독립 컴포넌트, 사이드바, 헤더, 기본 카드 패널.
+- **Level 2 (Elevated/Overlay)**: `bg-surface` + `shadow-elevation-3` - 중첩 팝오버, 다이얼로그, 플로팅 툴바.
+- **규칙**: 단일 컴포넌트 개발 시 부모 캔버스는 Level 0(`bg-background`)으로 가정하며, 컴포넌트 자체 컨테이너는 Level 1(`bg-surface`)로 격리하여 명도 대비를 확보한다.
+
 ## 1. High-Density Dashboard Shell (B2B Cockpit)
 
 A dense, non-collapsing multi-pane layout maximizing data density without visual clutter.

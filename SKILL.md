@@ -87,6 +87,7 @@ To eliminate context pollution and prevent regression into default AI aesthetics
 - Consult `reference/DESIGN.md` dials and read `reference/tokens/*.json` + `reference/patterns/micro-interactions.md`.
 - Bind styles exclusively using semantic CSS tokens (`bg-surface`, `text-foreground`, `shadow-elevation-1` to `shadow-elevation-4`).
 - Apply `active:scale-[0.98]` tactile press physics and Apple spring curves (`ease-apple-snappy`, `ease-apple-spring`).
+- **Surface Hierarchy**: 단일 컴포넌트 바인딩 시 기본 배경은 Level 1(`bg-surface`), 상위 캔버스는 Level 0(`bg-background`) 기본 컨벤션을 적용하여 중첩 대비를 보장한다.
 - **Strict Rule**: Zero hardcoded hex colors (`#6366f1`), arbitrary padding (`p-[18px]`), or generic Tailwind color palettes (`bg-slate-900`).
 
 ### Gate 3: `/critique` (Deterministic Lint Audit - Paul Bakaus & Addy Osmani)
