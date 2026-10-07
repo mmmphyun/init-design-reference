@@ -212,12 +212,12 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         except Exception:
             pass
 
-    bg_primary = colors.get("background", {}).get("primary", "#0f172a")
-    bg_surface = colors.get("background", {}).get("surface", "#334155")
-    text_primary = colors.get("text", {}).get("primary", "#f8fafc")
-    text_muted = colors.get("text", {}).get("muted", "#64748b")
-    accent_primary = colors.get("accent", {}).get("primary", "#38bdf8")
-    border_default = colors.get("border", {}).get("default", "#334155")
+    bg_primary = colors.get("background", {}).get("primary", "#09090b")
+    bg_surface = colors.get("background", {}).get("surface", "#18181b")
+    text_primary = colors.get("text", {}).get("primary", "#fafafa")
+    text_muted = colors.get("text", {}).get("muted", "#71717a")
+    accent_primary = colors.get("accent", {}).get("primary", "#2563eb")
+    border_default = colors.get("border", {}).get("default", "#27272a")
 
     font_imports = typography.get("imports", [])
     font_families = typography.get("families", {})
@@ -248,8 +248,10 @@ def generate_css_bridges(target_dir, style_engine, force=False):
 
     # 2. Tailwind v4 @theme bridge
     if style_engine == "tailwind-v4":
-        theme_css_lines = [
-            "/* Tailwind v4 @theme bridge */",
+        theme_css_lines = ["/* Tailwind v4 @theme bridge */"]
+        for url in font_imports:
+            theme_css_lines.append(f'@import url("{url}");')
+        theme_css_lines.extend([
             '@import "./tokens.css";',
             "",
             "@theme {",
@@ -259,9 +261,10 @@ def generate_css_bridges(target_dir, style_engine, force=False):
             "  --color-muted: var(--muted);",
             "  --color-accent: var(--accent);",
             "  --color-border: var(--border);",
-        ]
-        for fam_key in font_families:
-            theme_css_lines.append(f"  --font-{fam_key}: var(--font-{fam_key});")
+        ])
+        for fam_key, fam_list in font_families.items():
+            formatted_fam = ", ".join([f'"{f}"' if " " in f else f for f in fam_list])
+            theme_css_lines.append(f"  --font-{fam_key}: {formatted_fam};")
         for key in shadows:
             if key.startswith("elevation-"):
                 theme_css_lines.append(f"  --shadow-{key}: var(--shadow-{key});")
@@ -400,7 +403,7 @@ def scaffold_reference(target_dir=None, force=False, preset="default"):
     clean_target = target_dir.replace("\\", "/").strip("./")
     css_entry = f"{ctx['subproject_dir']}/src/index.css" if ctx.get("subproject_dir") else "your CSS entrypoint"
     if ctx["style_engine"] == "tailwind-v4":
-        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"./{clean_target}/tokens/theme.css\";' (or relative path) to {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"./{clean_target}/tokens/theme.css\";' (or relative path) at Line 1 of {css_entry} (before '@import \"tailwindcss\";') to prevent W3C font drop.")
     elif ctx["style_engine"] == "tailwind-v3":
         print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"./{clean_target}/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import {clean_target}/tokens/tokens.css in {css_entry}.")
     else:

@@ -33,12 +33,13 @@
   "typography": {
     "imports": [
       "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css",
-      "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap"
+      "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap",
+      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     ],
     "families": {
       "display": ["Newsreader", "Pretendard", "Georgia", "serif"],
       "body": ["Pretendard", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
-      "mono": ["JetBrains Mono", "Consolas", "monospace"]
+      "mono": ["JetBrains Mono", "D2Coding", "Pretendard", "monospace"]
     }
   }
 }

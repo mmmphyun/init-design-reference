@@ -32,12 +32,13 @@
   },
   "typography": {
     "imports": [
+      "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css",
       "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     ],
     "families": {
-      "display": ["JetBrains Mono", "monospace"],
-      "body": ["JetBrains Mono", "Consolas", "monospace"],
-      "mono": ["JetBrains Mono", "monospace"]
+      "display": ["JetBrains Mono", "D2Coding", "Pretendard", "monospace"],
+      "body": ["JetBrains Mono", "D2Coding", "Pretendard", "monospace"],
+      "mono": ["JetBrains Mono", "D2Coding", "Pretendard", "monospace"]
     }
   }
 }

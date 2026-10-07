@@ -123,6 +123,7 @@ Upon Gate 0 approval, execute Gates 1 through 4 continuously without asking inte
 #### Gate 2: `/bind` (Token & Surface Binding)
 - Bind styles exclusively using semantic CSS tokens (`bg-surface`, `text-foreground`, `border-border-default`, `shadow-elevation-1` to `shadow-elevation-4`).
 - **Surface Hierarchy Mandate**: Enforce Level 0 Canvas (`bg-background`) vs Level 1 Surface (`bg-surface`) contrast. Embedded panels and cards must sit on Level 1.
+- **Font & CSS Bridge Rule**: Ensure `@import "../.design/tokens/theme.css";` is placed at Line 1 of the global CSS before any other CSS rules to prevent W3C `@import` dropping. Monospace font stacks must include Korean glyph fallbacks (`Pretendard`, `D2Coding`) to prevent Windows OS GulimChe fallback.
 - **Strict Rule**: Zero hardcoded hex colors (`#6366f1`), arbitrary padding (`p-[18px]`), or generic Tailwind colors (`bg-slate-900`).
 
 #### Gate 3: `/critique` (Deterministic Lint & Self-Healing Loop)
