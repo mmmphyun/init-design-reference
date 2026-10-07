@@ -123,10 +123,10 @@ def check_scaffold_and_idempotency():
     temp_dir = tempfile.mkdtemp(prefix="init_design_test_")
 
     try:
-        target_ref = os.path.join(temp_dir, "reference")
+        target_design = os.path.join(temp_dir, ".design")
 
-        # 1st run with preset: must create all files
-        run1 = subprocess.run([sys.executable, adapter_path, target_ref, "--preset", "b2b-dense"], capture_output=True, text=True, cwd=temp_dir)
+        # 1st run with preset: must create all files in .design
+        run1 = subprocess.run([sys.executable, adapter_path, target_design, "--preset", "b2b-dense"], capture_output=True, text=True, cwd=temp_dir)
         if run1.returncode != 0:
             log(f"First run failed with code {run1.returncode}:\n{run1.stderr}", "FAIL")
             return False
@@ -135,14 +135,20 @@ def check_scaffold_and_idempotency():
             log("First run did not report created files.", "FAIL")
             return False
 
-        # Verify pattern files exist in target
-        expected_pattern = os.path.join(target_ref, "patterns", "data-display.md")
+        # Verify pattern and token files exist in target
+        expected_pattern = os.path.join(target_design, "patterns", "data-display.md")
         if not os.path.exists(expected_pattern):
             log(f"Pattern file not created: {expected_pattern}", "FAIL")
             return False
 
+        # Verify --verify-spec passes on freshly scaffolded target
+        run_spec = subprocess.run([sys.executable, adapter_path, target_design, "--verify-spec"], capture_output=True, text=True, cwd=temp_dir)
+        if run_spec.returncode != 0:
+            log(f"--verify-spec failed on valid scaffold:\n{run_spec.stderr}", "FAIL")
+            return False
+
         # 2nd run: must skip existing files (idempotency)
-        run2 = subprocess.run([sys.executable, adapter_path, target_ref], capture_output=True, text=True, cwd=temp_dir)
+        run2 = subprocess.run([sys.executable, adapter_path, target_design], capture_output=True, text=True, cwd=temp_dir)
         if run2.returncode != 0:
             log(f"Second run failed with code {run2.returncode}:\n{run2.stderr}", "FAIL")
             return False
@@ -152,7 +158,7 @@ def check_scaffold_and_idempotency():
             return False
 
         # 3rd run with --force: must overwrite
-        run3 = subprocess.run([sys.executable, adapter_path, target_ref, "--force"], capture_output=True, text=True, cwd=temp_dir)
+        run3 = subprocess.run([sys.executable, adapter_path, target_design, "--force"], capture_output=True, text=True, cwd=temp_dir)
         if run3.returncode != 0:
             log(f"Force run failed with code {run3.returncode}:\n{run3.stderr}", "FAIL")
             return False
@@ -161,7 +167,7 @@ def check_scaffold_and_idempotency():
             log("Force flag violated: did not report recreated files.", "FAIL")
             return False
 
-        log("Scaffolding, idempotency, preset, and force overwrite verified.", "PASS")
+        log("Scaffolding, idempotency, preset, hard-guard, and force overwrite verified.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

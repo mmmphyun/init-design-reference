@@ -24,6 +24,7 @@ def get_available_color_tokens() -> List[str]:
         return _CACHED_AVAILABLE_TOKENS
 
     candidates = [
+        os.path.join(".design", "tokens", "colors.json"),
         os.path.join("reference", "tokens", "colors.json"),
         os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates", "tokens", "colors.json")
     ]

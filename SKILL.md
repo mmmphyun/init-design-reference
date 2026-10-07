@@ -1,57 +1,49 @@
 ---
 name: init-design-reference
-description: Scaffolds a production-grade UI design reference, pattern architecture (/reference), and deterministic closed-loop verification pipeline to prevent AI visual drift.
+description: Scaffolds a production-grade UI design reference, pattern architecture (.design), and deterministic closed-loop verification pipeline to prevent AI visual drift.
 ---
 
 # Anti-Slop & Closed-Loop UI Framework
 
-Scaffolds a `/reference` directory structure within the project root to enforce deterministic design constraints, anti-cliché standards, pattern recipes, and closed-loop visual verification.
+Scaffolds a `.design/` directory structure within the project root to enforce deterministic design constraints, anti-cliché standards, pattern recipes, and closed-loop visual verification.
 
 Integrates proven design engineering standards from the open-source ecosystem (`shadcn/ui`, `emilkowalski/apple-design`, `MengTo/beautiful-shadows`, `addyosmani/accessibility`, `Superfuture/design-review`, `pbakaus/impeccable`, `jakubkrehel/skills`, `wshobson/interaction-design`). See `NOTICE.md` for license notices.
 
-## 1. Directory Structure
+## 1. Directory Structure (.design Goldilocks Architecture)
 
 ```
-reference/
+.design/                # Project design repository (supports legacy reference/ fallback)
   screenshots/          # UI target captures & audit runs (.gitignore applied)
     audit/              # Output from scripts/capture_ui.py
-  notes/
-    do-not-copy.md      # Strict AI cliché bans (no generic gradients, cards, or labels)
-    layout.md           # Breakpoints & spacing rhythm
-    interaction.md      # Transition timing & modal focus rules
-    visual-direction.md # Gate 0 brief intake (Jakub Krehel) & curated aesthetic palettes
-    accessibility.md    # WCAG 2.1 AA/AAA contrast & keyboard navigation mandates (Addy Osmani)
-  tokens/
+  tokens/               # Full design tokens preserved for project runtime
     colors.json         # Hex values for surface, text, accents
     spacing.json        # Rem-based vertical & horizontal rhythm
-    typography.json     # Role-based typography & bilingual fallbacks
+    typography.json     # Role-based typography & official CDN font imports
     radii.json          # Border radius tokens
     shadows.json        # Multi-layer ambient occlusion depth models (Meng To)
     motion.json         # Durations, Apple spring physics & gesture constraints (Emil Kowalski)
-  patterns/             # Production-grade React/TSX + Tailwind component blocks
-    layout-shells.md    # High-density cockpit & asymmetric hero layouts (shadcn unstyled slots)
-    data-display.md     # 4-state data tables (Hobson) & anti-cliché telemetry cards
-    forms-inputs.md     # Accessible validated inputs & filter toolbars (Addy Osmani)
-    micro-interactions.md # Tactile press, spring sheets, hardware acceleration (Kowalski & Bakaus)
-  fonts/
-    README.md           # Local font handling guidelines
-    font-license.md     # Licensing documentation
-    preview.html        # Bilingual font stack rendering test
-  DESIGN.md             # Core design principles & 3-Dial Taste Configuration
-  COMPONENTS.md         # Component 4-state completeness rules & Radix composition (Hobson)
-  REVIEW_CHECKLIST.md   # Superfuture 5-Pillar visual rubric & Feedback Translation Dictionary
+    theme.css           # Runtime CSS bridge (Tailwind v4 / Vanilla CSS variables)
+    tailwind.preset.js  # Runtime preset bridge (Tailwind v3)
+  patterns/             # Production-grade React/TSX + Tailwind component recipes
+    layout-shells.md    # High-density cockpit & asymmetric hero layouts
+    data-display.md     # 4-state data tables & anti-cliché telemetry cards
+    forms-inputs.md     # Accessible validated inputs & filter toolbars
+    micro-interactions.md # Tactile press, spring curves, hardware acceleration
+  DESIGN.md             # Single design constitution & 3-Dial Taste Configuration
 ```
+
+> **Zero Repo Pollution**: Static guidelines (`notes/*.md`, `fonts/` guides, `REVIEW_CHECKLIST.md`, `COMPONENTS.md`) remain isolated in the global skill and are referenced Just-In-Time (JIT) without cluttering the project codebase.
 
 ## 2. Initialization & Preset Scaffolding
 
-Run the framework adapter with an optional domain preset:
+Run the framework adapter with an optional domain preset (defaults to `.design`, falls back to existing `reference`):
 
 ```powershell
 # Windows
-python "$env:USERPROFILE/.gemini/config/skills/init-design-reference/scripts/adapter.py" "reference" --preset b2b-dense
+python "$env:USERPROFILE/.gemini/config/skills/init-design-reference/scripts/adapter.py" --preset b2b-dense
 
 # macOS / Linux
-python "$HOME/.gemini/config/skills/init-design-reference/scripts/adapter.py" "reference" --preset b2b-dense
+python "$HOME/.gemini/config/skills/init-design-reference/scripts/adapter.py" --preset b2b-dense
 ```
 
 ### Available Presets (`--preset`)
@@ -65,57 +57,99 @@ Use `--force` or `-f` to overwrite existing templates.
 
 ---
 
-## 3. The 5-Gate Implementation Lifecycle (Single-Agent JIT Paging)
+## 3. Smart Alignment & Autonomous 5-Gate Self-Driving Loop
 
-To eliminate context pollution and prevent regression into default AI aesthetics, execute through 5 deterministic gates in the main conversation thread:
+The development lifecycle enforces a strict **Golden Boundary**:
+- **Gate 0 (High-Touch)**: Plain-language collaborative alignment & user confirmation gate.
+- **Gates 1~4 (Zero-Touch Self-Driving)**: Fully autonomous orchestration loop (Skeleton -> Bind -> Self-Healing Lint -> Vision Capture) executed without human interruption.
 
-### Gate 0: Brief Intake & Token Synthesis (Jakub Krehel & frontend-design)
-- Read `reference/notes/visual-direction.md`.
-- Confirm 4 anchor points with the user:
-  1. **Concrete Subject & Audience**: Dictates domain vernacular and materials.
-  2. **Primary Job of the Screen**: High-throughput scanning vs single-action focus vs exploration.
-  3. **Single Signature Anchor**: Spend boldness in ONE place; keep surrounding surfaces quiet.
-  4. **Taste Dial Mapping**: Select target dials for `reference/DESIGN.md`.
-- *Output*: Populate `reference/DESIGN.md` dials and copy target palette to `reference/tokens/colors.json`.
+```
+[User Brief]
+     │
+     ▼
+【Gate 0: Smart Alignment Tiki-Taka】 (High-Touch Dialog)
+  - 2-Turn Plain-Language Inquiries (Subject/Vibe/Brand Color)
+  - 4-Anchor Mapping Table -> Preset & Dial Proposal
+  - User Confirmation Gate (Approval Required)
+     │
+     ▼
+【Gate 0: Deterministic Hard-Guard】
+  - adapter.py --verify-spec (Blocks progression if dials/tokens are missing)
+     │
+     ▼
+【Gates 1~4: Autonomous Self-Driving Orchestration Loop】 (Zero-Touch)
+  - Gate 1 (/craft)     : Semantic DOM skeleton (0 styling, pure ARIA)
+  - Gate 2 (/bind)      : Token & Surface hierarchy binding (Level 0/1)
+  - Gate 3 (/critique)  : lint_ui.py self-healing loop (Max 3 retries)
+  - Gate 4 (/harden)    : 4-State completeness, dev server mount & capture_ui.py
+     │
+     ▼ (Rendered Viewport Capture Delivered)
+[User Visual Feedback] ──(Token Reverse-Traceability)──► Adjust tokens/*.json (0-diff TSX)
+```
 
-### Gate 1: `/craft` (Semantic Skeleton - shadcn/ui Unstyled Architecture)
-- Read `reference/patterns/layout-shells.md`.
-- Construct semantic DOM hierarchy (`<header>`, `<main>`, `<aside>`, `<table>`) without aesthetic styling.
-- Zero decorative colors or background fills. Focus exclusively on information architecture, responsive grid slots, and Radix/ARIA accessibility roles.
+### Gate 0: Smart Alignment & Token Synthesis (High-Touch)
+1. **Plain-Language Intake (for Non-Experts)**:
+   - Ask up to 3 non-technical questions if requirements are underspecified:
+     - "누가 어떤 상황에서 주로 쓰나요? (B2B 전문가 도구 / 대중용 모바일 서비스 / 개발자 터미널)"
+     - "원하는 전체적인 분위기는 어떤가요? (산뜻하고 트렌디한 토스·애플 / 차분하고 전문적인 다크 콕핏 / 종이 같은 미니멀)"
+     - "반드시 살리고 싶은 브랜드 포인트 컬러나 시그니처가 있나요?"
+2. **4-Anchor Mapping & Dial Proposal (Anchor & Tune)**:
+   - Match the user's intent to the nearest anchor preset, then propose 3-dial tuning:
+     - 토스/애플 감성 B2C: `apple-fluid` (Variance 6, Density 5, Motion 9)
+     - AWS/엔터프라이즈 데이터 콕핏: `b2b-dense` (Variance 3, Density 9, Motion 2)
+     - 노션/에디토리얼 타이포그래피: `editorial-minimal` (Variance 8, Density 3, Motion 5)
+     - 개발자 터미널/CLI 툴: `technical-mono` (Variance 4, Density 8, Motion 1)
+3. **User Approval Gate**: Confirm preset selection and dial settings with the user before proceeding.
+4. **Deterministic Hard-Guard**:
+   - Scaffold the design repository and run the specification hard-guard:
+     ```powershell
+     python scripts/adapter.py --preset <selected-preset>
+     python scripts/adapter.py --verify-spec
+     ```
+   - If `--verify-spec` returns exit code 1 (missing dials or semantic tokens), pipeline execution is halted until corrected.
 
-### Gate 2: `/bind` (Token & Craft Binding - Meng To & Emil Kowalski)
-- Consult `reference/DESIGN.md` dials and read `reference/tokens/*.json` + `reference/patterns/micro-interactions.md`.
-- Bind styles exclusively using semantic CSS tokens (`bg-surface`, `text-foreground`, `shadow-elevation-1` to `shadow-elevation-4`).
-- Apply `active:scale-[0.98]` tactile press physics and Apple spring curves (`ease-apple-snappy`, `ease-apple-spring`).
-- **Surface Hierarchy**: 단일 컴포넌트 바인딩 시 기본 배경은 Level 1(`bg-surface`), 상위 캔버스는 Level 0(`bg-background`) 기본 컨벤션을 적용하여 중첩 대비를 보장한다.
-- **Strict Rule**: Zero hardcoded hex colors (`#6366f1`), arbitrary padding (`p-[18px]`), or generic Tailwind color palettes (`bg-slate-900`).
+---
 
-### Gate 3: `/critique` (Deterministic Lint Audit - Paul Bakaus & Addy Osmani)
-- Execute the offline, deterministic AST/Regex linter:
+### Gate 1~4: Autonomous Self-Driving Orchestration Loop (Zero-Touch)
+
+Upon Gate 0 approval, execute Gates 1 through 4 continuously without asking intermediate questions.
+
+#### Gate 1: `/craft` (Semantic Skeleton)
+- Construct semantic DOM hierarchy (`<header>`, `<main>`, `<aside>`, `<table>`, `<article>`).
+- Apply **zero styling or decorative colors**. Focus exclusively on structural hierarchy, responsive flex/grid layouts, and Radix/ARIA accessibility roles (`role="table"`, `aria-expanded`).
+
+#### Gate 2: `/bind` (Token & Surface Binding)
+- Bind styles exclusively using semantic CSS tokens (`bg-surface`, `text-foreground`, `border-border-default`, `shadow-elevation-1` to `shadow-elevation-4`).
+- **Surface Hierarchy Mandate**: Enforce Level 0 Canvas (`bg-background`) vs Level 1 Surface (`bg-surface`) contrast. Embedded panels and cards must sit on Level 1.
+- **Strict Rule**: Zero hardcoded hex colors (`#6366f1`), arbitrary padding (`p-[18px]`), or generic Tailwind colors (`bg-slate-900`).
+
+#### Gate 3: `/critique` (Deterministic Lint & Self-Healing Loop)
+- Execute the offline AST/Regex linter:
   ```powershell
   python scripts/lint_ui.py src/
   ```
-- Must resolve all reported `[ERROR]` findings (AI gradients, uppercase tracking, layout thrashing, naked outline-none, missing alt tags) before proceeding.
+- **Self-Healing Loop**: If any `[ERROR]` is reported (hardcoded hex, uppercase tracking, naked outline-none, missing alt), the agent must immediately parse the line number, auto-fix the code, and re-run `lint_ui.py`. Repeat up to 3 times until 0 errors are achieved.
 
-### Gate 4: `/harden` (4-States, Vision Verification & Superfuture Critique)
-1. **Mandatory 4-State Coverage (William Hobson)**: Verify `Loading` (skeleton with `aria-busy`), `Empty` (actionable CTA), `Error` (`role="alert"` with retry), and `Populated` are explicitly implemented.
-2. **Motion Guardrails**: Animate ONLY `transform` and `opacity`. Cap micro-interactions to <= 350ms. Obey `prefers-reduced-motion`.
-3. **Closed-Loop Vision Verification**:
-   - Start local dev server (`npm run dev`).
-   - 단위 컴포넌트(예: `DataTable.tsx`) 개발 시, 프로젝트 최상위 진입점(`app/page.tsx` 또는 `src/App.tsx`)에 임시 마운트하여 렌더링 경로를 확보한다.
-   - Run headless auditor to capture viewports (포트는 3000, 5173, 8080 등을 자동 감지):
+#### Gate 4: `/harden` (4-State Completeness & Closed-Loop Vision Verification)
+1. **Mandatory 4-State Coverage**: Verify `Loading` (skeleton with `aria-busy`), `Empty` (actionable CTA), `Error` (`role="alert"` with retry), and `Populated` are implemented.
+2. **Mount & Headless Capture**:
+   - Start the local dev server (`npm run dev`).
+   - For isolated components, temporarily mount to the top-level route (`app/page.tsx` or `src/App.tsx`).
+   - Run the headless auditor (auto-detects active port 3000, 5173, 8080):
      ```powershell
      python scripts/capture_ui.py
      ```
-   - Evaluate screenshots against the **Superfuture 5-Pillar Visual Critique Rubric** in `reference/REVIEW_CHECKLIST.md` (Typographic Hierarchy, Spacing Rhythm, Surface & Noise, Affordance, AI Cliché Residuals).
-4. **Natural Language Feedback Iteration**:
-   - When the user gives aesthetic feedback ("너무 휑해", "장난감 같아"), consult the **Feedback Translation Dictionary** in `reference/REVIEW_CHECKLIST.md` to deterministically adjust tokens and dials.
+3. **Closed-Loop Feedback Rule (Token Reverse-Traceability)**:
+   - Present captured viewport screenshots (`.design/screenshots/audit/desktop_1440.png`) to the user.
+   - When the user provides visual feedback ("배경이 너무 어두워", "여백을 넓혀줘"), **DO NOT edit TSX component files directly**.
+   - Modify the corresponding token in `.design/tokens/*.json`, regenerate CSS bridges with `python scripts/adapter.py`, and trigger a headless re-capture to prove that styling updates via pure design tokens.
 
 ---
 
 ## 4. Companion Bridges & Tools
 
-- `scripts/lint_ui.py`: Fast offline anti-pattern & accessibility detector (ported from `pbakaus/impeccable` & `addyosmani/accessibility`).
-- `scripts/capture_ui.py`: Playwright headless screenshot & console error auditor.
-- `scripts/sync_figma.py`: Synchronizes remote Figma Variables directly into `reference/tokens/*.json`.
-- `scripts/verify_repo.py`: Repository self-integrity and architectural verification suite.
+- `scripts/adapter.py`: Scaffolds `.design/` architecture, generates CSS/Tailwind bridges, and runs `--verify-spec` hard-guard.
+- `scripts/lint_ui.py`: Fast offline anti-pattern & accessibility detector with dynamic token recommendation.
+- `scripts/capture_ui.py`: Playwright headless screenshot & console error auditor with automatic port discovery.
+- `scripts/sync_figma.py`: Synchronizes remote Figma Variables directly into `.design/tokens/*.json`.
+- `scripts/verify_repo.py`: Repository self-integrity, architecture decoupling, and hard-guard test suite.

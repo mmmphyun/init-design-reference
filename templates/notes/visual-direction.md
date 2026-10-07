@@ -5,24 +5,32 @@ Synthesizes Jakub Krehel's design brief extraction protocol with deterministic t
 
 ---
 
-## 1. Gate 0: Natural Language Brief Intake (Interview Protocol)
+## 1. Gate 0: Smart Alignment Intake (2-Turn Progressive Interview)
 
-Before touching layout or code, the agent MUST establish these four anchor points through brief confirmation with the user:
+Before touching layout or code, the agent MUST run this non-expert-friendly 2-turn alignment interview to establish design anchors without cognitive overload:
 
-1. **Concrete Subject & Audience**:
-   - *Example*: "A clinical laboratory portal for senior pathologists" vs "A playful mobile gamification tool for students aged 10-14".
-   - The vernacular, materials, and vocabulary of the subject dictate the visual tone.
-2. **The Interface's Primary Job**:
-   - High-throughput scanning and editing vs single-action focus and conversion vs exploratory browsing.
-3. **The Single Signature Element (Spend Boldness in One Place)**:
-   - Identify the ONE memorable visual anchor (e.g., an oversized typographic ticker, an interactive timeline canvas, a dense data HUD). Keep all surrounding surfaces disciplined, quiet, and minimalist.
-4. **Taste Dial Mapping**:
-   - Select and write target dials to `reference/DESIGN.md`:
-     - **B2B High-Density Data Cockpit**: `DESIGN_VARIANCE=3`, `VISUAL_DENSITY=9`, `MOTION_INTENSITY=2`
-     - **Apple Fluid Tactile Experience**: `DESIGN_VARIANCE=6`, `VISUAL_DENSITY=5`, `MOTION_INTENSITY=9`
-     - **Editorial Minimalist Showcase**: `DESIGN_VARIANCE=8`, `VISUAL_DENSITY=3`, `MOTION_INTENSITY=5`
-     - **Technical Terminal / Developer HUD**: `DESIGN_VARIANCE=4`, `VISUAL_DENSITY=8`, `MOTION_INTENSITY=1`
-     - **Default Balanced SaaS**: `DESIGN_VARIANCE=5`, `VISUAL_DENSITY=7`, `MOTION_INTENSITY=4`
+### Turn 1: 3 Casual Anchor Questions
+Ask the user these 3 intuitive, non-jargon questions:
+1. **Target User**: [A] Internal team / power operators (speed & scanning priority) vs [B] General public / consumers (clean & welcoming)
+2. **Atmosphere / Persona**:
+   - [A] **Toss / Apple style**: Spacious, clean, tactile spring micro-interactions (`apple-fluid`)
+   - [B] **AWS / Bloomberg cockpit**: High-density telemetry, dark carbon surfaces, tabular data (`b2b-dense`)
+   - [C] **Notion / Editorial minimal**: Monotone calm, airy typography, reading rhythm (`editorial-minimal`)
+   - [D] **Terminal / Developer HUD**: Low-reflection dark surfaces, mono fonts, dense status signals (`technical-mono`)
+3. **Brand / Accent Color**: Desired logo/accent hex or general hue (or default to recommended palette).
+
+### Turn 2: Persona-to-Preset Deterministic Translation Table
+The agent deterministically translates the user's choice into baseline dials and fonts:
+
+| Selected Persona | Preset | Variance | Density | Motion | Font Pair |
+|---|---|---|---|---|---|
+| **[A] Toss / Apple** | `apple-fluid` | 6 | 5 | 9 | Display: Pretendard / Body: Pretendard |
+| **[B] AWS / Bloomberg Cockpit** | `b2b-dense` | 3 | 9 | 2 | Display: Space Grotesk / Body: Pretendard (tabular-nums) |
+| **[C] Notion / Editorial** | `editorial-minimal` | 8 | 3 | 5 | Display: Space Grotesk / Body: Pretendard |
+| **[D] Terminal / Dev HUD** | `technical-mono` | 4 | 8 | 1 | Display: JetBrains Mono / Body: JetBrains Mono |
+
+- **Anchor & Tune Rule**: The preset sets the baseline anchor. If the user asks for minor tweaks ("Apple vibe but slightly more dense data"), tune dials relatively (`Density +2`) without abandoning the persona.
+- **Approval Gate**: Present the concrete proposal (Preset, Palette, Fonts, Density). **Wait for explicit user confirmation ("진행해", "확정") before initiating Gate 1~4 autonomous execution.**
 
 ---
 

@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import json
+import re
 import argparse
 
 PRESETS = {
@@ -252,7 +253,56 @@ module.exports = {{
 """
         safe_write(os.path.join(tokens_dir, "tailwind.preset.js"), preset_content, force=force)
 
-def scaffold_reference(target_dir="reference", force=False, preset="default"):
+def resolve_design_target(custom_target=None):
+    if custom_target:
+        return custom_target
+    if os.path.exists(".design"):
+        return ".design"
+    if os.path.exists("reference"):
+        return "reference"
+    return ".design"
+
+def verify_design_spec(target_dir=None):
+    resolved = resolve_design_target(target_dir)
+    design_md = os.path.join(resolved, "DESIGN.md")
+    colors_json = os.path.join(resolved, "tokens", "colors.json")
+
+    if not os.path.exists(design_md):
+        print(f"[HARD-GUARD FAIL] {design_md} does not exist.", file=sys.stderr)
+        return False
+
+    with open(design_md, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    variance = re.search(r"`DESIGN_VARIANCE`:\s*([0-9]+)", content)
+    density = re.search(r"`VISUAL_DENSITY`:\s*([0-9]+)", content)
+    motion = re.search(r"`MOTION_INTENSITY`:\s*([0-9]+)", content)
+
+    if not (variance and density and motion):
+        print(f"[HARD-GUARD FAIL] {design_md} is missing one of DESIGN_VARIANCE, VISUAL_DENSITY, MOTION_INTENSITY.", file=sys.stderr)
+        return False
+
+    if not os.path.exists(colors_json):
+        print(f"[HARD-GUARD FAIL] {colors_json} does not exist.", file=sys.stderr)
+        return False
+
+    try:
+        with open(colors_json, "r", encoding="utf-8") as f:
+            colors = json.load(f)
+        required = [("background", "surface"), ("background", "primary"), ("accent", "primary"), ("border", "default")]
+        for sec, key in required:
+            if not colors.get(sec, {}).get(key):
+                print(f"[HARD-GUARD FAIL] {colors_json} missing required token '{sec}.{key}'.", file=sys.stderr)
+                return False
+    except Exception as e:
+        print(f"[HARD-GUARD FAIL] Failed to parse {colors_json}: {e}", file=sys.stderr)
+        return False
+
+    print(f"[HARD-GUARD PASS] Design specification and tokens in '{resolved}' are valid (Variance={variance.group(1)}, Density={density.group(1)}, Motion={motion.group(1)}).")
+    return True
+
+def scaffold_reference(target_dir=None, force=False, preset="default"):
+    target_dir = resolve_design_target(target_dir)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     templates_dir = os.path.join(os.path.dirname(script_dir), "templates")
 
@@ -260,8 +310,8 @@ def scaffold_reference(target_dir="reference", force=False, preset="default"):
         print(f"Error: Templates directory not found at {templates_dir}", file=sys.stderr)
         sys.exit(1)
 
-    # Required target directories
-    for sub in ["screenshots", "notes", "tokens", "fonts", "patterns"]:
+    # Required target directories: tokens, screenshots, patterns
+    for sub in ["screenshots", "tokens", "patterns"]:
         os.makedirs(os.path.join(target_dir, sub), exist_ok=True)
 
     # Ensure screenshots .gitkeep
@@ -270,8 +320,8 @@ def scaffold_reference(target_dir="reference", force=False, preset="default"):
         with open(gitkeep_path, "w", encoding="utf-8") as f:
             pass
 
-    # Copy template folders (notes, tokens, fonts, patterns)
-    for category in ["notes", "tokens", "fonts", "patterns"]:
+    # Copy template folders: tokens, patterns (exclude notes and fonts from repo pollution)
+    for category in ["tokens", "patterns"]:
         cat_src = os.path.join(templates_dir, category)
         if os.path.exists(cat_src):
             for filename in os.listdir(cat_src):
@@ -279,13 +329,10 @@ def scaffold_reference(target_dir="reference", force=False, preset="default"):
                 dst_file = os.path.join(target_dir, category, filename)
                 safe_copy(src_file, dst_file, force=force)
 
-    # Copy root documents directly to reference root
-    root_src = os.path.join(templates_dir, "root")
-    if os.path.exists(root_src):
-        for filename in os.listdir(root_src):
-            src_file = os.path.join(root_src, filename)
-            dst_file = os.path.join(target_dir, filename)
-            safe_copy(src_file, dst_file, force=force)
+    # Copy single constitutional spec (DESIGN.md) to target root
+    design_src = os.path.join(templates_dir, "root", "DESIGN.md")
+    if os.path.exists(design_src):
+        safe_copy(design_src, os.path.join(target_dir, "DESIGN.md"), force=force)
 
     # Apply selected Taste preset
     apply_preset(target_dir, preset)
@@ -303,19 +350,24 @@ def scaffold_reference(target_dir="reference", force=False, preset="default"):
     print(f"Preset Applied: {preset} ({PRESETS.get(preset, {}).get('desc', '')})")
     print(f"Detected Environment: Framework={ctx['framework']}, StyleEngine={ctx['style_engine']}{sub_info}")
 
+    clean_target = target_dir.replace("\\", "/").strip("./")
     css_entry = f"{ctx['subproject_dir']}/src/index.css" if ctx.get("subproject_dir") else "your CSS entrypoint"
     if ctx["style_engine"] == "tailwind-v4":
-        print(f"Integration: Generated reference/tokens/theme.css. Add '@import \"./reference/tokens/theme.css\";' (or relative path) to {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"./{clean_target}/tokens/theme.css\";' (or relative path) to {css_entry}.")
     elif ctx["style_engine"] == "tailwind-v3":
-        print(f"Integration: Generated reference/tokens/tailwind.preset.js. Add 'presets: [require(\"./reference/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import reference/tokens/tokens.css in {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"./{clean_target}/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import {clean_target}/tokens/tokens.css in {css_entry}.")
     else:
-        print(f"Integration: Generated reference/tokens/tokens.css. Add '@import \"./reference/tokens/tokens.css\";' to {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/tokens.css. Add '@import \"./{clean_target}/tokens/tokens.css\";' to {css_entry}.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scaffold production-grade UI design reference and pattern architecture")
-    parser.add_argument("target", nargs="?", default="reference", help="Target directory (default: reference)")
+    parser.add_argument("target", nargs="?", default=None, help="Target directory (default: .design or reference fallback)")
     parser.add_argument("-f", "--force", action="store_true", help="Force overwrite existing template files")
     parser.add_argument("-p", "--preset", choices=list(PRESETS.keys()), default="default", help="Design taste preset")
+    parser.add_argument("--verify-spec", action="store_true", help="Verify integrity of design specification and tokens (Hard-Guard)")
     args = parser.parse_args()
+
+    if args.verify_spec:
+        sys.exit(0 if verify_design_spec(args.target) else 1)
 
     scaffold_reference(args.target, force=args.force, preset=args.preset)

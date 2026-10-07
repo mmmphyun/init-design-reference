@@ -38,9 +38,17 @@ def detect_active_port(candidate_ports=None) -> int:
                     return port
         except Exception:
             continue
-    return 3000
+def resolve_output_dir(output_dir=None):
+    if output_dir:
+        return output_dir
+    if os.path.exists(".design"):
+        return ".design/screenshots/audit"
+    if os.path.exists("reference"):
+        return "reference/screenshots/audit"
+    return ".design/screenshots/audit"
 
-def capture_ui(url=None, output_dir="reference/screenshots/audit", allow_missing=False):
+def capture_ui(url=None, output_dir=None, allow_missing=False):
+    output_dir = resolve_output_dir(output_dir)
     if not url:
         port = detect_active_port()
         url = f"http://localhost:{port}"
@@ -134,7 +142,7 @@ def capture_ui(url=None, output_dir="reference/screenshots/audit", allow_missing
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Headless Browser UI Capture & Auditor")
     parser.add_argument("--url", default=None, help="Target URL (default: auto-detected localhost port)")
-    parser.add_argument("--output", default="reference/screenshots/audit", help="Output directory for screenshots")
+    parser.add_argument("--output", default=None, help="Output directory for screenshots (default: .design/screenshots/audit or reference fallback)")
     parser.add_argument("--allow-missing", action="store_true", help="Do not exit with error if Playwright/server is unavailable")
     args = parser.parse_args()
 
