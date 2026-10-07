@@ -12,8 +12,54 @@ for hardcoded values, AI cliches, layout thrashing, and aesthetic anti-patterns.
 import os
 import sys
 import re
+import json
 import argparse
 from typing import List, Dict, Tuple
+
+_CACHED_AVAILABLE_TOKENS = None
+
+def get_available_color_tokens() -> List[str]:
+    global _CACHED_AVAILABLE_TOKENS
+    if _CACHED_AVAILABLE_TOKENS is not None:
+        return _CACHED_AVAILABLE_TOKENS
+
+    candidates = [
+        os.path.join("reference", "tokens", "colors.json"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates", "tokens", "colors.json")
+    ]
+    tokens = []
+    for c in candidates:
+        if os.path.exists(c):
+            try:
+                with open(c, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                for group, items in data.items():
+                    if isinstance(items, dict):
+                        for subkey in items:
+                            tokens.append(f"bg-{subkey}" if group == "background" else f"{group}-{subkey}")
+                    else:
+                        tokens.append(group)
+                break
+            except Exception:
+                pass
+
+    if not tokens:
+        tokens = ["bg-surface", "bg-background", "text-primary", "text-muted", "accent-primary", "border-default"]
+
+    _CACHED_AVAILABLE_TOKENS = tokens
+    return _CACHED_AVAILABLE_TOKENS
+
+def get_rule_suggestion(rule_id: str) -> str:
+    if rule_id == "a11y-naked-outline-none":
+        return "Add 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'"
+    if rule_id == "hardcoded-hex":
+        tokens = get_available_color_tokens()
+        return f"Use semantic tokens from colors.json: {', '.join(tokens[:6])}"
+    if rule_id == "cliche-ai-gradient":
+        return "Use purposeful solid surface (bg-surface) or subtle single-axis contrast"
+    if rule_id == "cliche-tracking-uppercase":
+        return "Use standard sentence case or normal tracking (tracking-normal)"
+    return ""
 
 # Supported file extensions for frontend source code
 DEFAULT_EXTENSIONS = {".tsx", ".jsx", ".vue", ".svelte", ".html", ".css"}
@@ -214,6 +260,7 @@ def scan_file(file_path: str) -> List[Dict]:
                     "rule_id": "a11y-naked-outline-none",
                     "severity": "ERROR",
                     "message": "outline-none detected on element without focus-visible:ring replacement (WCAG 2.4.7).",
+                    "suggestion": get_rule_suggestion("a11y-naked-outline-none"),
                     "snippet": full_tag.strip().splitlines()[0]
                 })
 
@@ -226,6 +273,7 @@ def scan_file(file_path: str) -> List[Dict]:
                     "rule_id": "a11y-missing-alt",
                     "severity": "ERROR",
                     "message": "<img> tag missing alt attribute (WCAG 1.1.1). Provide informative alt text or alt=\"\" for decorative images.",
+                    "suggestion": "Add alt=\"...\" description or alt=\"\" for decorative images",
                     "snippet": full_tag.strip().splitlines()[0]
                 })
 
@@ -246,6 +294,7 @@ def scan_file(file_path: str) -> List[Dict]:
                     "rule_id": rule.rule_id,
                     "severity": rule.severity,
                     "message": rule.message,
+                    "suggestion": get_rule_suggestion(rule.rule_id),
                     "snippet": line.strip()
                 })
 
@@ -283,6 +332,8 @@ def run_linter(targets: List[str], excludes: List[str] = None) -> int:
             prefix = "[ERROR]" if v["severity"] == "ERROR" else "[WARN]"
             print(f"{prefix} {v['file']}:{v['line']} ({v['rule_id']})")
             print(f"       {v['message']}")
+            if v.get("suggestion"):
+                print(f"       Suggestion: {v['suggestion']}")
             print(f"       Code: {v['snippet']}\n")
 
     print(f"Scan complete: {len(files_to_scan)} files inspected. Findings: {error_count} errors, {warn_count} warnings.")
