@@ -12,45 +12,65 @@ PRESETS = {
     "apple-fluid": {"variance": 6, "density": 5, "motion": 9, "desc": "Fluid spring physics & tactile feedback"},
 }
 
-def detect_project_context():
+def detect_project_context(base_dir="."):
     context = {
         "framework": "unknown",
         "style_engine": "css",
-        "has_package_json": False
+        "has_package_json": False,
+        "subproject_dir": None
     }
 
-    if os.path.exists("package.json"):
-        context["has_package_json"] = True
+    candidate_pkg_paths = [os.path.join(base_dir, "package.json")]
+    if not os.path.exists(candidate_pkg_paths[0]):
         try:
-            with open("package.json", "r", encoding="utf-8") as f:
-                pkg = json.load(f)
-            deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+            for entry in sorted(os.listdir(base_dir)):
+                entry_path = os.path.join(base_dir, entry)
+                if os.path.isdir(entry_path) and not entry.startswith(".") and entry not in {"node_modules", "reference", "dist", "build", "templates", "scripts"}:
+                    sub_pkg = os.path.join(entry_path, "package.json")
+                    if os.path.exists(sub_pkg):
+                        candidate_pkg_paths.append(sub_pkg)
+        except Exception:
+            pass
 
-            # Detect Framework
-            if "next" in deps:
-                context["framework"] = "nextjs"
-            elif "vite" in deps:
-                context["framework"] = "vite"
-            elif "nuxt" in deps:
-                context["framework"] = "nuxt"
-            elif "svelte" in deps or "@sveltejs/kit" in deps:
-                context["framework"] = "svelte"
+    for pkg_path in candidate_pkg_paths:
+        if os.path.exists(pkg_path):
+            context["has_package_json"] = True
+            rel_dir = os.path.relpath(os.path.dirname(pkg_path), base_dir)
+            if rel_dir and rel_dir != ".":
+                context["subproject_dir"] = rel_dir.replace("\\", "/")
+            try:
+                with open(pkg_path, "r", encoding="utf-8") as f:
+                    pkg = json.load(f)
+                deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
 
-            # Detect Style Engine
-            if "@tailwindcss/postcss" in deps or "@tailwindcss/vite" in deps:
-                context["style_engine"] = "tailwind-v4"
-            elif "tailwindcss" in deps:
-                context["style_engine"] = "tailwind-v3"
-            elif "@pandacss/dev" in deps:
-                context["style_engine"] = "pandacss"
-        except Exception as e:
-            print(f"Notice: Failed to parse package.json ({e})")
+                # Detect Framework
+                if "next" in deps:
+                    context["framework"] = "nextjs"
+                elif "vite" in deps:
+                    context["framework"] = "vite"
+                elif "nuxt" in deps:
+                    context["framework"] = "nuxt"
+                elif "svelte" in deps or "@sveltejs/kit" in deps:
+                    context["framework"] = "svelte"
+
+                # Detect Style Engine
+                if "@tailwindcss/postcss" in deps or "@tailwindcss/vite" in deps:
+                    context["style_engine"] = "tailwind-v4"
+                elif "tailwindcss" in deps:
+                    context["style_engine"] = "tailwind-v3"
+                elif "@pandacss/dev" in deps:
+                    context["style_engine"] = "pandacss"
+
+                break
+            except Exception as e:
+                print(f"Notice: Failed to parse {pkg_path} ({e})")
 
     return context
 
-def update_gitignore(base_dir):
-    gitignore_path = ".gitignore"
-    clean_dir = base_dir.replace("\\", "/").strip("./")
+def update_gitignore(target_dir):
+    project_base = os.path.dirname(os.path.abspath(target_dir))
+    gitignore_path = os.path.join(project_base, ".gitignore")
+    clean_dir = os.path.relpath(os.path.abspath(target_dir), project_base).replace("\\", "/").strip("./")
     rules = (
         "\n# Design Reference\n"
         f"{clean_dir}/screenshots/*\n"
@@ -118,6 +138,7 @@ def generate_css_bridges(target_dir, style_engine, force=False):
     tokens_dir = os.path.join(target_dir, "tokens")
     colors_file = os.path.join(tokens_dir, "colors.json")
     shadows_file = os.path.join(tokens_dir, "shadows.json")
+    typography_file = os.path.join(tokens_dir, "typography.json")
 
     colors = {}
     if os.path.exists(colors_file):
@@ -135,6 +156,14 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         except Exception:
             pass
 
+    typography = {}
+    if os.path.exists(typography_file):
+        try:
+            with open(typography_file, "r", encoding="utf-8") as f:
+                typography = json.load(f)
+        except Exception:
+            pass
+
     bg_primary = colors.get("background", {}).get("primary", "#0f172a")
     bg_surface = colors.get("background", {}).get("surface", "#334155")
     text_primary = colors.get("text", {}).get("primary", "#f8fafc")
@@ -142,9 +171,16 @@ def generate_css_bridges(target_dir, style_engine, force=False):
     accent_primary = colors.get("accent", {}).get("primary", "#38bdf8")
     border_default = colors.get("border", {}).get("default", "#334155")
 
+    font_imports = typography.get("imports", [])
+    font_families = typography.get("families", {})
+
     # 1. Standard CSS Custom Properties
-    tokens_css_lines = [
-        "/* Generated by init-design-reference adapter */",
+    tokens_css_lines = ["/* Generated by init-design-reference adapter */"]
+    for url in font_imports:
+        tokens_css_lines.append(f'@import url("{url}");')
+
+    tokens_css_lines.extend([
+        "",
         ":root {",
         f"  --background: {bg_primary};",
         f"  --surface: {bg_surface};",
@@ -152,7 +188,10 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         f"  --muted: {text_muted};",
         f"  --accent: {accent_primary};",
         f"  --border: {border_default};",
-    ]
+    ])
+    for fam_key, fam_list in font_families.items():
+        formatted_fam = ", ".join([f'"{f}"' if " " in f else f for f in fam_list])
+        tokens_css_lines.append(f"  --font-{fam_key}: {formatted_fam};")
     for key, val in shadows.items():
         if key.startswith("elevation-"):
             tokens_css_lines.append(f"  --shadow-{key}: {val};")
@@ -173,6 +212,8 @@ def generate_css_bridges(target_dir, style_engine, force=False):
             "  --color-accent: var(--accent);",
             "  --color-border: var(--border);",
         ]
+        for fam_key in font_families:
+            theme_css_lines.append(f"  --font-{fam_key}: var(--font-{fam_key});")
         for key in shadows:
             if key.startswith("elevation-"):
                 theme_css_lines.append(f"  --shadow-{key}: var(--shadow-{key});")
@@ -184,10 +225,16 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         shadow_entries = ",\n".join(
             [f'        "{k}": "var(--shadow-{k})"' for k in shadows if k.startswith("elevation-")]
         )
+        font_entries = ",\n".join(
+            [f'        "{k}": ["var(--font-{k})"]' for k in font_families]
+        )
         preset_content = f"""/** Tailwind v3 preset bridge */
 module.exports = {{
   theme: {{
     extend: {{
+      fontFamily: {{
+{font_entries}
+      }},
       colors: {{
         background: "var(--background)",
         surface: "var(--surface)",
@@ -247,19 +294,22 @@ def scaffold_reference(target_dir="reference", force=False, preset="default"):
     update_gitignore(target_dir)
 
     # Inspect context & generate CSS bridges
-    ctx = detect_project_context()
+    project_base = os.path.dirname(os.path.abspath(target_dir))
+    ctx = detect_project_context(base_dir=project_base)
     generate_css_bridges(target_dir, ctx["style_engine"], force=force)
 
+    sub_info = f" (detected in ./{ctx['subproject_dir']})" if ctx.get("subproject_dir") else ""
     print(f"\nScaffolding complete in: {os.path.abspath(target_dir)}")
     print(f"Preset Applied: {preset} ({PRESETS.get(preset, {}).get('desc', '')})")
-    print(f"Detected Environment: Framework={ctx['framework']}, StyleEngine={ctx['style_engine']}")
+    print(f"Detected Environment: Framework={ctx['framework']}, StyleEngine={ctx['style_engine']}{sub_info}")
 
+    css_entry = f"{ctx['subproject_dir']}/src/index.css" if ctx.get("subproject_dir") else "your CSS entrypoint"
     if ctx["style_engine"] == "tailwind-v4":
-        print("Integration: Generated reference/tokens/theme.css. Add '@import \"./reference/tokens/theme.css\";' to your CSS entrypoint.")
+        print(f"Integration: Generated reference/tokens/theme.css. Add '@import \"./reference/tokens/theme.css\";' (or relative path) to {css_entry}.")
     elif ctx["style_engine"] == "tailwind-v3":
-        print("Integration: Generated reference/tokens/tailwind.preset.js. Add 'presets: [require(\"./reference/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import reference/tokens/tokens.css.")
+        print(f"Integration: Generated reference/tokens/tailwind.preset.js. Add 'presets: [require(\"./reference/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import reference/tokens/tokens.css in {css_entry}.")
     else:
-        print("Integration: Generated reference/tokens/tokens.css. Add '@import \"./reference/tokens/tokens.css\";' to your main stylesheet.")
+        print(f"Integration: Generated reference/tokens/tokens.css. Add '@import \"./reference/tokens/tokens.css\";' to {css_entry}.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scaffold production-grade UI design reference and pattern architecture")
