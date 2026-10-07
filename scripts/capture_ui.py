@@ -11,6 +11,7 @@ Enforces the visual feedback loop required to prevent generic AI style drift.
 import os
 import sys
 import json
+import socket
 import argparse
 from datetime import datetime
 
@@ -21,7 +22,29 @@ def check_playwright_installed():
     except ImportError:
         return False
 
-def capture_ui(url="http://localhost:3000", output_dir="reference/screenshots/audit", allow_missing=False):
+def detect_active_port(candidate_ports=None) -> int:
+    """
+    Probes candidate ports via TCP connection to detect active dev server.
+    Defaults to 3000 if none detected.
+    """
+    if candidate_ports is None:
+        candidate_ports = [3000, 5173, 8080, 4321, 8000]
+
+    for port in candidate_ports:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(0.15)
+                if s.connect_ex(("127.0.0.1", port)) == 0:
+                    return port
+        except Exception:
+            continue
+    return 3000
+
+def capture_ui(url=None, output_dir="reference/screenshots/audit", allow_missing=False):
+    if not url:
+        port = detect_active_port()
+        url = f"http://localhost:{port}"
+        print(f"Auto-detected active dev server on port {port}: {url}")
     if not check_playwright_installed():
         print("\n==================================================================", file=sys.stderr)
         print("[ACTION REQUIRED] Playwright is not installed in the current environment.", file=sys.stderr)
@@ -110,7 +133,7 @@ def capture_ui(url="http://localhost:3000", output_dir="reference/screenshots/au
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Headless Browser UI Capture & Auditor")
-    parser.add_argument("--url", default="http://localhost:3000", help="Target URL (default: http://localhost:3000)")
+    parser.add_argument("--url", default=None, help="Target URL (default: auto-detected localhost port)")
     parser.add_argument("--output", default="reference/screenshots/audit", help="Output directory for screenshots")
     parser.add_argument("--allow-missing", action="store_true", help="Do not exit with error if Playwright/server is unavailable")
     args = parser.parse_args()

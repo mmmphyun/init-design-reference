@@ -102,9 +102,10 @@ To eliminate context pollution and prevent regression into default AI aesthetics
 2. **Motion Guardrails**: Animate ONLY `transform` and `opacity`. Cap micro-interactions to <= 350ms. Obey `prefers-reduced-motion`.
 3. **Closed-Loop Vision Verification**:
    - Start local dev server (`npm run dev`).
-   - Run headless auditor to capture viewports:
+   - 단위 컴포넌트(예: `DataTable.tsx`) 개발 시, 프로젝트 최상위 진입점(`app/page.tsx` 또는 `src/App.tsx`)에 임시 마운트하여 렌더링 경로를 확보한다.
+   - Run headless auditor to capture viewports (포트는 3000, 5173, 8080 등을 자동 감지):
      ```powershell
-     python scripts/capture_ui.py --url http://localhost:3000
+     python scripts/capture_ui.py
      ```
    - Evaluate screenshots against the **Superfuture 5-Pillar Visual Critique Rubric** in `reference/REVIEW_CHECKLIST.md` (Typographic Hierarchy, Spacing Rhythm, Surface & Noise, Affordance, AI Cliché Residuals).
 4. **Natural Language Feedback Iteration**:
