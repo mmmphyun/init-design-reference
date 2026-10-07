@@ -1,0 +1,43 @@
+{
+  "variance": 4,
+  "density": 8,
+  "motion": 1,
+  "desc": "Terminal & cybernetic HUD aesthetic (Pitch Black & Amber Phosphor)",
+  "colors": {
+    "background": {
+      "primary": "#0a0a0a",
+      "secondary": "#121212",
+      "surface": "#171717"
+    },
+    "text": {
+      "primary": "#e5e5e5",
+      "secondary": "#a3a3a3",
+      "muted": "#525252"
+    },
+    "accent": {
+      "primary": "#f59e0b",
+      "hover": "#d97706"
+    },
+    "border": {
+      "subtle": "#1c1c1c",
+      "default": "#262626",
+      "strong": "#404040"
+    },
+    "status": {
+      "success": "#84cc16",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#06b6d4"
+    }
+  },
+  "typography": {
+    "imports": [
+      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    ],
+    "families": {
+      "display": ["JetBrains Mono", "monospace"],
+      "body": ["JetBrains Mono", "Consolas", "monospace"],
+      "mono": ["JetBrains Mono", "monospace"]
+    }
+  }
+}

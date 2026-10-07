@@ -1,0 +1,44 @@
+{
+  "variance": 3,
+  "density": 9,
+  "motion": 2,
+  "desc": "High-density data cockpit & telemetry (Carbon & Phosphor Emerald)",
+  "colors": {
+    "background": {
+      "primary": "#08090c",
+      "secondary": "#0d0f14",
+      "surface": "#12151c"
+    },
+    "text": {
+      "primary": "#f0f2f5",
+      "secondary": "#9aa2b1",
+      "muted": "#5d6575"
+    },
+    "accent": {
+      "primary": "#10b981",
+      "hover": "#059669"
+    },
+    "border": {
+      "subtle": "#151821",
+      "default": "#1e2330",
+      "strong": "#2c3345"
+    },
+    "status": {
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "error": "#f43f5e",
+      "info": "#06b6d4"
+    }
+  },
+  "typography": {
+    "imports": [
+      "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css",
+      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    ],
+    "families": {
+      "display": ["JetBrains Mono", "Pretendard", "sans-serif"],
+      "body": ["Pretendard", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+      "mono": ["JetBrains Mono", "Consolas", "monospace"]
+    }
+  }
+}

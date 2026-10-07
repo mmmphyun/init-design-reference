@@ -1,0 +1,43 @@
+{
+  "variance": 6,
+  "density": 5,
+  "motion": 9,
+  "desc": "Fluid spring physics & consumer haptic (Pure OLED & iOS Accent Blue)",
+  "colors": {
+    "background": {
+      "primary": "#000000",
+      "secondary": "#121214",
+      "surface": "#1c1c1e"
+    },
+    "text": {
+      "primary": "#ffffff",
+      "secondary": "#ebebf5",
+      "muted": "#8e8e93"
+    },
+    "accent": {
+      "primary": "#0071e3",
+      "hover": "#0077ed"
+    },
+    "border": {
+      "subtle": "#1f1f24",
+      "default": "#2c2c2e",
+      "strong": "#3a3a3c"
+    },
+    "status": {
+      "success": "#34c759",
+      "warning": "#ff9f0a",
+      "error": "#ff453a",
+      "info": "#0071e3"
+    }
+  },
+  "typography": {
+    "imports": [
+      "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    ],
+    "families": {
+      "display": ["Pretendard", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+      "body": ["Pretendard", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+      "mono": ["SF Mono", "JetBrains Mono", "monospace"]
+    }
+  }
+}

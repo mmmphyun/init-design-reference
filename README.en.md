@@ -14,7 +14,7 @@ Demonstrated 0-diff component modification: Updating only `.design/tokens/colors
 | Baseline Rendering (`assets/baseline.png`) | Updated Token Rendering (`assets/updated.png`) |
 |:---:|:---:|
 | ![Baseline](assets/baseline.png) | ![Updated](assets/updated.png) |
-| `--surface`: `#334155` (Slate Navy)<br>`--accent`: `#38bdf8` (Cyan Blue) | `--surface`: `#172033` (Deep Dark Navy)<br>`--accent`: `#10b981` (Vivid Emerald) |
+| `--surface`: `#12151c` (Cockpit Carbon)<br>`--accent`: `#10b981` (Phosphor Emerald) | `--surface`: `#171717` (Terminal Panel)<br>`--accent`: `#f59e0b` (Amber Phosphor CRT) |
 
 ```console
 $ git diff --stat app/components/MetricCard.tsx

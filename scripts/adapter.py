@@ -5,13 +5,23 @@ import json
 import re
 import argparse
 
-PRESETS = {
-    "default": {"variance": 5, "density": 7, "motion": 4, "desc": "Balanced modern SaaS baseline"},
-    "b2b-dense": {"variance": 3, "density": 9, "motion": 2, "desc": "High-density data cockpit & telemetry"},
-    "editorial-minimal": {"variance": 8, "density": 3, "motion": 5, "desc": "Airy asymmetric showcase & landing"},
-    "technical-mono": {"variance": 4, "density": 8, "motion": 1, "desc": "Terminal/developer tool aesthetic"},
-    "apple-fluid": {"variance": 6, "density": 5, "motion": 9, "desc": "Fluid spring physics & tactile feedback"},
-}
+def load_presets(templates_dir):
+    presets = {}
+    presets_dir = os.path.join(templates_dir, "presets")
+    if os.path.exists(presets_dir):
+        for f in sorted(os.listdir(presets_dir)):
+            if f.endswith(".json"):
+                name = os.path.splitext(f)[0]
+                try:
+                    with open(os.path.join(presets_dir, f), "r", encoding="utf-8") as fp:
+                        presets[name] = json.load(fp)
+                except Exception:
+                    pass
+    return presets
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_TEMPLATES_DIR = os.path.join(os.path.dirname(_SCRIPT_DIR), "templates")
+PRESETS = load_presets(_TEMPLATES_DIR)
 
 def detect_project_context(base_dir="."):
     context = {
@@ -119,21 +129,58 @@ def apply_preset(target_dir, preset_name):
 
     config = PRESETS[preset_name]
     design_md_path = os.path.join(target_dir, "DESIGN.md")
+    colors_json_path = os.path.join(target_dir, "tokens", "colors.json")
+    typography_json_path = os.path.join(target_dir, "tokens", "typography.json")
 
+    # 1. Update DESIGN.md Dials
     if os.path.exists(design_md_path):
         try:
             with open(design_md_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
-            content = content.replace("`DESIGN_VARIANCE`: 5", f"`DESIGN_VARIANCE`: {config['variance']}")
-            content = content.replace("`VISUAL_DENSITY`: 7", f"`VISUAL_DENSITY`: {config['density']}")
-            content = content.replace("`MOTION_INTENSITY`: 4", f"`MOTION_INTENSITY`: {config['motion']}")
+            content = re.sub(r"`DESIGN_VARIANCE`:\s*[0-9]+", f"`DESIGN_VARIANCE`: {config['variance']}", content)
+            content = re.sub(r"`VISUAL_DENSITY`:\s*[0-9]+", f"`VISUAL_DENSITY`: {config['density']}", content)
+            content = re.sub(r"`MOTION_INTENSITY`:\s*[0-9]+", f"`MOTION_INTENSITY`: {config['motion']}", content)
 
             with open(design_md_path, "w", encoding="utf-8") as f:
                 f.write(content)
             print(f"Applied preset '{preset_name}' (Variance={config['variance']}, Density={config['density']}, Motion={config['motion']}) to DESIGN.md")
         except Exception as e:
             print(f"Notice: Failed to update DESIGN.md with preset ({e})")
+
+    # 2. Inject Curated Domain Palette into colors.json
+    if "colors" in config:
+        try:
+            existing_colors = {}
+            if os.path.exists(colors_json_path):
+                with open(colors_json_path, "r", encoding="utf-8") as f:
+                    existing_colors = json.load(f)
+
+            for group, vals in config["colors"].items():
+                if group not in existing_colors:
+                    existing_colors[group] = {}
+                existing_colors[group].update(vals)
+
+            with open(colors_json_path, "w", encoding="utf-8") as f:
+                json.dump(existing_colors, f, indent=2, ensure_ascii=False)
+            print(f"Injected curated domain colors for '{preset_name}' into {colors_json_path}")
+        except Exception as e:
+            print(f"Notice: Failed to update colors.json with preset ({e})")
+
+    # 3. Inject Curated Typography into typography.json
+    if "typography" in config and os.path.exists(typography_json_path):
+        try:
+            with open(typography_json_path, "r", encoding="utf-8") as f:
+                existing_typo = json.load(f)
+            if "imports" in config["typography"]:
+                existing_typo["imports"] = config["typography"]["imports"]
+            if "families" in config["typography"]:
+                existing_typo["families"].update(config["typography"]["families"])
+            with open(typography_json_path, "w", encoding="utf-8") as f:
+                json.dump(existing_typo, f, indent=2, ensure_ascii=False)
+            print(f"Injected curated typography for '{preset_name}' into {typography_json_path}")
+        except Exception as e:
+            print(f"Notice: Failed to update typography.json with preset ({e})")
 
 def generate_css_bridges(target_dir, style_engine, force=False):
     tokens_dir = os.path.join(target_dir, "tokens")

@@ -14,7 +14,7 @@ AI 코딩 에이전트(Google Antigravity, Claude Code, Cursor 등)의 UI 스타
 | 기준 렌더링 (`assets/baseline.png`) | 토큰 갱신 렌더링 (`assets/updated.png`) |
 |:---:|:---:|
 | ![Baseline](assets/baseline.png) | ![Updated](assets/updated.png) |
-| `--surface`: `#334155` (Slate Navy)<br>`--accent`: `#38bdf8` (Cyan Blue) | `--surface`: `#172033` (Deep Dark Navy)<br>`--accent`: `#10b981` (Vivid Emerald) |
+| `--surface`: `#12151c` (Cockpit Carbon)<br>`--accent`: `#10b981` (Phosphor Emerald) | `--surface`: `#171717` (Terminal Panel)<br>`--accent`: `#f59e0b` (Amber Phosphor CRT) |
 
 ```console
 $ git diff --stat app/components/MetricCard.tsx
