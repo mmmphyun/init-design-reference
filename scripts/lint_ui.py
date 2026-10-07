@@ -305,10 +305,20 @@ def run_linter(targets: List[str], excludes: List[str] = None) -> int:
     files_to_scan = []
 
     for target in targets:
-        if os.path.isfile(target):
-            files_to_scan.append(target)
-        elif os.path.isdir(target):
-            for root, dirs, files in os.walk(target):
+        resolved = target
+        if not os.path.exists(resolved):
+            clean_target = target.strip("/\\")
+            for entry in sorted(os.listdir(".")):
+                if os.path.isdir(entry) and not entry.startswith(".") and entry not in active_excludes:
+                    candidate = os.path.join(entry, clean_target)
+                    if os.path.exists(candidate):
+                        resolved = candidate
+                        break
+
+        if os.path.isfile(resolved):
+            files_to_scan.append(resolved)
+        elif os.path.isdir(resolved):
+            for root, dirs, files in os.walk(resolved):
                 dirs[:] = [d for d in dirs if d not in active_excludes]
                 for file in files:
                     ext = os.path.splitext(file)[1].lower()
