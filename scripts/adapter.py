@@ -122,7 +122,7 @@ def safe_write(dst_file, content, force=False):
     print(f"Created: {dst_file}")
     return True
 
-def apply_preset(target_dir, preset_name, dials_override=None, force=False):
+def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_new=False):
     if preset_name not in PRESETS:
         print(f"Notice: Preset '{preset_name}' not in predefined templates. Falling back to baseline 'default' with custom tuning.")
         preset_name = "default"
@@ -147,7 +147,7 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False):
 
     # 1. Update DESIGN.md Dials
     if os.path.exists(design_md_path):
-        if not force and not dials_override:
+        if not force and not dials_override and not is_new:
             print(f"Preserved existing dials in {design_md_path} (use --dials or -f/--force to override).")
         else:
             try:
@@ -165,10 +165,10 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False):
                 print(f"Notice: Failed to update DESIGN.md with preset ({e})")
 
 
-    # 2. Inject Curated Domain Palette into colors.json (Skip if already exists unless force=True)
+    # 2. Inject Curated Domain Palette into colors.json (Skip if already exists unless force=True or is_new=True)
     if "colors" in config:
         colors_existed = os.path.exists(colors_json_path)
-        if colors_existed and not force:
+        if colors_existed and not force and not is_new:
             print(f"Preserved existing colors in {colors_json_path} (use -f/--force to overwrite with preset palette).")
         else:
             try:
@@ -188,11 +188,12 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False):
             except Exception as e:
                 print(f"Notice: Failed to update colors.json with preset ({e})")
 
-    # 3. Inject Curated Typography into typography.json (Skip if already exists unless force=True)
+    # 3. Inject Curated Typography into typography.json (Skip if already exists unless force=True or is_new=True)
     if "typography" in config and os.path.exists(typography_json_path):
-        if not force:
+        if not force and not is_new:
             print(f"Preserved existing typography in {typography_json_path} (use -f/--force to overwrite with preset fonts).")
         else:
+
             try:
                 with open(typography_json_path, "r", encoding="utf-8") as f:
                     existing_typo = json.load(f)
@@ -231,10 +232,13 @@ def generate_css_bridges(target_dir, style_engine, force=False):
 
     bg_primary = colors.get("background", {}).get("primary", "#09090b")
     bg_surface = colors.get("background", {}).get("surface", "#18181b")
+    bg_surface_secondary = colors.get("background", {}).get("secondary", "#121215")
     text_primary = colors.get("text", {}).get("primary", "#fafafa")
     text_muted = colors.get("text", {}).get("muted", "#71717a")
     accent_primary = colors.get("accent", {}).get("primary", "#2563eb")
     border_default = colors.get("border", {}).get("default", "#27272a")
+    border_subtle = colors.get("border", {}).get("subtle", "#18181b")
+    border_strong = colors.get("border", {}).get("strong", "#3f3f46")
 
     status_error = colors.get("status", {}).get("error", "#ef4444")
     status_success = colors.get("status", {}).get("success", "#22c55e")
@@ -254,19 +258,30 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         ":root {",
         f"  --background: {bg_primary};",
         f"  --surface: {bg_surface};",
+        f"  --surface-secondary: {bg_surface_secondary};",
         f"  --foreground: {text_primary};",
         f"  --muted: {text_muted};",
         f"  --accent: {accent_primary};",
         f"  --border: {border_default};",
-        f"  --border-border-default: {border_default};",
+        f"  --border-default: {border_default};",
+        f"  --border-subtle: {border_subtle};",
+        f"  --border-strong: {border_strong};",
         f"  --primary: {accent_primary};",
         f"  --primary-foreground: #ffffff;",
         f"  --danger: {status_error};",
         f"  --danger-foreground: #ffffff;",
         f"  --status-error: {status_error};",
+        "  --status-error-bg: rgba(239, 68, 68, 0.12);",
+        "  --status-error-border: rgba(239, 68, 68, 0.25);",
         f"  --status-success: {status_success};",
+        "  --status-success-bg: rgba(34, 197, 94, 0.12);",
+        "  --status-success-border: rgba(34, 197, 94, 0.25);",
         f"  --status-warning: {status_warning};",
+        "  --status-warning-bg: rgba(234, 179, 8, 0.12);",
+        "  --status-warning-border: rgba(234, 179, 8, 0.25);",
         f"  --status-info: {status_info};",
+        f"  --skeleton: {bg_surface};",
+        f"  --skeleton-subtle: {bg_primary};",
     ])
     for fam_key, fam_list in font_families.items():
         formatted_fam = ", ".join([f'"{f}"' if " " in f else f for f in fam_list])
@@ -294,19 +309,30 @@ def generate_css_bridges(target_dir, style_engine, force=False):
             "@theme {",
             "  --color-background: var(--background);",
             "  --color-surface: var(--surface);",
+            "  --color-surface-secondary: var(--surface-secondary);",
             "  --color-foreground: var(--foreground);",
             "  --color-muted: var(--muted);",
             "  --color-accent: var(--accent);",
             "  --color-border: var(--border);",
-            "  --color-border-border-default: var(--border-border-default);",
+            "  --color-border-default: var(--border-default);",
+            "  --color-border-subtle: var(--border-subtle);",
+            "  --color-border-strong: var(--border-strong);",
             "  --color-primary: var(--primary);",
             "  --color-primary-foreground: var(--primary-foreground);",
             "  --color-danger: var(--danger);",
             "  --color-danger-foreground: var(--danger-foreground);",
             "  --color-status-error: var(--status-error);",
+            "  --color-status-error-bg: var(--status-error-bg);",
+            "  --color-status-error-border: var(--status-error-border);",
             "  --color-status-success: var(--status-success);",
+            "  --color-status-success-bg: var(--status-success-bg);",
+            "  --color-status-success-border: var(--status-success-border);",
             "  --color-status-warning: var(--status-warning);",
+            "  --color-status-warning-bg: var(--status-warning-bg);",
+            "  --color-status-warning-border: var(--status-warning-border);",
             "  --color-status-info: var(--status-info);",
+            "  --color-skeleton: var(--skeleton);",
+            "  --color-skeleton-subtle: var(--skeleton-subtle);",
         ])
         for fam_key, fam_list in font_families.items():
             formatted_fam = ", ".join([f'"{f}"' if " " in f else f for f in fam_list])
@@ -350,19 +376,30 @@ module.exports = {{
       colors: {{
         background: "var(--background)",
         surface: "var(--surface)",
+        "surface-secondary": "var(--surface-secondary)",
         foreground: "var(--foreground)",
         muted: "var(--muted)",
         accent: "var(--accent)",
         border: "var(--border)",
-        "border-default": "var(--border-border-default)",
+        "border-default": "var(--border-default)",
+        "border-subtle": "var(--border-subtle)",
+        "border-strong": "var(--border-strong)",
         primary: "var(--primary)",
         "primary-foreground": "var(--primary-foreground)",
         danger: "var(--danger)",
         "danger-foreground": "var(--danger-foreground)",
         "status-error": "var(--status-error)",
+        "status-error-bg": "var(--status-error-bg)",
+        "status-error-border": "var(--status-error-border)",
         "status-success": "var(--status-success)",
+        "status-success-bg": "var(--status-success-bg)",
+        "status-success-border": "var(--status-success-border)",
         "status-warning": "var(--status-warning)",
+        "status-warning-bg": "var(--status-warning-bg)",
+        "status-warning-border": "var(--status-warning-border)",
         "status-info": "var(--status-info)",
+        skeleton: "var(--skeleton)",
+        "skeleton-subtle": "var(--skeleton-subtle)",
       }},
       borderRadius: {{
 {radii_entries}
@@ -381,6 +418,7 @@ module.exports = {{
 }};
 """
         safe_write(os.path.join(tokens_dir, "tailwind.preset.js"), preset_content, force=force)
+
 
 
 def resolve_design_target(custom_target=None):
@@ -444,6 +482,7 @@ def verify_design_spec(target_dir=None):
 
 def scaffold_reference(target_dir=None, force=False, preset="default", dials_override=None):
     target_dir = resolve_design_target(target_dir)
+    is_new = not os.path.exists(os.path.join(target_dir, "DESIGN.md"))
     script_dir = os.path.dirname(os.path.abspath(__file__))
     templates_dir = os.path.join(os.path.dirname(script_dir), "templates")
 
@@ -476,7 +515,8 @@ def scaffold_reference(target_dir=None, force=False, preset="default", dials_ove
         safe_copy(design_src, os.path.join(target_dir, "DESIGN.md"), force=force)
 
     # Apply selected Taste preset
-    apply_preset(target_dir, preset, dials_override=dials_override, force=force)
+    apply_preset(target_dir, preset, dials_override=dials_override, force=force, is_new=is_new)
+
 
     # Update .gitignore
     update_gitignore(target_dir)

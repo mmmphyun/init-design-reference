@@ -4,8 +4,9 @@
 <!-- Architecture derived from leonxlnx/taste-skill (MIT License, Copyright (c) 2025 Leon Linz) -->
 <!-- Tune these knobs to govern visual output without ambiguous prose -->
 - `DESIGN_VARIANCE`: 5   # 1 (Strict/Symmetric) ~ 10 (Asymmetric/Experimental)
-- `VISUAL_DENSITY`: 9    # 1 (Airy/Minimalist) ~ 10 (High-Density Views - Data Preservation Mandate)
+- `VISUAL_DENSITY`: 7    # 1 (Airy/Minimalist) ~ 10 (High-Density Views - Data Preservation Mandate)
 - `MOTION_INTENSITY`: 4  # 1 (Static/Subtle) ~ 10 (Cinematic Spring Physics)
+
 
 ## 1. Single Source of Truth
 - All visual values (colors, spacing, typography, radii) MUST be derived from `.design/tokens/` (or `reference/tokens/`).

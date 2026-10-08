@@ -137,6 +137,13 @@ def check_scaffold_and_idempotency():
             log("First run did not report created files.", "FAIL")
             return False
 
+        # Verify preset dials applied to freshly scaffolded DESIGN.md
+        with open(os.path.join(target_design, "DESIGN.md"), "r", encoding="utf-8") as f:
+            d_init = f.read()
+        if "`DESIGN_VARIANCE`: 3" not in d_init or "`VISUAL_DENSITY`: 9" not in d_init:
+            log("Fresh preset application failed: b2b-dense dials not applied on initial scaffold!", "FAIL")
+            return False
+
         # Verify pattern and token files exist in target
         expected_pattern = os.path.join(target_design, "patterns", "data-display.md")
         if not os.path.exists(expected_pattern):
@@ -182,9 +189,10 @@ def check_scaffold_and_idempotency():
         tokens_css_path = os.path.join(target_design, "tokens", "tokens.css")
         with open(tokens_css_path, "r", encoding="utf-8") as f:
             t_css = f.read()
-        if "--radius-btn:" not in t_css or "--status-error:" not in t_css:
+        if "--radius-btn:" not in t_css or "--radius-card:" not in t_css or "--status-error-bg:" not in t_css or "--surface-secondary:" not in t_css or "--border-default:" not in t_css:
             log("Bridge generation missing semantic radii or status tokens!", "FAIL")
             return False
+
 
         # 3rd run with --force: must overwrite
         run3 = subprocess.run([sys.executable, adapter_path, target_design, "--force"], capture_output=True, text=True, cwd=temp_dir)
