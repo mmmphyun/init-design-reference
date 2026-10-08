@@ -187,11 +187,12 @@ def check_scaffold_and_idempotency():
             log(f"--bridge-only failed:\n{run_bridge.stderr}", "FAIL")
             return False
         tokens_css_path = os.path.join(target_design, "tokens", "tokens.css")
-        # Test dynamic status alpha derivation in CSS bridge (including 4-digit and custom HEX)
+        # Test dynamic status alpha derivation in CSS bridge (including 4-digit, 8-digit, background & border HEX)
         tokens_json_path = os.path.join(target_design, "tokens", "colors.json")
         with open(tokens_json_path, "r", encoding="utf-8") as f:
             c_data = json.load(f)
         c_data.setdefault("status", {})["error"] = "#f00f"  # 4-digit hex (#RGBA)
+        c_data.setdefault("status", {})["warning"] = "#00ff00aa"  # 8-digit hex (#RRGGBBAA)
         with open(tokens_json_path, "w", encoding="utf-8") as f:
             json.dump(c_data, f, indent=2)
 
@@ -203,7 +204,16 @@ def check_scaffold_and_idempotency():
         with open(tokens_css_path, "r", encoding="utf-8") as f:
             t_css_custom = f.read()
         if "--status-error-bg: rgba(255, 0, 0, 0.12);" not in t_css_custom:
-            log(f"Dynamic status alpha derivation failed for 4-digit hex #f00f! Got:\n{t_css_custom}", "FAIL")
+            log(f"Dynamic status alpha derivation failed for 4-digit hex #f00f (bg)! Got:\n{t_css_custom}", "FAIL")
+            return False
+        if "--status-error-border: rgba(255, 0, 0, 0.25);" not in t_css_custom:
+            log(f"Dynamic status alpha derivation failed for 4-digit hex #f00f (border)! Got:\n{t_css_custom}", "FAIL")
+            return False
+        if "--status-warning-bg: rgba(0, 255, 0, 0.12);" not in t_css_custom:
+            log(f"Dynamic status alpha derivation failed for 8-digit hex #00ff00aa (bg)! Got:\n{t_css_custom}", "FAIL")
+            return False
+        if "--status-warning-border: rgba(0, 255, 0, 0.25);" not in t_css_custom:
+            log(f"Dynamic status alpha derivation failed for 8-digit hex #00ff00aa (border)! Got:\n{t_css_custom}", "FAIL")
             return False
 
         # Test token preservation when DESIGN.md is absent with overlapping preset keys (background.primary)
