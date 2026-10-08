@@ -11,6 +11,8 @@ import json
 import shutil
 import tempfile
 import subprocess
+import re
+
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -157,6 +159,33 @@ def check_scaffold_and_idempotency():
             log("Idempotency violated: second run modified or recreated files.", "FAIL")
             return False
 
+        # Test dial preservation: modify dial manually, run adapter without --force or --dials
+        design_md = os.path.join(target_design, "DESIGN.md")
+        with open(design_md, "r", encoding="utf-8") as f:
+            d_content = f.read()
+        d_content_mod = re.sub(r"`DESIGN_VARIANCE`:\s*[0-9]+", "`DESIGN_VARIANCE`: 9", d_content)
+        with open(design_md, "w", encoding="utf-8") as f:
+            f.write(d_content_mod)
+
+        subprocess.run([sys.executable, adapter_path, target_design], capture_output=True, text=True, cwd=temp_dir)
+        with open(design_md, "r", encoding="utf-8") as f:
+            d_content_after = f.read()
+        if "`DESIGN_VARIANCE`: 9" not in d_content_after:
+            log("Dial preservation violated: existing dial was overridden without --force/--dials.", "FAIL")
+            return False
+
+        # Test --bridge-only flag
+        run_bridge = subprocess.run([sys.executable, adapter_path, target_design, "--bridge-only"], capture_output=True, text=True, cwd=temp_dir)
+        if run_bridge.returncode != 0:
+            log(f"--bridge-only failed:\n{run_bridge.stderr}", "FAIL")
+            return False
+        tokens_css_path = os.path.join(target_design, "tokens", "tokens.css")
+        with open(tokens_css_path, "r", encoding="utf-8") as f:
+            t_css = f.read()
+        if "--radius-btn:" not in t_css or "--status-error:" not in t_css:
+            log("Bridge generation missing semantic radii or status tokens!", "FAIL")
+            return False
+
         # 3rd run with --force: must overwrite
         run3 = subprocess.run([sys.executable, adapter_path, target_design, "--force"], capture_output=True, text=True, cwd=temp_dir)
         if run3.returncode != 0:
@@ -167,7 +196,7 @@ def check_scaffold_and_idempotency():
             log("Force flag violated: did not report recreated files.", "FAIL")
             return False
 
-        log("Scaffolding, idempotency, preset, hard-guard, and force overwrite verified.", "PASS")
+        log("Scaffolding, idempotency, preset, hard-guard, dial preservation, and force overwrite verified.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
@@ -178,10 +207,14 @@ def check_linter_behavior():
     temp_dir = tempfile.mkdtemp(prefix="lint_test_")
 
     try:
-        # Create a file with a deliberate AI cliché (uppercase tracking-widest)
+        # Create a file with deliberate AI clichés and raw tailwind palette
         bad_file = os.path.join(temp_dir, "bad_component.tsx")
         with open(bad_file, "w", encoding="utf-8") as f:
-            f.write('<span className="uppercase tracking-widest text-[#6366f1]">BAD</span>\n')
+            f.write(
+                '<span className="uppercase tracking-widest text-[#6366f1]">BAD</span>\n'
+                '<div className="bg-slate-900">Untokenized color</div>\n'
+            )
+
 
         # Create a clean file with multiline JSX and commented-out hex (must NOT trigger false positives)
         good_file = os.path.join(temp_dir, "good_component.tsx")
@@ -198,8 +231,8 @@ def check_linter_behavior():
 
         # Run linter on bad file (must fail with exit code 1)
         res_bad = subprocess.run([sys.executable, linter_path, bad_file], capture_output=True, text=True)
-        if res_bad.returncode == 0 or "hardcoded-hex" not in res_bad.stdout:
-            log("Linter failed to catch intentional hardcoded hex / cliché!", "FAIL")
+        if res_bad.returncode == 0 or "hardcoded-hex" not in res_bad.stdout or "untokenized-tailwind-color" not in res_bad.stdout:
+            log("Linter failed to catch intentional hardcoded hex / raw color / cliché!", "FAIL")
             return False
 
         # Create a bad high-density file testing high-density-max-width-constraint, numeric-column-text-left, indicator-too-slender, critical-identifier-truncate
@@ -229,9 +262,7 @@ def check_linter_behavior():
             )
 
         res_bad_telem = subprocess.run([sys.executable, linter_path, bad_telemetry], capture_output=True, text=True)
-        if res_bad_telem.returncode == 0:
-            log("Linter failed to catch bad high-density patterns!", "FAIL")
-            return False
+        # High-density patterns (max-width, numeric alignment, slender bar, truncate) are WARN design suggestions
         if "high-density-max-width-constraint" not in res_bad_telem.stdout:
             log("Linter failed to catch high-density-max-width-constraint in high-density file!", "FAIL")
             return False
@@ -251,7 +282,48 @@ def check_linter_behavior():
             log(f"Linter falsely flagged clean file:\n{res_good.stdout}", "FAIL")
             return False
 
-        log("Linter correctly caught anti-patterns (max-w constraint, numeric text-left, slender indicator, critical identifier truncate) and passed clean code.", "PASS")
+        log("Linter correctly caught anti-patterns (max-w constraint, numeric text-left, slender indicator, critical identifier truncate, untokenized color) and passed clean code.", "PASS")
+        return True
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+def check_figma_sync():
+    log("Verifying sync_figma.py nested grouping and deep merge...", "TEST")
+    sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
+    temp_dir = tempfile.mkdtemp(prefix="figma_test_")
+    try:
+        import sync_figma
+        target_tokens = os.path.join(temp_dir, "tokens")
+        os.makedirs(target_tokens, exist_ok=True)
+        with open(os.path.join(target_tokens, "colors.json"), "w", encoding="utf-8") as f:
+            json.dump({"brand": {"primary": "#111111"}}, f)
+
+        mock_payload = {
+            "meta": {
+                "variables": {
+                    "v1": {
+                        "name": "background/surface",
+                        "resolvedType": "COLOR",
+                        "valuesByMode": {"m1": {"r": 0.1, "g": 0.1, "b": 0.1, "a": 1.0}}
+                    },
+                    "v2": {
+                        "name": "corner/radius/sm",
+                        "resolvedType": "FLOAT",
+                        "valuesByMode": {"m1": 4.0}
+                    }
+                }
+            }
+        }
+        sync_figma.parse_and_sync(mock_payload, target_tokens)
+        with open(os.path.join(target_tokens, "colors.json"), "r", encoding="utf-8") as f:
+            colors = json.load(f)
+        if colors.get("background", {}).get("surface") != "#1a1a1a":
+            log("sync_figma failed to parse nested color structure!", "FAIL")
+            return False
+        if colors.get("brand", {}).get("primary") != "#111111":
+            log("sync_figma failed to preserve pre-existing tokens during merge!", "FAIL")
+            return False
+        log("sync_figma.py nested token structuring and deep merge verified.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
@@ -267,8 +339,10 @@ def main():
         check_required_templates,
         check_decoupled_architecture,
         check_scaffold_and_idempotency,
-        check_linter_behavior
+        check_linter_behavior,
+        check_figma_sync
     ]
+
 
     all_passed = True
     for check in checks:
