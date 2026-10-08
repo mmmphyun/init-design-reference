@@ -59,7 +59,7 @@ Lint PASSED.
 ```console
 $ python scripts/adapter.py --verify-spec
 [HARD-GUARD FAIL] .design\DESIGN.md is missing one of DESIGN_VARIANCE, VISUAL_DENSITY, MOTION_INTENSITY.
-# -> 에이전트의 무지성 코딩 진입을 원천 차단하고 스펙 정상화 후 재진행 강제
+# -> 스펙 불일치 시 0이 아닌 종료 코드를 반환하여 에이전트가 설정을 정상화하도록 유도
 ```
 
 ---
