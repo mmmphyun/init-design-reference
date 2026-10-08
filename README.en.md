@@ -23,8 +23,8 @@ $ git diff --stat app/components/MetricCard.tsx
 
 ---
 
-### ② Deterministic AST Linter & Self-Healing Loop
-Detects 5 common AI frontend anti-patterns and autonomously rectifies the code within 1 loop without human micromanagement.
+### ② Deterministic Static Linter & Self-Healing Loop
+Lightweight regex-based static linter (`scripts/lint_ui.py`) detects accessibility flaws and hardcoded tokens, converging to `0 errors` via agent self-healing.
 
 ```console
 $ python scripts/lint_ui.py app/components/MetricCard.tsx
@@ -34,7 +34,7 @@ $ python scripts/lint_ui.py app/components/MetricCard.tsx
        outline-none detected on element without focus-visible:ring replacement (WCAG 2.4.7).
 [ERROR] app/components/MetricCard.tsx:102 (hardcoded-hex)
        Hardcoded hex color detected (#1e293b). Use semantic tokens from colors.json.
-[ERROR] app/components/MetricCard.tsx:102 (layout-thrashing-animation)
+[WARN]  app/components/MetricCard.tsx:102 (layout-thrashing-animation)
        Layout thrashing animation detected (transition-all). Animate ONLY transform and opacity.
 [ERROR] app/components/MetricCard.tsx:105 (a11y-missing-alt)
        <img> tag missing alt attribute (WCAG 1.1.1).
@@ -72,7 +72,7 @@ When tasked with frontend code, LLMs routinely converge toward generic purple/in
 `init-design-reference` eliminates this across **4 Engineering Pillars**:
 1. **Tokens & 3-Dial Taste Knobs (`DESIGN.md`, `.design/tokens/*.json`)**: Adopts `leonxlnx/taste-skill` numeric dials (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`, scaled 1–10).
 2. **Proven Component Recipes (`.design/patterns/*.md`)**: Production React/TSX + Tailwind blocks for dense data tables, shells, forms, and spring physics.
-3. **Deterministic Linter (`scripts/lint_ui.py`)**: Complete port of `pbakaus/impeccable` rules, mechanically blocking AI clichés, hardcoded hex, layout thrashing, and accessibility bugs offline.
+3. **Deterministic Linter (`scripts/lint_ui.py`)**: Regex-based static analysis inspired by `pbakaus/impeccable` patterns, mechanically blocking key accessibility defects (WCAG), generic clichés, and hardcoded tokens offline.
 4. **Closed-Loop Vision Feedback (`scripts/capture_ui.py`)**: Uses Playwright to capture desktop/mobile viewports and collect console errors for vision-model self-correction.
 
 ---

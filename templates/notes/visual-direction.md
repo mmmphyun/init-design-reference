@@ -60,5 +60,11 @@ Mathematical color spaces (like OKLCH) guarantee contrast ratios, but cannot com
 
 When external Color or Palette MCPs (e.g., Coolors MCP, Color Hunt MCP) are available in the agent harness:
 1. Extract the primary 4-6 hex codes.
-2. Verify contrast against WCAG 2.1 AA (4.5:1 for body text) using `reference/REVIEW_CHECKLIST.md`.
-3. Directly populate `reference/tokens/colors.json` under `surface`, `foreground`, `primary`, and `muted`.
+2. Verify contrast against WCAG 2.1 AA (4.5:1 for body text) using `reference/REVIEW_CHECKLIST.md` (or global checklist).
+3. Directly populate `.design/tokens/colors.json` following the token schema:
+   - `background.primary`, `background.surface`
+   - `text.primary`, `text.secondary`, `text.muted`
+   - `accent.primary`, `accent.hover`
+   - `border.subtle`, `border.default`
+4. Run `python scripts/adapter.py --verify-spec` to confirm required tokens and valid hex values.
+

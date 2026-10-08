@@ -242,7 +242,7 @@ def check_file_contracts(file_path: str, full_content: str) -> List[Dict]:
                 "line": 1,
                 "rule_id": "component-4state-incomplete",
                 "severity": "WARN",
-                "message": f"Data collection component missing explicit state guards: {', '.join(missing)}. Enforce 4-state contract (COMPONENTS.md).",
+                "message": f"Data collection component missing explicit state guards: {', '.join(missing)}. Enforce 4-state contract (Loading, Empty, Error, Success).",
                 "snippet": f"Missing states: {', '.join(missing)}"
             })
     return violations

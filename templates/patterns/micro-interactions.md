@@ -46,7 +46,7 @@ export function TactileButton({
   return (
     <button
       disabled={disabled}
-      className={`inline-flex items-center justify-center font-sans font-medium rounded-btn select-none transition-all duration-fast ease-apple-snappy active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none will-change-transform ${variantStyles} ${sizeStyles} ${className}`}
+      className={`inline-flex items-center justify-center font-sans font-medium rounded-btn select-none transition-colors duration-fast ease-apple-snappy active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none will-change-transform ${variantStyles} ${sizeStyles} ${className}`}
       {...props}
     >
       {children}
