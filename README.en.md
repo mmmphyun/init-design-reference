@@ -59,7 +59,7 @@ Statically verifies that required design tokens and Taste dials (1-10 bounds, va
 ```console
 $ python scripts/adapter.py --verify-spec
 [HARD-GUARD FAIL] .design\DESIGN.md is missing one of DESIGN_VARIANCE, VISUAL_DENSITY, MOTION_INTENSITY.
-# -> Returns non-zero exit code on spec mismatch to ensure agent normalizes configuration
+# -> Returns non-zero exit code on spec mismatch so the caller can normalize configuration
 ```
 
 ---
