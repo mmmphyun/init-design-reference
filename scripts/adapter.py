@@ -564,12 +564,14 @@ def scaffold_reference(target_dir=None, force=False, preset="default", dials_ove
 
     clean_target = target_dir.replace("\\", "/").strip("./")
     css_entry = f"{ctx['subproject_dir']}/src/index.css" if ctx.get("subproject_dir") else "your CSS entrypoint"
+    rel_prefix = "../" if (ctx.get("subproject_dir") or "src" in css_entry) else "./"
+    import_path = f"{rel_prefix}{clean_target}/tokens/theme.css"
     if ctx["style_engine"] == "tailwind-v4":
-        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"./{clean_target}/tokens/theme.css\";' (or relative path) at Line 1 of {css_entry} (before '@import \"tailwindcss\";') to prevent W3C font drop.")
+        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"{import_path}\";' at Line 1 of {css_entry} (before '@import \"tailwindcss\";') to prevent W3C font drop.")
     elif ctx["style_engine"] == "tailwind-v3":
-        print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"./{clean_target}/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import {clean_target}/tokens/tokens.css in {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"{rel_prefix}{clean_target}/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import {rel_prefix}{clean_target}/tokens/tokens.css in {css_entry}.")
     else:
-        print(f"Integration: Generated {clean_target}/tokens/tokens.css. Add '@import \"./{clean_target}/tokens/tokens.css\";' to {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/tokens.css. Add '@import \"{rel_prefix}{clean_target}/tokens/tokens.css\";' to {css_entry}.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scaffold production-grade UI design reference and pattern architecture")

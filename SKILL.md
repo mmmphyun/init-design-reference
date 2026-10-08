@@ -91,23 +91,29 @@ The development lifecycle enforces a strict **Golden Boundary**:
 
 ### Gate 0: Deep Listening & Dynamic Theme Synthesis (High-Touch Probe)
 
-1. **6-Decision Matrix & Existing Project Inspection**:
+1. **7-Decision Matrix & Existing Project Inspection**:
    - 에이전트는 기존 프로젝트가 있을 경우 먼저 정체성을 파악한다:
      - 검사 대상: `AGENTS.md`, `.design/DESIGN.md`, `tokens/*.json`, `tailwind.config.*`, 전역 CSS, 대표 페이지 TSX.
-   - 6대 결정 항목 매트릭스를 추적 관리한다:
+   - 7대 결정 항목 매트릭스를 추적 관리한다:
      1. **대상 사용자와 사용 맥락 (Context)**
      2. **핵심 작업 및 주요 화면 (Hero Action / Screen)**
-     3. **상호작용 감각과 모션 (Interaction Vibe)**
-     4. **콘텐츠/정보 밀도 (Visual Density)**
-     5. **지원 기기 및 뷰포트 범위 (Device Scope)**
-     6. **브랜드/접근성 제약 (Constraints & Brand)**
+     3. **시각 스타일 및 참고 레퍼런스 (Visual Direction & References)**: 원하는 톤앤매너, 배경 밝기(다크 vs 라이트 vs 웜톤), 타이포그래피 성격(산세리프 vs 세리프 vs 모노), 벤치마크 서비스나 지향하는 심미적 분위기.
+     4. **상호작용 감각과 모션 (Interaction Vibe)**
+     5. **콘텐츠/정보 밀도 (Visual Density)**
+     6. **지원 기기 및 뷰포트 범위 (Device Scope)**
+     7. **브랜드/접근성 제약 (Constraints & Brand)**
    - 각 항목의 상태를 **[사용자 확인] / [기존 프로젝트에서 확인] / [미정] / [에이전트 가정]**으로 분류한다.
+   - **기존 디자인 시스템 수동 매핑 프로토콜 (Legacy Design System Mapping)**:
+     - 기존 프로젝트에 `.design/tokens/*.json`이 없더라도 `tailwind.config.*`의 커스텀 테마나 전역 CSS의 커스텀 속성(`--*`)이 존재하는 경우:
+     - 에이전트는 기존 파일에서 브랜드 컬러(배경, 텍스트, 액센트, 보더)와 폰트를 직접 식별하여 **[기존 프로젝트에서 확인]**으로 기록한다.
+     - 스캐폴딩 후 임의의 프리셋 기본값으로 방치하지 않고, 식별된 기존 값을 `.design/tokens/colors.json`과 `typography.json`에 매핑 반영한 뒤 `python scripts/adapter.py --bridge-only`를 실행한다.
 
 2. **Adaptive Deep Probe (설문지형 일괄 질문 엄격 금지)**:
    - 턴당 **최대 1~2개의 핵심 질문**만 제시하며, 결과를 실질적으로 바꿀 **[미정]** 항목에 대해서만 질문한다.
    - 최초 요청이나 기존 프로젝트에서 이미 확인된 항목은 질문하지 않고 요약하여 확인한다.
    - 기본 권장 대화 예산은 **2~3턴**이며, 핵심 결정 사항에 [미정]이 남아 있다면 사용자의 선택권을 위해 필요한 만큼 확인을 지속할 수 있다(단일 주제 꼬리질문은 최대 1회).
    - 중립적 감각 표현을 사용한다:
+     - 시각 스타일/톤: "절제되고 차분한 고대비 다크 테마 vs 편안한 종이 질감의 웜톤 라이트 테마 vs 선명한 원색 포인트의 미니멀 테마"
      - 상호작용 피드백: "지체 없이 절제된 즉각 반응 vs 부드럽고 탄성 있는 유기적 반응"
      - 정보 밀도: "보조 수치와 지표가 한눈에 모이는 고밀도 구성 vs 여백과 타이포그래피 리듬 중심의 여유로운 구성"
 
@@ -146,7 +152,7 @@ Gate 0 승인 즉시 Phase 1부터 Phase 4까지 중간 질문 없이 한 호흡
 #### Phase 2: Token & Surface Binding (Bind)
 - 시맨틱 CSS 토큰(`bg-surface`, `text-foreground`, `border-border-default` 등)으로 스타일 바인딩.
 - **Surface 계층 구조**: Level 0 Canvas(`bg-background`)와 Level 1 Surface(`bg-surface`) 간의 대비를 보장한다.
-- **Font & CSS Bridge Rule**: `@import "../.design/tokens/theme.css";`가 전역 CSS 최상단(Line 1)에 위치하도록 보장한다. Monospace 폰트 스택에는 한글 폴백(`Pretendard`, `D2Coding`)을 필수로 포함한다.
+- **Font & CSS Bridge Rule**: 토큰 브리지 import(`@import "../.design/tokens/theme.css";` 또는 해당 CSS 파일 위치 기준 상대 경로)가 전역 CSS 최상단(Line 1)에 위치하도록 보장한다. Monospace 폰트 스택에는 한글 폴백(`Pretendard`, `D2Coding`)을 필수로 포함한다.
 - **데이터 정렬 및 인디케이터 표준**: 다중 행 수치 비교가 필요한 데이터 표(Table)의 수치 열은 우측 정렬(`text-right`)을 적용한다.
 - **Strict Rule**: 하드코딩된 hex 코드(`#6366f1`) 또는 임의의 Tailwind 기본 색상(`bg-slate-900`) 직접 사용 금지.
 

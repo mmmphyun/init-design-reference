@@ -53,7 +53,7 @@ Lint PASSED.
 ---
 
 ### ③ Design Specification Static Hard-Guard (`--verify-spec`)
-Statically verifies that required design tokens and Taste dials (1-10 bounds, valid hex format) are properly configured, preventing defect propagation before frontend code generation.
+Statically verifies that Taste dials (1-10 bounds) and core required color tokens (`background.surface`, `background.primary`, `accent.primary`, `border.default`) exist with valid hex formats, preventing defect propagation before frontend code generation.
 
 
 ```console
