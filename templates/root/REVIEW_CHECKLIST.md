@@ -7,8 +7,8 @@ Complete this checklist prior to submitting or committing UI code changes.
 
 ## 1. Pre-Commit Verification Checklist
 
-- [ ] **Token Adherence**: Colors, spacing, and typography conform strictly to `reference/tokens/`.
-- [ ] **Anti-Cliché Audit**: Verified absence of prohibited patterns in `reference/notes/do-not-copy.md`.
+- [ ] **Token Adherence**: Colors, spacing, and typography conform strictly to `.design/tokens/` (or `reference/tokens/`).
+- [ ] **Anti-Cliché Audit**: Verified absence of prohibited patterns in `.design/notes/do-not-copy.md`.
 - [ ] **Deterministic Lint**: `python scripts/lint_ui.py <src>` returns 0 errors.
 - [ ] **Responsive Breakpoints**: Verified visual integrity at `375px` (mobile) and `1440px` (desktop).
 - [ ] **Multilingual Typography**: Korean and English mixed strings render without baseline distortion or font clipping.
@@ -37,7 +37,7 @@ Evaluate headless Playwright captures against these 5 pillars during Gate 4 veri
 | **1. Typographic Hierarchy** | Font size scale & line height rhythm | Maximum 3 distinct type sizes per component view; line-height >= 1.4 for body | Font size soup; consolidate to `text-xs`, `text-sm`, `text-xl` |
 | **2. Spacing Rhythm** | Consistency of gap, padding, and margins | Strict adherence to `spacing.json` scale factors (multiples of 4px / 0.25rem) | Arbitrary spacing (`p-[13px]`, `gap-5` mixed with `gap-6`); normalize to token |
 | **3. Surface & Noise** | Card nesting and border cage density | Surfaces differentiated by tonal step (`bg-surface` vs `bg-background`), not 4 nested border boxes | "Card inside card inside card"; strip inner borders, use tonal contrast |
-| **4. Affordance & Contrast** | Primary vs Secondary action hierarchy | Exactly ONE primary prominent button per view; secondary actions use quiet surfaces | Competing colored buttons; convert secondary buttons to `variant="secondary"` |
+| **4. Affordance & Contrast** | Primary vs Secondary action hierarchy | Clear visual prominence for primary CTA; secondary actions use quiet surfaces | Competing colored buttons; convert secondary buttons to `variant="secondary"` |
 | **5. AI Cliché Residuals** | Unintentional generative AI artifacts | Zero purple gradients, no floating ambient blobs, no unnecessary trailing arrows (`->`) | AI default slop; replace with solid tokens and crisp architectural lines |
 | **6. Critical Data & Indicator Integrity** | Preattentive alert prominence & Zero truncation | Indicator height >= 6px (`h-1.5`); zero `...` truncation on critical identifiers; standard units | Anemic 1-2px lines; truncated identifiers (`ORD-92...`); dead space > 100px |
 
@@ -46,7 +46,7 @@ Evaluate headless Playwright captures against these 5 pillars during Gate 4 veri
 ## 3. Natural Language Feedback Translation Dictionary
 *(Translates vague, emotional non-designer feedback into deterministic token and dial adjustments)*
 
-| User Natural Language Feedback | Root Cause Diagnosis | Deterministic Action in `/reference` |
+| User Natural Language Feedback | Root Cause Diagnosis | Deterministic Action in `.design/` |
 | :--- | :--- | :--- |
 | **"너무 휑하고 빈약해 보여"** | Low information density, over-spaced padding | 1. Increase `VISUAL_DENSITY` by +2 in `DESIGN.md`<br>2. Reduce base padding in `spacing.json` by 0.25rem<br>3. Expose telemetry metadata/badges into empty slots |
 | **"너무 장난감 같아 / 가벼워 보여"** | Bubble-like rounding, playful bouncing animation | 1. Reduce border radii in `radii.json` to `<= 4px`<br>2. Lower `MOTION_INTENSITY` by -2 in `DESIGN.md`<br>3. Remove gradient fills; convert to crisp 1px solid borders |

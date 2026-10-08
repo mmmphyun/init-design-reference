@@ -5,38 +5,30 @@ Synthesizes Jakub Krehel's design brief extraction protocol with deterministic t
 
 ---
 
-## 1. Gate 0: Smart Alignment Intake (2-Turn Progressive Interview)
+## 1. Gate 0: Alignment Protocol & Decision Matrix Tracking
 
-Before touching layout or code, the agent MUST run this non-expert-friendly 2-turn alignment interview to establish design anchors without cognitive overload:
+Before touching layout or code, the agent extracts requirements using a structured **6-Decision Matrix**:
 
-### Turn 1: 3 Casual Anchor Questions
-Ask the user these 3 intuitive, non-jargon questions:
-1. **Target User**: [A] Internal team / power operators (speed & scanning priority) vs [B] General public / consumers (clean & welcoming)
-2. **Atmosphere / Persona**:
-   - [A] **Toss / Apple style**: Spacious, clean, tactile spring micro-interactions (`apple-fluid`)
-   - [B] **AWS / Bloomberg cockpit**: High-density telemetry, dark carbon surfaces, tabular data (`b2b-dense`)
-   - [C] **Notion / Editorial minimal**: Monotone calm, airy typography, reading rhythm (`editorial-minimal`)
-   - [D] **Terminal / Developer HUD**: Low-reflection dark surfaces, mono fonts, dense status signals (`technical-mono`)
-3. **Brand / Accent Color**: Desired logo/accent hex or general hue (or default to recommended palette).
+### 6-Decision Matrix Tracking
+1. **Target User & Context**: Internal operators vs consumers / casual users.
+2. **Hero Action & Screen**: The single most critical operation or viewport.
+3. **Interaction & Motion Vibe**: Immediate/understated reaction vs organic/spring feedback.
+4. **Visual Density**: Information-dense multi-metric cockpit vs airy typographical rhythm.
+5. **Device Scope**: Desktop workspace vs mobile-first responsive.
+6. **Brand Constraints & Accessibility**: Specific brand colors, contrast targets, compliance.
 
-### Turn 2: Persona-to-Preset Deterministic Translation Table
-The agent deterministically translates the user's choice into baseline dials and fonts:
-
-| Selected Persona | Preset | Variance | Density | Motion | Font Pair |
-|---|---|---|---|---|---|
-| **[A] Toss / Apple** | `apple-fluid` | 6 | 5 | 9 | Display: Pretendard / Body: Pretendard |
-| **[B] AWS / Bloomberg Cockpit** | `b2b-dense` | 3 | 9 | 2 | Display: Space Grotesk / Body: Pretendard (tabular-nums) |
-| **[C] Notion / Editorial** | `editorial-minimal` | 8 | 3 | 5 | Display: Space Grotesk / Body: Pretendard |
-| **[D] Terminal / Dev HUD** | `technical-mono` | 4 | 8 | 1 | Display: JetBrains Mono / Body: JetBrains Mono |
-
-- **Anchor & Tune Rule**: The preset sets the baseline anchor. If the user asks for minor tweaks ("Apple vibe but slightly more dense data"), tune dials relatively (`Density +2`) without abandoning the persona.
-- **Approval Gate**: Present the concrete proposal (Preset, Palette, Fonts, Density). **Wait for explicit user confirmation ("진행해", "확정") before initiating Gate 1~4 autonomous execution.**
+### Turn-Budgeted Deep Probe
+- **Budget**: Recommended 2~3 dialog turns total (max 1 follow-up probe per specific topic). Continue inquiry only when high-impact architecture items remain undefined.
+- **Probe Only High-Impact Gaps**: Questions are limited to undefined ([미정]) items that alter design architecture.
+- **Neutral Phrasing**: Avoid biased brand names. Inquire about concrete tactile feedback and information hierarchy.
+- **Dynamic Theme Synthesis**: Predefined presets serve as baselines. Tune the 3 dials (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`) freely (1~10) to match the agreed brief.
+- **Approval Gate**: Present the synthesized proposal, explicit dials, and default assumptions. **Wait for explicit user confirmation before initiating Phase 1~4 autonomous execution.**
 
 ---
 
-## 2. Curated Aesthetic Palettes (Aesthetic Taste Over Pure Formulas)
+## 2. Curated Aesthetic Palettes (Reference Baselines)
 
-Mathematical color spaces (like OKLCH) guarantee contrast ratios, but cannot compute aesthetic discernment or domain taste. When no external design reference or Figma token set exists, adopt one of these curated domain palettes:
+Mathematical color spaces (like OKLCH) guarantee contrast ratios, but cannot compute aesthetic discernment or domain taste. When no project design reference, Figma token set, or explicit user color brief exists, the following domain palettes may serve as starting baselines:
 
 ### A. Fintech / High-Trust Dashboard
 - **Surface**: `#0A0F1D` (Deep Abyssal Blue) / `#111827` (Card Elevated)

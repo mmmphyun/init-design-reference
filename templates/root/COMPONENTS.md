@@ -1,8 +1,8 @@
 # Component Architecture Guidelines
 <!-- Derived from wshobson/agents (MIT License) & pbakaus/impeccable (Apache 2.0) -->
 
-## 1. The Mandatory 4-State Completeness Contract
-Every data-driven or dynamic component must provide explicit UI representations for all 4 lifecycle states. PRs or code generations lacking any of these 4 states are rejected at Gate 4.
+## 1. Asynchronous Data 4-State Completeness Contract
+For asynchronous data-fetching components, network collection views, or views subject to remote state changes, provide explicit UI representations for all 4 lifecycle states. Purely static, presenter, or layout components are exempt.
 
 ```
        ┌───────────────┐
@@ -22,7 +22,7 @@ Every data-driven or dynamic component must provide explicit UI representations 
    - Semantic skeleton with `aria-busy="true"` and `aria-live="polite"`.
    - Dimension-matched skeletons preventing Layout Shift (CLS score = 0).
 2. **Populated State**:
-   - Default high-density view utilizing semantic tokens (`bg-surface`, `text-foreground`).
+   - Default view utilizing semantic tokens (`bg-surface`, `text-foreground`).
 3. **Empty State**:
    - Actionable zero-data layout with informative title, description, and primary CTA. No dead-ends.
 4. **Error State**:
