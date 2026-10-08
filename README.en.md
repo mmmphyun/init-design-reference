@@ -38,15 +38,15 @@ $ python scripts/lint_ui.py app/components/MetricCard.tsx
        Layout thrashing animation detected (transition-all). Animate ONLY transform and opacity.
 [ERROR] app/components/MetricCard.tsx:105 (a11y-missing-alt)
        <img> tag missing alt attribute (WCAG 1.1.1).
-[ERROR] app/components/MetricCard.tsx:107 (cliche-tracking-uppercase)
+[WARN]  app/components/MetricCard.tsx:107 (cliche-tracking-uppercase)
        Generic AI 'uppercase tracking-widest' eyebrow label detected.
 
-Scan complete: 1 files inspected. Findings: 5 errors, 0 warnings.
+Scan complete: 1 files inspected. Findings: 3 errors, 2 warnings.
 Lint FAILED. Rectify errors or align with reference/ tokens and patterns.
 
 # -> After 1 autonomous self-healing loop by the agent:
 $ python scripts/lint_ui.py app/components/MetricCard.tsx
-Scan complete: 1 files inspected. Findings: 0 errors, 0 warnings.
+Scan complete: 1 files inspected. Findings: 0 errors, 2 warnings.
 Lint PASSED.
 ```
 
@@ -139,23 +139,24 @@ python "scripts/adapter.py" --preset apple-fluid
 Agents strictly adhere to the 5-Gate Golden Boundary:
 
 1. **Gate 0: Smart Alignment (High-Touch Dialog & Hard-Guard)**:
-   - 2-turn plain-language inquiries -> Propose matched preset and 3 dials.
+   - Identify existing project identity & track the 6-Decision Matrix (confirmed / existing project / undefined / assumption).
+   - Adaptive Deep Probe dynamically synthesizes 3 Taste dials (1~10) and brand tokens.
    - **User Approval Gate (Strict Lock)**: Execution of `adapter.py` and file generation is strictly blocked until explicit user confirmation.
-   - Run `python scripts/adapter.py --verify-spec` to enforce specification validity.
-2. **Gate 1: `/craft` (Semantic Skeleton)**: Structural hierarchy and pure ARIA roles without decorative styling.
-3. **Gate 2: `/bind` (Token & Surface Binding)**: Bind exclusively to `.design/tokens/*.json` semantic classes (zero hardcoded hex).
-4. **Gate 3: `/critique` (Deterministic Lint & Self-Healing)**:
+   - Run `python scripts/adapter.py --verify-spec` to enforce specification validity (dials 1~10 and required tokens).
+2. **Phase 1: Semantic Skeleton (Craft)**: Structural hierarchy and pure ARIA roles without decorative styling.
+3. **Phase 2: Token & Surface Binding (Bind)**: Bind exclusively to `.design/tokens/*.json` semantic classes (zero hardcoded hex).
+4. **Phase 3: Deterministic Lint & Self-Healing (Critique)**:
    ```powershell
    python scripts/lint_ui.py src/
    ```
-   Autonomously patches violations within 3 retries until 0 errors are achieved.
-5. **Gate 4: `/harden` (4-State Completeness & Vision Verification)**:
-   - Implement Loading (skeleton), Empty, Error, and Populated states.
+   Autonomously patches objective `[ERROR]` violations (a11y and missing tokens) within 3 retries until 0 errors are achieved.
+5. **Phase 4: Completeness & Vision Verification (Harden)**:
+   - Implement Loading (skeleton), Empty, Error, and Populated states for asynchronous data views.
    - Execute Playwright headless audit:
      ```powershell
      python scripts/capture_ui.py
      ```
-   - On user styling feedback, modify tokens only to achieve 0-diff TSX visual regression.
+   - On styling feedback (colors, spacing, fonts), update tokens in `tokens/*.json`. On layout/structural feedback, modify component TSX.
 
 ---
 

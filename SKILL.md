@@ -67,90 +67,108 @@ The development lifecycle enforces a strict **Golden Boundary**:
 [User Brief]
      │
      ▼
-【Gate 0: Smart Alignment Tiki-Taka】 (High-Touch Dialog)
-  - 2-Turn Plain-Language Inquiries (Subject/Vibe/Brand Color)
-  - 4-Anchor Mapping Table -> Preset & Dial Proposal
-  - User Confirmation Gate (Approval Required)
+【Gate 0: Smart Alignment Deep Probe】 (High-Touch Dialog)
+  - Turn-Budgeted Probe (최대 2~3턴, 턴당 1~2개 질문)
+  - 6-Decision Matrix Tracking (확인 / 프로젝트 추출 / 미정 / 가정)
+  - Dynamic Theme Synthesis (3 Dials 1~10 + Token Composition)
+  - Synthesis Briefing & User Approval Gate
      │
      ▼
 【Gate 0: Deterministic Hard-Guard】
+  - adapter.py --preset <base> --dials <v,d,m>
   - adapter.py --verify-spec (Blocks progression if dials/tokens are missing)
      │
      ▼
-【Gates 1~4: Autonomous Self-Driving Orchestration Loop】 (Zero-Touch)
-  - Gate 1 (/craft)     : Semantic DOM skeleton (0 styling, pure ARIA)
-  - Gate 2 (/bind)      : Token & Surface hierarchy binding (Level 0/1)
-  - Gate 3 (/critique)  : lint_ui.py self-healing loop (Max 3 retries)
-  - Gate 4 (/harden)    : 4-State completeness, dev server mount & capture_ui.py
+【Phase 1~4: Autonomous Self-Driving Orchestration Loop】 (Zero-Touch)
+  - Phase 1 (Craft)     : Semantic DOM skeleton (0 styling, pure ARIA)
+  - Phase 2 (Bind)      : Token & Surface hierarchy binding (Level 0/1)
+  - Phase 3 (Critique)  : lint_ui.py self-healing loop (Max 3 retries, a11y & token errors only)
+  - Phase 4 (Harden)    : 4-State completeness, dev server mount & capture_ui.py
      │
      ▼ (Rendered Viewport Capture Delivered)
-[User Visual Feedback] ──(Token Reverse-Traceability)──► Adjust tokens/*.json (0-diff TSX)
+[User Visual Feedback] ──(Token & Structure Separation)──► Style -> tokens/*.json / Structure -> Component TSX
 ```
 
-### Gate 0: Smart Alignment & Token Synthesis (High-Touch)
-1. **Plain-Language Intake (for Non-Experts)**:
-   - Ask up to 3 non-technical questions if requirements are underspecified:
-     - "누가 어떤 상황에서 주로 쓰나요? (B2B 전문가 도구 / 대중용 모바일 서비스 / 개발자 터미널)"
-     - "원하는 전체적인 분위기는 어떤가요? (산뜻하고 트렌디한 토스·애플 / 차분하고 전문적인 다크 콕핏 / 종이 같은 미니멀)"
-     - "반드시 살리고 싶은 브랜드 포인트 컬러나 시그니처가 있나요?"
-2. **4-Anchor Mapping & Dial Proposal (Anchor & Tune)**:
-   - Match the user's intent to the nearest anchor preset, then propose 3-dial tuning:
-     - 토스/애플 감성 B2C: `apple-fluid` (Variance 6, Density 5, Motion 9)
-     - AWS/엔터프라이즈 데이터 콕핏: `b2b-dense` (Variance 3, Density 9, Motion 2)
-     - 노션/에디토리얼 타이포그래피: `editorial-minimal` (Variance 8, Density 3, Motion 5)
-     - 개발자 터미널/CLI 툴: `technical-mono` (Variance 4, Density 8, Motion 1)
-3. **User Approval Gate (Strict Lock)**:
-   - Propose the matched preset, 3 dials, and visual rationale to the user, then request explicit confirmation.
-   - **MANDATORY**: Do NOT execute `adapter.py` or write files prior to receiving explicit user confirmation, even if the user provided clear domain keywords in their initial brief.
-4. **Deterministic Hard-Guard**:
-   - Scaffold the design repository and run the specification hard-guard:
+### Gate 0: Deep Listening & Dynamic Theme Synthesis (High-Touch Probe)
+
+1. **6-Decision Matrix & Existing Project Inspection**:
+   - 에이전트는 기존 프로젝트가 있을 경우 먼저 정체성을 파악한다:
+     - 검사 대상: `AGENTS.md`, `.design/DESIGN.md`, `tokens/*.json`, `tailwind.config.*`, 전역 CSS, 대표 페이지 TSX.
+   - 6대 결정 항목 매트릭스를 추적 관리한다:
+     1. **대상 사용자와 사용 맥락 (Context)**
+     2. **핵심 작업 및 주요 화면 (Hero Action / Screen)**
+     3. **상호작용 감각과 모션 (Interaction Vibe)**
+     4. **콘텐츠/정보 밀도 (Visual Density)**
+     5. **지원 기기 및 뷰포트 범위 (Device Scope)**
+     6. **브랜드/접근성 제약 (Constraints & Brand)**
+   - 각 항목의 상태를 **[사용자 확인] / [기존 프로젝트에서 확인] / [미정] / [에이전트 가정]**으로 분류한다.
+
+2. **Adaptive Deep Probe (설문지형 일괄 질문 엄격 금지)**:
+   - 턴당 **최대 1~2개의 핵심 질문**만 제시하며, 결과를 실질적으로 바꿀 **[미정]** 항목에 대해서만 질문한다.
+   - 최초 요청이나 기존 프로젝트에서 이미 확인된 항목은 질문하지 않고 요약하여 확인한다.
+   - 기본 권장 대화 예산은 **2~3턴**이며, 핵심 결정 사항에 [미정]이 남아 있다면 사용자의 선택권을 위해 필요한 만큼 확인을 지속할 수 있다(단일 주제 꼬리질문은 최대 1회).
+   - 중립적 감각 표현을 사용한다:
+     - 상호작용 피드백: "지체 없이 절제된 즉각 반응 vs 부드럽고 탄성 있는 유기적 반응"
+     - 정보 밀도: "보조 수치와 지표가 한눈에 모이는 고밀도 구성 vs 여백과 타이포그래피 리듬 중심의 여유로운 구성"
+
+3. **Dynamic Theme Synthesis (동적 테마 합성)**:
+   - 기성 프리셋은 출발 베이스라인으로만 활용하며, 사용자와 합의된 3대 Taste 다이얼(`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`)을 1~10 범위로 동적 합성한다.
+   - 인터뷰를 통해 합의된 고유 브랜드 컬러, 폰트 스택, 인터랙션 원칙을 명세화한다.
+
+4. **Synthesis Briefing & User Approval Gate**:
+   - 도출된 다이얼 수치, 합의된 시그니처 색상/폰트, 그리고 미처 논의되지 않아 채운 **[에이전트 가정]** 사항을 브리핑하고 최종 확인을 구한다.
+   - **MANDATORY**: 사용자 승인(Approval) 이전에는 `adapter.py` 실행이나 파일 생성을 하지 않는다.
+
+5. **Deterministic Hard-Guard & Token Injection**:
+   - 승인 후 스캐폴딩 실행:
      ```powershell
-     python scripts/adapter.py --preset <selected-preset>
+     python scripts/adapter.py --preset <base-preset> --dials <v,d,m>
+     ```
+   - **Token Injection Mandate**: 기존 프로젝트 토큰이 없는 신규 스캐폴딩의 경우, 사용자와 합의된 고유 브랜드 컬러 및 폰트를 `.design/tokens/colors.json`, `typography.json`에 직접 반영하고 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)한다. 기존 토큰이 이미 있는 프로젝트에서는 기존 값을 보존한다.
+   - 스펙 검증 하드가드 실행:
+     ```powershell
      python scripts/adapter.py --verify-spec
      ```
-   - If `--verify-spec` returns exit code 1 (missing dials or semantic tokens), pipeline execution is halted until corrected.
+   - `--verify-spec` 실패 시(다이얼 누락, 1~10 범위 초과, 비정상 hex 등) 즉시 보정한다.
 
 ---
 
-### Gate 1~4: Autonomous Self-Driving Orchestration Loop (Zero-Touch)
+### Phase 1~4: Autonomous Self-Driving Orchestration Loop (Zero-Touch)
 
-Upon Gate 0 approval, execute Gates 1 through 4 continuously without asking intermediate questions.
+Gate 0 승인 즉시 Phase 1부터 Phase 4까지 중간 질문 없이 한 호흡으로 연속 실행한다. 단, 화면 구조, 핵심 도메인 식별자, 브랜드/접근성 제약 등 사전 인터뷰에서 드러나지 않은 새로운 중대 결정([미정])이 발생한 경우에 한하여 예외적으로 사용자에게 에스컬레이션하여 확인을 구한다. 그 외의 세부 구현 선택은 자율 실행한다.
 
-#### Gate 1: `/craft` (Semantic Skeleton)
-- Construct semantic DOM hierarchy (`<header>`, `<main>`, `<aside>`, `<table>`, `<article>`).
-- Apply **zero styling or decorative colors**. Focus exclusively on structural hierarchy, responsive flex/grid layouts, and Radix/ARIA accessibility roles (`role="table"`, `aria-expanded`).
-- **High-Density Views Rule (Density >= 8)**: 고밀도 데이터 화면에서는 `max-w-7xl` 등 인위적 래퍼 폭 제한을 지양하고 `w-full` 전폭을 사용한다. 고정 뷰포트 기준 하단 100px 이상의 빈 공간(Dead Space) 방치를 금지하고 행 높이와 여백으로 뷰포트를 균형 있게 흡수한다.
-- **Zero-Truncation Policy**: 핵심 도메인 식별자(ID, 코드, 식별 번호, 호스트/IP 등)에 `truncate` 또는 고정폭 제한을 적용하여 말줄임표(`...`)를 발생시키는 행위를 엄격히 금지한다.
+#### Phase 1: Semantic Skeleton (Craft)
+- Semantic DOM 계층 구조(`header`, `main`, `aside`, `table`, `article`) 구축.
+- **장식용 스타일/색상 배제**. 구조적 계층, 반응형 Flex/Grid, Radix/ARIA 접근성 역할(`role="table"`, `aria-expanded`)에 집중.
+- **고밀도 화면 규칙 (사용자가 확정한 Density >= 8)**: 사용자가 고밀도 구성을 선택한 경우에 한하여 전폭(`w-full`) 레이아웃을 사용하고 불필요한 공백 방치를 지양한다. 여유로운 밀도를 선택한 일반 뷰에서는 적절한 최대 폭(`max-w-*`)을 유지한다.
+- **Zero-Truncation Policy**: 핵심 도메인 식별자(ID, 코드, 식별 번호 등)에 무분별한 `truncate`를 걸어 식별을 방해하는 행위를 지양한다.
 
-#### Gate 2: `/bind` (Token & Surface Binding)
-- Bind styles exclusively using semantic CSS tokens (`bg-surface`, `text-foreground`, `border-border-default`, `shadow-elevation-1` to `shadow-elevation-4`).
-- **Surface Hierarchy Mandate**: Enforce Level 0 Canvas (`bg-background`) vs Level 1 Surface (`bg-surface`) contrast. Embedded panels and cards must sit on Level 1.
-- **Font & CSS Bridge Rule**: Ensure `@import "../.design/tokens/theme.css";` is placed at Line 1 of the global CSS before any other CSS rules to prevent W3C `@import` dropping. Monospace font stacks must include Korean glyph fallbacks (`Pretendard`, `D2Coding`) to prevent Windows OS GulimChe fallback.
-- **Data Preservation Mandate**: 고밀도 데이터 화면에서 주요 보조 지표, 세부 상태값, 추세 인디케이터 등 판단에 직결되는 핵심 정보를 절제/미니멀리즘을 이유로 누락하는 것을 엄격히 금지한다. 모든 수치 데이터는 우측 정렬(`text-right`)을 적용하고 정렬 가능한 상태는 심각도/우선순위(Severity/Priority-first)로 바인딩한다.
-- **Functional Indicator & Alert Prominence**: 상태/진행률 인디케이터 바는 주변 시야 식별성을 위해 최소 6px(`h-1.5`) 두께를 보장한다(1-2px 초슬림 바 금지). 임계(Critical)/경고 상태 항목은 강조 보더 또는 배경 틴트를 부여한다.
-- **Standard Scientific Units**: 정식 표준 규격 단위를 명시하며 임의의 한 글자 축약을 금지한다.
-- **Strict Rule**: Zero hardcoded hex colors (`#6366f1`), arbitrary padding (`p-[18px]`), or generic Tailwind colors (`bg-slate-900`).
+#### Phase 2: Token & Surface Binding (Bind)
+- 시맨틱 CSS 토큰(`bg-surface`, `text-foreground`, `border-border-default` 등)으로 스타일 바인딩.
+- **Surface 계층 구조**: Level 0 Canvas(`bg-background`)와 Level 1 Surface(`bg-surface`) 간의 대비를 보장한다.
+- **Font & CSS Bridge Rule**: `@import "../.design/tokens/theme.css";`가 전역 CSS 최상단(Line 1)에 위치하도록 보장한다. Monospace 폰트 스택에는 한글 폴백(`Pretendard`, `D2Coding`)을 필수로 포함한다.
+- **데이터 정렬 및 인디케이터 표준**: 다중 행 수치 비교가 필요한 데이터 표(Table)의 수치 열은 우측 정렬(`text-right`)을 적용한다.
+- **Strict Rule**: 하드코딩된 hex 코드(`#6366f1`) 또는 임의의 Tailwind 기본 색상(`bg-slate-900`) 직접 사용 금지.
 
-#### Gate 3: `/critique` (Deterministic Lint & Self-Healing Loop)
-- Execute the offline AST/Regex linter:
+#### Phase 3: Deterministic Lint & Self-Healing Loop (Critique)
+- 정적 린터 실행:
    ```powershell
    python scripts/lint_ui.py src/
    ```
-- **Self-Healing Loop**: If any `[ERROR]` is reported (hardcoded hex, uppercase tracking, naked outline-none, missing alt, max-w constraint, numeric text-left, slender indicator, critical identifier truncate), the agent must immediately parse the line number, auto-fix the code, and re-run `lint_ui.py`. Repeat up to 3 times until 0 errors are achieved.
+- **Self-Healing Loop**: 접근성(a11y) 결함 및 하드코딩된 토큰 등 객관적 `[ERROR]` 발생 시 라인 번호를 파싱하여 자동 교정 후 재검사(최대 3회). 디자인 권고사항(`[WARN]`)은 임의로 레이아웃을 깨뜨리지 않고 존중한다.
 
-#### Gate 4: `/harden` (4-State Completeness & Closed-Loop Vision Verification)
-1. **Mandatory 4-State Coverage**: Verify `Loading` (skeleton with `aria-busy`), `Empty` (actionable CTA), `Error` (`role="alert"` with retry), and `Populated` are implemented. 디자인 검증용 목업 상태 전환 컨트롤이 실제 운영 뷰포트를 침범하지 않도록 격리한다.
+#### Phase 4: Completeness & Vision Verification (Harden)
+1. **조건부 4-State 커버리지**: 원격 비동기 데이터 패칭이나 컬렉션 조회가 발생하는 비동기 데이터 뷰에 한하여 `Loading`(스켈레톤), `Empty`(CTA), `Error`(재시도), `Populated` 4상태를 구현한다. 순수 정적/레이아웃 컴포넌트는 해당되지 않는다.
 2. **Mount & Headless Capture**:
-   - Start the local dev server (`npm run dev`).
-   - For isolated components, temporarily mount to the top-level route (`app/page.tsx` or `src/App.tsx`).
-   - Run the headless auditor (auto-detects active port 3000, 5173, 8080):
+   - 로컬 개발 서버 확인 및 컴포넌트 마운트.
+   - 헤드리스 감사 실행:
      ```powershell
      python scripts/capture_ui.py
      ```
-3. **Closed-Loop Feedback Rule (Token Reverse-Traceability)**:
-   - Present captured viewport screenshots (`.design/screenshots/audit/desktop_1440.png`) to the user.
-   - When the user provides visual feedback ("배경이 너무 어두워", "여백을 넓혀줘"), **DO NOT edit TSX component files directly**.
-   - Modify the corresponding token in `.design/tokens/*.json`, regenerate CSS bridges with `python scripts/adapter.py`, and trigger a headless re-capture to prove that styling updates via pure design tokens.
+3. **폐루프 시각 피드백 원칙 (Token & Structure Separation)**:
+   - 캡처된 뷰포트 스크린샷을 사용자에게 제시한다.
+   - **스타일 피드백 (색상, 간격, 폰트)**: TSX를 건드리지 않고 `.design/tokens/*.json`을 수정한 뒤 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)하여 전역 일관성을 유지한다.
+   - **구조적 피드백 (컴포넌트 배치, 정보 구조, DOM 변경)**: 컴포넌트 TSX 코드를 직접 수정하여 사용자 요구를 충실히 반영한다.
 
 ---
 
