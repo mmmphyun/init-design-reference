@@ -48,7 +48,7 @@ python "$HOME/.gemini/config/skills/init-design-reference/scripts/adapter.py" --
 
 ### Available Presets (`--preset`)
 - `default`: Balanced modern SaaS baseline (Variance 5, Density 7, Motion 4)
-- `b2b-dense`: High-density data cockpit & telemetry (Variance 3, Density 9, Motion 2) — **Data Preservation Mandate**: "정보 생략 금지 + 단위 면적당 텔레메트리 수용 극대화", Load avg, Swap margin, Rx/Tx split 필수 수납, `max-w-7xl` 금지 및 `w-full` 전폭 확장, 수치 우측 정렬(`text-right`), 심각도 우선(Severity-first) 정렬
+- `b2b-dense`: High-density data views & telemetry (Variance 3, Density 9, Motion 2) — **Data Preservation Mandate**: "핵심 데이터 무단 생략 금지 + 단위 면적당 유효 정보 수용 극대화", 주요 보조 지표 및 상태값 필수 수납, `max-w-7xl` 인위적 폭 제한 지양 및 `w-full` 전폭 확장, 수치 우측 정렬(`text-right`), 위험도/우선순위(Severity/Priority-first) 정렬
 - `editorial-minimal`: Airy asymmetric showcase & landing (Variance 8, Density 3, Motion 5)
 - `technical-mono`: Terminal/developer tool aesthetic (Variance 4, Density 8, Motion 1)
 - `apple-fluid`: Tactile spring physics & fluid gestures (Variance 6, Density 5, Motion 9)
@@ -119,16 +119,16 @@ Upon Gate 0 approval, execute Gates 1 through 4 continuously without asking inte
 #### Gate 1: `/craft` (Semantic Skeleton)
 - Construct semantic DOM hierarchy (`<header>`, `<main>`, `<aside>`, `<table>`, `<article>`).
 - Apply **zero styling or decorative colors**. Focus exclusively on structural hierarchy, responsive flex/grid layouts, and Radix/ARIA accessibility roles (`role="table"`, `aria-expanded`).
-- **High-Density Cockpit Rule (Density >= 8)**: B2B 관제 대시보드에서는 `max-w-7xl` 등 인위적 래퍼 폭 제한을 전면 금지하고 `w-full` 전폭을 사용한다. 1440x900 단일 뷰포트 기준 스크롤 0px을 기본으로 삼되, 하단 100px 이상의 빈 공간(Dead Space) 방치를 금지하고 행 높이(64~70px)로 뷰포트를 균형 있게 흡수한다.
-- **Zero-Truncation Policy**: 인프라 식별자(가용영역 AZ, 데이터센터, 호스트명, IP)에 `truncate` 또는 고정폭 제한을 적용하여 말줄임표(`...`)를 발생시키는 행위를 엄격히 금지한다.
+- **High-Density Views Rule (Density >= 8)**: 고밀도 데이터 화면에서는 `max-w-7xl` 등 인위적 래퍼 폭 제한을 지양하고 `w-full` 전폭을 사용한다. 고정 뷰포트 기준 하단 100px 이상의 빈 공간(Dead Space) 방치를 금지하고 행 높이와 여백으로 뷰포트를 균형 있게 흡수한다.
+- **Zero-Truncation Policy**: 핵심 도메인 식별자(ID, 코드, 식별 번호, 호스트/IP 등)에 `truncate` 또는 고정폭 제한을 적용하여 말줄임표(`...`)를 발생시키는 행위를 엄격히 금지한다.
 
 #### Gate 2: `/bind` (Token & Surface Binding)
 - Bind styles exclusively using semantic CSS tokens (`bg-surface`, `text-foreground`, `border-border-default`, `shadow-elevation-1` to `shadow-elevation-4`).
 - **Surface Hierarchy Mandate**: Enforce Level 0 Canvas (`bg-background`) vs Level 1 Surface (`bg-surface`) contrast. Embedded panels and cards must sit on Level 1.
 - **Font & CSS Bridge Rule**: Ensure `@import "../.design/tokens/theme.css";` is placed at Line 1 of the global CSS before any other CSS rules to prevent W3C `@import` dropping. Monospace font stacks must include Korean glyph fallbacks (`Pretendard`, `D2Coding`) to prevent Windows OS GulimChe fallback.
-- **Data Preservation Mandate**: 텔레메트리 화면에서 Load average, Swap margin, Rx/Tx split, 스파크라인 등 24/7 관제 핵심 지표를 절제/미니멀리즘을 이유로 누락하는 것을 엄격히 금지한다. 모든 수치 데이터는 우측 정렬(`text-right`)을 적용하고 상태는 심각도 우선(Severity-first)으로 바인딩한다.
-- **Preattentive Gauge & Alert Prominence**: 관제 프로그레스/게이지 바는 원거리/심야 식별을 위해 최소 6px(`h-1.5`) 두께를 보장한다(1-2px 초슬림 바 금지). 임계(Critical) 노드는 좌측 강조 보더(`border-l-4 border-status-error`) 또는 배경 틴트를 부여한다.
-- **Standard Scientific Units**: `GiB`, `코어` 등 정식 표준 단위를 명시하며 임의 축약(`G`, `C`)을 금지한다.
+- **Data Preservation Mandate**: 고밀도 데이터 화면에서 주요 보조 지표, 세부 상태값, 추세 인디케이터 등 판단에 직결되는 핵심 정보를 절제/미니멀리즘을 이유로 누락하는 것을 엄격히 금지한다. 모든 수치 데이터는 우측 정렬(`text-right`)을 적용하고 정렬 가능한 상태는 심각도/우선순위(Severity/Priority-first)로 바인딩한다.
+- **Functional Indicator & Alert Prominence**: 상태/진행률 인디케이터 바는 주변 시야 식별성을 위해 최소 6px(`h-1.5`) 두께를 보장한다(1-2px 초슬림 바 금지). 임계(Critical)/경고 상태 항목은 강조 보더 또는 배경 틴트를 부여한다.
+- **Standard Scientific Units**: 정식 표준 규격 단위를 명시하며 임의의 한 글자 축약을 금지한다.
 - **Strict Rule**: Zero hardcoded hex colors (`#6366f1`), arbitrary padding (`p-[18px]`), or generic Tailwind colors (`bg-slate-900`).
 
 #### Gate 3: `/critique` (Deterministic Lint & Self-Healing Loop)
@@ -136,10 +136,10 @@ Upon Gate 0 approval, execute Gates 1 through 4 continuously without asking inte
    ```powershell
    python scripts/lint_ui.py src/
    ```
-- **Self-Healing Loop**: If any `[ERROR]` is reported (hardcoded hex, uppercase tracking, naked outline-none, missing alt, B2B max-w wrapper, numeric text-left, slender gauge, illegal truncate), the agent must immediately parse the line number, auto-fix the code, and re-run `lint_ui.py`. Repeat up to 3 times until 0 errors are achieved.
+- **Self-Healing Loop**: If any `[ERROR]` is reported (hardcoded hex, uppercase tracking, naked outline-none, missing alt, max-w constraint, numeric text-left, slender indicator, critical identifier truncate), the agent must immediately parse the line number, auto-fix the code, and re-run `lint_ui.py`. Repeat up to 3 times until 0 errors are achieved.
 
 #### Gate 4: `/harden` (4-State Completeness & Closed-Loop Vision Verification)
-1. **Mandatory 4-State Coverage**: Verify `Loading` (skeleton with `aria-busy`), `Empty` (actionable CTA), `Error` (`role="alert"` with retry), and `Populated` are implemented. 디자인 리뷰/데모용 4-State 토글러가 프로덕션 관제 뷰포트를 침범하지 않도록 격리한다.
+1. **Mandatory 4-State Coverage**: Verify `Loading` (skeleton with `aria-busy`), `Empty` (actionable CTA), `Error` (`role="alert"` with retry), and `Populated` are implemented. 디자인 검증용 목업 상태 전환 컨트롤이 실제 운영 뷰포트를 침범하지 않도록 격리한다.
 2. **Mount & Headless Capture**:
    - Start the local dev server (`npm run dev`).
    - For isolated components, temporarily mount to the top-level route (`app/page.tsx` or `src/App.tsx`).

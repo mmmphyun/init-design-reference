@@ -202,14 +202,14 @@ def check_linter_behavior():
             log("Linter failed to catch intentional hardcoded hex / cliché!", "FAIL")
             return False
 
-        # Create a bad telemetry cockpit file testing b2b-max-width-wrapper, numeric-column-text-left, gauge-too-slender, b2b-illegal-truncate
+        # Create a bad high-density file testing high-density-max-width-constraint, numeric-column-text-left, indicator-too-slender, critical-identifier-truncate
         bad_telemetry = os.path.join(temp_dir, "bad_telemetry.tsx")
         with open(bad_telemetry, "w", encoding="utf-8") as f:
             f.write(
                 'export function BadDashboard() {\n'
                 '  return (\n'
                 '    <div className="max-w-7xl mx-auto">\n'
-                '      <div className="truncate text-xs">ap-northeast-2c (부산 DR)</div>\n'
+                '      <div className="truncate text-xs">node-kr-zone-1 (order-tx-8821)</div>\n'
                 '      <div className="w-full bg-background rounded-full h-1 overflow-hidden" />\n'
                 '      <table>\n'
                 '        <thead>\n'
@@ -230,19 +230,19 @@ def check_linter_behavior():
 
         res_bad_telem = subprocess.run([sys.executable, linter_path, bad_telemetry], capture_output=True, text=True)
         if res_bad_telem.returncode == 0:
-            log("Linter failed to catch bad telemetry patterns!", "FAIL")
+            log("Linter failed to catch bad high-density patterns!", "FAIL")
             return False
-        if "b2b-max-width-wrapper" not in res_bad_telem.stdout:
-            log("Linter failed to catch b2b-max-width-wrapper in cockpit file!", "FAIL")
+        if "high-density-max-width-constraint" not in res_bad_telem.stdout:
+            log("Linter failed to catch high-density-max-width-constraint in high-density file!", "FAIL")
             return False
         if "numeric-column-text-left" not in res_bad_telem.stdout:
             log("Linter failed to catch numeric-column-text-left in table header/cell!", "FAIL")
             return False
-        if "gauge-too-slender" not in res_bad_telem.stdout:
-            log("Linter failed to catch gauge-too-slender in cockpit file!", "FAIL")
+        if "indicator-too-slender" not in res_bad_telem.stdout:
+            log("Linter failed to catch indicator-too-slender in high-density file!", "FAIL")
             return False
-        if "b2b-illegal-truncate" not in res_bad_telem.stdout:
-            log("Linter failed to catch b2b-illegal-truncate on AZ in cockpit file!", "FAIL")
+        if "critical-identifier-truncate" not in res_bad_telem.stdout:
+            log("Linter failed to catch critical-identifier-truncate in high-density file!", "FAIL")
             return False
 
         # Run linter on good file (must pass with exit code 0)
@@ -251,7 +251,7 @@ def check_linter_behavior():
             log(f"Linter falsely flagged clean file:\n{res_good.stdout}", "FAIL")
             return False
 
-        log("Linter correctly caught anti-patterns (B2B max-w, numeric text-left, slender gauge, illegal truncate) and passed clean code.", "PASS")
+        log("Linter correctly caught anti-patterns (max-w constraint, numeric text-left, slender indicator, critical identifier truncate) and passed clean code.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

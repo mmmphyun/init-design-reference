@@ -60,14 +60,14 @@ def get_rule_suggestion(rule_id: str) -> str:
         return "Use purposeful solid surface (bg-surface) or subtle single-axis contrast"
     if rule_id == "cliche-tracking-uppercase":
         return "Use standard sentence case or normal tracking (tracking-normal)"
-    if rule_id == "b2b-max-width-wrapper":
-        return "Replace with 'w-full' to prevent lateral whitespace abandonment in B2B cockpit"
+    if rule_id == "high-density-max-width-constraint":
+        return "Replace with 'w-full' to prevent lateral whitespace abandonment in high-density views"
     if rule_id == "numeric-column-text-left":
-        return "Change 'text-left' to 'text-right' (and justify-end) for numeric telemetry metrics"
-    if rule_id == "gauge-too-slender":
-        return "Use 'h-1.5' (6px) or larger for preattentive alert visibility in 24/7 cockpits"
-    if rule_id == "b2b-illegal-truncate":
-        return "Remove 'truncate' and fixed 'max-w-[...]' to ensure 100% full visibility of infrastructure identities"
+        return "Change 'text-left' to 'text-right' (and justify-end) for numeric data"
+    if rule_id == "indicator-too-slender":
+        return "Use 'h-1.5' (6px) or larger for functional indicator visibility"
+    if rule_id == "critical-identifier-truncate":
+        return "Remove 'truncate' and fixed 'max-w-[...]' to ensure full visibility of critical identifiers"
     return ""
 
 # Supported file extensions for frontend source code
@@ -286,13 +286,13 @@ def scan_file(file_path: str) -> List[Dict]:
                     "snippet": full_tag.strip().splitlines()[0]
                 })
 
-    # 4. High-Density B2B Cockpit Specialized Checks
-    is_cockpit_context = bool(
-        re.search(r"\b(?:telemetry|dashboard|cockpit|console|monitor|node)\b", raw_content, re.I) or
-        re.search(r"telemetry|dashboard|cockpit|node", file_path, re.I)
+    # 4. High-Density Views Specialized Checks
+    is_high_density_context = bool(
+        re.search(r"\b(?:telemetry|dashboard|cockpit|console|monitor|node|admin|table|metric|metrics)\b", raw_content, re.I) or
+        re.search(r"telemetry|dashboard|cockpit|node|admin|table|metric", file_path, re.I)
     )
 
-    if is_cockpit_context:
+    if is_high_density_context:
         # Check max-width constraint wrapper
         for line_num, line in enumerate(clean_lines, start=1):
             if is_line_ignored(line):
@@ -301,20 +301,20 @@ def scan_file(file_path: str) -> List[Dict]:
                 violations.append({
                     "file": file_path,
                     "line": line_num,
-                    "rule_id": "b2b-max-width-wrapper",
+                    "rule_id": "high-density-max-width-constraint",
                     "severity": "ERROR",
-                    "message": "Restricted max-width wrapper (max-w-7xl/6xl/etc.) detected in B2B cockpit. Enforce w-full to prevent lateral whitespace abandonment.",
-                    "suggestion": get_rule_suggestion("b2b-max-width-wrapper"),
+                    "message": "Restricted max-width wrapper (max-w-7xl/6xl/etc.) detected in high-density view. Enforce w-full to prevent lateral whitespace abandonment.",
+                    "suggestion": get_rule_suggestion("high-density-max-width-constraint"),
                     "snippet": line.strip()
                 })
 
         # Check numeric table headers and cells using text-left
         NUMERIC_HEADER_KEYWORDS = re.compile(
-            r"(?:CPU|메모리|Memory|부하|점유|로드|Load|스왑|Swap|디스크|Disk|네트워크|Network|IOPS|Throughput|대역폭|가동\s*시간|Uptime|Latency|QPS|RPS|%)",
+            r"(?:CPU|메모리|Memory|부하|점유|로드|Load|스왑|Swap|디스크|Disk|네트워크|Network|IOPS|Throughput|대역폭|가동\s*시간|Uptime|Latency|QPS|RPS|가격|금액|수량|잔액|매출|비율|Percent|Price|Amount|Count|Balance|Revenue|Ratio|Cost|Total|%)",
             re.I
         )
         NUMERIC_CELL_KEYWORDS = re.compile(
-            r"(?:usagePercent|loadAvg|iops|Throughput|swapMargin|cores|uptimePercent|\b\d+(?:\.\d+)?%\b)",
+            r"(?:usagePercent|loadAvg|iops|Throughput|swapMargin|cores|uptimePercent|amount|price|count|balance|revenue|cost|total|\b\d+(?:\.\d+)?%\b)",
             re.I
         )
 
@@ -354,34 +354,34 @@ def scan_file(file_path: str) -> List[Dict]:
                         "snippet": full_match
                     })
 
-        # Check anemic slender gauges (h-0.5 or h-1) in cockpit (w-full progress bar contexts)
+        # Check anemic slender indicators (h-0.5 or h-1) (w-full progress bar contexts)
         for line_num, line in enumerate(clean_lines, start=1):
             if is_line_ignored(line):
                 continue
-            if re.search(r"\bw-full\b", line) and re.search(r"\b(?:h-0\.5|h-1)(?![.\d])\b", line) and re.search(r"rounded|bg-|bar|gauge|overflow-hidden", line):
+            if re.search(r"\bw-full\b", line) and re.search(r"\b(?:h-0\.5|h-1)(?![.\d])\b", line) and re.search(r"rounded|bg-|bar|gauge|indicator|progress|overflow-hidden", line):
                 violations.append({
                     "file": file_path,
                     "line": line_num,
-                    "rule_id": "gauge-too-slender",
+                    "rule_id": "indicator-too-slender",
                     "severity": "ERROR",
-                    "message": "Anemic slender gauge bar (h-0.5 or h-1) detected in cockpit. Enforce minimum h-1.5 (6px) for preattentive alert visibility.",
-                    "suggestion": get_rule_suggestion("gauge-too-slender"),
+                    "message": "Anemic slender indicator bar (h-0.5 or h-1) detected in high-density view. Enforce minimum h-1.5 (6px) for preattentive alert visibility.",
+                    "suggestion": get_rule_suggestion("indicator-too-slender"),
                     "snippet": line.strip()
                 })
 
-        # Check illegal truncation on mission-critical infrastructure metadata (region, zone, AZ)
-        TRUNCATE_TARGET_KEYWORDS = re.compile(r"(?:region|zone|DC|DR|ap-northeast|가용영역)", re.I)
+        # Check illegal truncation on critical domain identifiers (id, code, sku, host, node, zone, account)
+        CRITICAL_IDENTIFIER_KEYWORDS = re.compile(r"(?:id|code|sku|uuid|account|tx|order|host|node|region|zone|address|ip|식별자|계좌|주문|호스트)", re.I)
         for line_num, line in enumerate(clean_lines, start=1):
             if is_line_ignored(line):
                 continue
-            if re.search(r"\b(?:truncate|max-w-\[\d+px\])\b", line) and TRUNCATE_TARGET_KEYWORDS.search(line):
+            if re.search(r"\b(?:truncate|max-w-\[\d+px\])\b", line) and CRITICAL_IDENTIFIER_KEYWORDS.search(line):
                 violations.append({
                     "file": file_path,
                     "line": line_num,
-                    "rule_id": "b2b-illegal-truncate",
+                    "rule_id": "critical-identifier-truncate",
                     "severity": "ERROR",
-                    "message": "Truncation detected on mission-critical infrastructure metadata (region/zone/AZ). Enforce zero-truncation to prevent datacenter misidentification.",
-                    "suggestion": get_rule_suggestion("b2b-illegal-truncate"),
+                    "message": "Truncation detected on critical domain identifier. Enforce zero-truncation to prevent entity misidentification.",
+                    "suggestion": get_rule_suggestion("critical-identifier-truncate"),
                     "snippet": line.strip()
                 })
 

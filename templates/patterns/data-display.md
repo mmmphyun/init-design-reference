@@ -3,24 +3,24 @@
 
 Deterministic components for high-density tabular metrics, telemetry, and structured records without artificial AI ornamentation.
 
-## 1. High-Density Cockpit Architectural Rules
+## 1. High-Density Architectural Rules
 
-### Data Preservation & Zero-Truncation Mandate (정보 보존 및 말줄임표 금지)
-- **밀도(Density) != 미니멀리즘**: 고밀도는 정보를 비우거나 폰트를 극소화하는 것이 아니라, 단위 면적당 수용 가능한 텔레메트리 정보량을 온전히 극대화하는 것이다.
-- **인프라 식별자 Truncate 전면 금지**: `ap-northeast-2c (부산 DR)`와 같은 가용영역 및 데이터센터 위치는 재해복구(DR) 및 망 분리 장애 시 생명선이다. `truncate`나 `max-w`로 잘라 말줄임표(`...`)를 띄우고 마우스 호버(Tooltip)를 유도하는 행위를 엄격히 금지한다.
-- **정식 표준 단위 표기**: `(128C)`, `(462.8G/512G)` 식의 비표준 축약은 OOM 계산 혼선을 초래한다. 반드시 `128 코어`, `462.8 / 512 GiB` 표준 단위를 명시한다.
-- 24/7 관제 도구에서 Load average (1m/5m/15m), Swap margin, Rx/Tx split, 스파크라인 등 핵심 커널/인프라 텔레메트리 생략을 전면 금지한다.
+### Data Preservation & Zero-Truncation Mandate (핵심 정보 보존 및 말줄임표 금지)
+- **밀도(Density) != 미니멀리즘**: 고밀도는 정보를 비우거나 폰트를 극소화하는 것이 아니라, 단위 면적당 수용 가능한 유효 정보량을 온전히 극대화하는 것이다.
+- **핵심 도메인 식별자 Truncate 전면 금지**: 고유 ID, 계좌/주문/트랜잭션 식별자, 호스트/IP, 코드, 모델명 등 식별의 기준이 되는 핵심 텍스트에 `truncate`나 임의 고정폭을 적용하여 말줄임표(`...`)를 띄우고 마우스 호버(Tooltip)를 유도하는 행위를 엄격히 금지한다.
+- **정식 표준 단위 표기**: 비표준 축약은 수치 계산 및 판단 혼선을 초래한다. 정식 표준 단위(예: `GiB`, `ms`, `USD`, `EA` 등)를 명시한다.
+- 전문가용 뷰에서 판단에 필수적인 주요 보조 지표(분할 수치, 세부 상태값, 추세 인디케이터 등)의 임의 생략을 전면 금지한다.
 
-### Preattentive Alert Prominence (원거리 전주의적 시각 인지)
-- **게이지 바 두께 >= 6px (`h-1.5`)**: 1-2px 수준의 초슬림 라인은 심야 온콜이나 4K 월 모니터 관제 시 초점 밖 시야(Peripheral vision)에서 식별되지 않는다. 최소 6px 두께와 고대비 색상으로 0.1초 내 위험을 감지하게 만든다.
-- **Critical State Prominence**: 임계(Critical) 상태의 노드는 일반 행과 동일한 시각적 무게로 두지 않는다. 좌측 경보 보더(`border-l-4 border-status-error`) 또는 미세한 배경 틴트를 부여하여 첫 시선 스캔에서 1순위로 포착되도록 한다.
-- **장식용 반복 아이콘 제거**: 매 행마다 동일한 서버 랙 아이콘을 7회 이상 기계적으로 반복 렌더링하는 시각적 노이즈를 제거한다.
+### Preattentive Alert & Indicator Prominence (전주의적 시각 인지 및 상태 가시성)
+- **인디케이터 바 유효 두께 >= 6px (`h-1.5`)**: 1-2px 수준의 초슬림 라인은 주변 시야(Peripheral vision)에서 식별되지 않는다. 최소 6px 두께와 고대비 색상으로 즉시 상태와 진행률을 감지하게 만든다.
+- **Critical State Prominence**: 임계(Critical)·에러 상태의 항목은 일반 정상 행과 동일한 시각적 무게로 두지 않는다. 좌측 경보 보더(`border-l-4 border-status-error`) 또는 미세한 배경 틴트를 부여하여 첫 시선 스캔에서 1순위로 포착되도록 한다.
+- **장식용 반복 아이콘 제거**: 매 행마다 문맥 차이가 없는 동일한 아이콘을 기계적으로 반복 렌더링하는 시각적 노이즈를 제거한다.
 
 ### Layout & Sizing Rules
-- **`max-w-7xl` 인위적 폭 제한 금지**: B2B 관제 대시보드에서는 `max-w-7xl`, `max-w-6xl` 등의 래퍼를 전면 금지하고 `w-full` 전폭 확장을 적용한다. 1440px+ 뷰포트에서 좌우 160px+ 여백 방치를 차단한다.
-- **Zero Dead-Space Mandate**: 1440x900 단일 뷰포트 기준, 하단 100px 이상의 빈 공간(Dead Space)을 방치하지 않는다. 스크롤 0px을 유지하되 행 높이를 64~70px 수준으로 비례 확장하여 타이포그래피 가독성을 극대화한다.
+- **`max-w-7xl` 인위적 폭 제한 금지**: 고밀도 데이터 뷰에서는 `max-w-7xl`, `max-w-6xl` 등의 래퍼를 지양하고 `w-full` 전폭 확장을 적용한다. 1440px+ 뷰포트에서 불필요한 좌우 여백 방치를 차단한다.
+- **Zero Dead-Space Mandate**: 단일 고정 뷰포트 기준, 하단 100px 이상의 빈 공간(Dead Space)을 방치하지 않는다. 스크롤 0px을 유지하되 행 높이나 여백을 비례 확장하여 타이포그래피 가독성을 극대화한다.
 - **수치 우측 정렬 (Numeric Right-Alignment)**: 모든 정량적 수치 데이터(헤더 `<th>`, 셀 `<td>`, 게이지 수치)는 자릿수 비교 가독성을 위해 반드시 `text-right` 및 `justify-end`를 적용한다.
-- **심각도 우선 정렬 (Severity-First Ordering)**: 장애 인지 시간(MTTD) 최소화를 위해 인프라 노드는 상태 심각도순(`CRITICAL` -> `WARNING` -> `NORMAL` -> `OFFLINE`/`MAINTENANCE`)을 기본 정렬 기준으로 적용한다.
+- **심각도/우선순위 우선 정렬 (Severity/Priority-First Ordering)**: 인지 시간 최소화를 위해 모니터링/목록 엔티티는 상태 심각도나 우선순위(`CRITICAL` -> `WARNING` -> `NORMAL` 등)를 기본 정렬 기준으로 지원한다.
 
 ---
 

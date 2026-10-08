@@ -18,11 +18,11 @@ Complete this checklist prior to submitting or committing UI code changes.
   - [ ] Screen-reader accessible labels on icon-only buttons.
 - [ ] **Hobson 4-State Completeness**: Verified `Loading`, `Empty`, `Error`, and `Populated` states on all dynamic components.
 - [ ] **Performance & Motion**: Hardware-accelerated transitions only (`transform`, `opacity`), micro-interaction duration <= 350ms.
-- [ ] **Telemetry Integrity (High-Density / B2B)**:
-  - [ ] Zero truncation on infrastructure identities (AZ, Region, IP, Role fully visible).
-  - [ ] Progress/Gauge bar height >= 6px (`h-1.5`) with high-contrast alert states.
-  - [ ] Standard units enforced (`GiB`, `cores`, `IOPS`, `Mbps`), no informal abbreviations.
-  - [ ] No dead space > 100px on 1440x900 viewport; rows vertically balanced.
+- [ ] **Critical Data Integrity & Functional Visibility (High-Density / Enterprise)**:
+  - [ ] Zero truncation on critical domain identities (ID, Code, Key, Host/IP, Account fully visible).
+  - [ ] Functional indicator/gauge bar height >= 6px (`h-1.5`) with high-contrast alert states.
+  - [ ] Standard units enforced (e.g., `GiB`, `cores`, `ms`, `USD`, `Mbps`), no informal abbreviations.
+  - [ ] Adaptive vertical budget: no dead space > 100px on fixed viewports; rows vertically balanced.
   - [ ] Critical state rows have elevated prominence (left border indicator or tint).
   - [ ] Production view isolated from development state-simulation controls.
 
@@ -39,7 +39,7 @@ Evaluate headless Playwright captures against these 5 pillars during Gate 4 veri
 | **3. Surface & Noise** | Card nesting and border cage density | Surfaces differentiated by tonal step (`bg-surface` vs `bg-background`), not 4 nested border boxes | "Card inside card inside card"; strip inner borders, use tonal contrast |
 | **4. Affordance & Contrast** | Primary vs Secondary action hierarchy | Exactly ONE primary prominent button per view; secondary actions use quiet surfaces | Competing colored buttons; convert secondary buttons to `variant="secondary"` |
 | **5. AI Cliché Residuals** | Unintentional generative AI artifacts | Zero purple gradients, no floating ambient blobs, no unnecessary trailing arrows (`->`) | AI default slop; replace with solid tokens and crisp architectural lines |
-| **6. Telemetry Integrity (24/7)** | Preattentive alert prominence & Zero truncation | Gauge height >= 6px (`h-1.5`); zero `...` truncation on AZ/node/IP; standard units (`GiB`, `cores`) | Anemic 1-2px lines; truncated IDC/AZ (`부산 D...`); dead space > 100px |
+| **6. Critical Data & Indicator Integrity** | Preattentive alert prominence & Zero truncation | Indicator height >= 6px (`h-1.5`); zero `...` truncation on critical identifiers; standard units | Anemic 1-2px lines; truncated identifiers (`ORD-92...`); dead space > 100px |
 
 ---
 
