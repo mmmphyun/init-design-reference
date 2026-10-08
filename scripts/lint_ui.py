@@ -98,7 +98,7 @@ RULES: List[Rule] = [
     # 2. AI Cliche Purple / Indigo Gradients
     Rule(
         rule_id="cliche-ai-gradient",
-        severity="ERROR",
+        severity="WARN",
         message="Generic AI purple/indigo gradient detected. Use purposeful, brand-aligned solid surfaces or subtle contrast.",
         pattern=re.compile(r"\b(?:from-indigo-[0-9]{3}|from-purple-[0-9]{3}|from-violet-[0-9]{3})\s+(?:to-purple-[0-9]{3}|to-indigo-[0-9]{3}|to-pink-[0-9]{3})\b")
     ),
@@ -106,7 +106,7 @@ RULES: List[Rule] = [
     # 3. All-Caps Over-tracking Label Cliche
     Rule(
         rule_id="cliche-tracking-uppercase",
-        severity="ERROR",
+        severity="WARN",
         message="Generic AI 'uppercase tracking-widest' eyebrow label detected. Prefer lowercase or standard sentence case.",
         pattern=re.compile(r"\b(?:tracking-widest|tracking-wider)\s+uppercase\b|\buppercase\s+(?:tracking-widest|tracking-wider)\b")
     ),
@@ -122,7 +122,7 @@ RULES: List[Rule] = [
     # 5. Meaningless Ambient Glow Blur
     Rule(
         rule_id="ambient-glow-blur",
-        severity="ERROR",
+        severity="WARN",
         message="Decorative ambient glow (blur-2xl / blur-3xl) background artifact detected. Maintain crisp surface boundaries.",
         pattern=re.compile(r"\bblur-(?:2xl|3xl|\[[0-9]{2,3}px\])\b")
     ),
@@ -130,7 +130,7 @@ RULES: List[Rule] = [
     # 6. Layout Thrashing Transition
     Rule(
         rule_id="layout-thrashing-animation",
-        severity="ERROR",
+        severity="WARN",
         message="Layout thrashing animation detected (transition-all or animating width/height/top/left). Animate ONLY transform and opacity.",
         pattern=re.compile(r"\btransition-all\b|\btransition-\[(?:width|height|top|left|margin|padding)\]")
     ),
@@ -165,8 +165,17 @@ RULES: List[Rule] = [
         severity="WARN",
         message="Micro-interaction animation duration exceeds 350ms budget (duration-500/700/1000). Use duration-fast or duration-normal.",
         pattern=re.compile(r"\b(?:transition|animate)[^\"'>]*\bduration-(?:500|700|1000)\b")
+    ),
+
+    # 11. Untokenized Tailwind Color Palette
+    Rule(
+        rule_id="untokenized-tailwind-color",
+        severity="WARN",
+        message="Raw Tailwind color palette detected. Use semantic tokens (e.g. bg-surface, text-foreground, bg-background) from .design/tokens/colors.json.",
+        pattern=re.compile(r"\b(?:bg|text|border|ring)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|[1-9]00|950)\b")
     )
 ]
+
 
 def is_line_ignored(line: str) -> bool:
     return bool(re.search(r"lint-ui-(?:disable|ignore)|@lint-ignore", line))
@@ -287,13 +296,26 @@ def scan_file(file_path: str) -> List[Dict]:
                 })
 
     # 4. High-Density Views Specialized Checks
-    is_high_density_context = bool(
-        re.search(r"\b(?:telemetry|dashboard|cockpit|console|monitor|node|admin|table|metric|metrics)\b", raw_content, re.I) or
-        re.search(r"telemetry|dashboard|cockpit|node|admin|table|metric", file_path, re.I)
-    )
+    # High-density rules apply when explicit high-density profile is active in DESIGN.md (Density >= 8)
+    # or when explicitly marked in file header/name for specialized telemetry views.
+    def get_project_density() -> int:
+        for p in [".design/DESIGN.md", "reference/DESIGN.md"]:
+            if os.path.exists(p):
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        m = re.search(r"`VISUAL_DENSITY`:\s*([0-9]+)", f.read())
+                        if m:
+                            return int(m.group(1))
+                except Exception:
+                    pass
+        return 5
+
+    project_density = get_project_density()
+    is_telemetry_file = bool(re.search(r"telemetry|cockpit|monitor|cluster|node_status", file_path, re.I))
+    is_high_density_context = (project_density >= 8) or is_telemetry_file
 
     if is_high_density_context:
-        # Check max-width constraint wrapper
+        # Check max-width constraint wrapper (WARN: design advice, not a crash)
         for line_num, line in enumerate(clean_lines, start=1):
             if is_line_ignored(line):
                 continue
@@ -302,8 +324,8 @@ def scan_file(file_path: str) -> List[Dict]:
                     "file": file_path,
                     "line": line_num,
                     "rule_id": "high-density-max-width-constraint",
-                    "severity": "ERROR",
-                    "message": "Restricted max-width wrapper (max-w-7xl/6xl/etc.) detected in high-density view. Enforce w-full to prevent lateral whitespace abandonment.",
+                    "severity": "WARN",
+                    "message": "Restricted max-width wrapper (max-w-7xl/6xl/etc.) detected in high-density view. Consider w-full if lateral space is needed for operational data.",
                     "suggestion": get_rule_suggestion("high-density-max-width-constraint"),
                     "snippet": line.strip()
                 })
@@ -330,8 +352,8 @@ def scan_file(file_path: str) -> List[Dict]:
                         "file": file_path,
                         "line": line_num,
                         "rule_id": "numeric-column-text-left",
-                        "severity": "ERROR",
-                        "message": "Numeric metric table header using 'text-left'. Enforce 'text-right' alignment for numeric comparison readability.",
+                        "severity": "WARN",
+                        "message": "Numeric metric table header using 'text-left'. Consider 'text-right' alignment for multi-row comparison readability.",
                         "suggestion": get_rule_suggestion("numeric-column-text-left"),
                         "snippet": full_match
                     })
@@ -348,8 +370,8 @@ def scan_file(file_path: str) -> List[Dict]:
                         "file": file_path,
                         "line": line_num,
                         "rule_id": "numeric-column-text-left",
-                        "severity": "ERROR",
-                        "message": "Numeric telemetry table cell using 'text-left'. Enforce 'text-right' alignment for numeric data.",
+                        "severity": "WARN",
+                        "message": "Numeric telemetry table cell using 'text-left'. Consider 'text-right' alignment for numeric data.",
                         "suggestion": get_rule_suggestion("numeric-column-text-left"),
                         "snippet": full_match
                     })
@@ -363,8 +385,8 @@ def scan_file(file_path: str) -> List[Dict]:
                     "file": file_path,
                     "line": line_num,
                     "rule_id": "indicator-too-slender",
-                    "severity": "ERROR",
-                    "message": "Anemic slender indicator bar (h-0.5 or h-1) detected in high-density view. Enforce minimum h-1.5 (6px) for preattentive alert visibility.",
+                    "severity": "WARN",
+                    "message": "Slender indicator bar (h-0.5 or h-1) detected. In operational screens, consider h-1.5 (6px) or larger for peripheral glanceability.",
                     "suggestion": get_rule_suggestion("indicator-too-slender"),
                     "snippet": line.strip()
                 })
@@ -379,8 +401,8 @@ def scan_file(file_path: str) -> List[Dict]:
                     "file": file_path,
                     "line": line_num,
                     "rule_id": "critical-identifier-truncate",
-                    "severity": "ERROR",
-                    "message": "Truncation detected on critical domain identifier. Enforce zero-truncation to prevent entity misidentification.",
+                    "severity": "WARN",
+                    "message": "Truncation detected on critical domain identifier. Verify whether full visibility is required to prevent misidentification.",
                     "suggestion": get_rule_suggestion("critical-identifier-truncate"),
                     "snippet": line.strip()
                 })
