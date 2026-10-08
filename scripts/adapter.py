@@ -122,95 +122,112 @@ def safe_write(dst_file, content, force=False):
     print(f"Created: {dst_file}")
     return True
 
-def apply_preset(target_dir, preset_name):
+def apply_preset(target_dir, preset_name, dials_override=None, force=False):
     if preset_name not in PRESETS:
-        print(f"Warning: Unknown preset '{preset_name}'. Defaulting to 'default'.")
+        print(f"Notice: Preset '{preset_name}' not in predefined templates. Falling back to baseline 'default' with custom tuning.")
         preset_name = "default"
 
     config = PRESETS[preset_name]
+    variance = config.get("variance", 5)
+    density = config.get("density", 5)
+    motion = config.get("motion", 5)
+
+    if dials_override:
+        try:
+            parts = [int(p.strip()) for p in dials_override.split(",")]
+            if len(parts) == 3:
+                variance, density, motion = parts[0], parts[1], parts[2]
+                print(f"Overriding dials with custom values: Variance={variance}, Density={density}, Motion={motion}")
+        except Exception as e:
+            print(f"Notice: Failed to parse --dials '{dials_override}', using preset values ({e})")
+
     design_md_path = os.path.join(target_dir, "DESIGN.md")
     colors_json_path = os.path.join(target_dir, "tokens", "colors.json")
     typography_json_path = os.path.join(target_dir, "tokens", "typography.json")
 
     # 1. Update DESIGN.md Dials
     if os.path.exists(design_md_path):
-        try:
-            with open(design_md_path, "r", encoding="utf-8") as f:
-                content = f.read()
+        if not force and not dials_override:
+            print(f"Preserved existing dials in {design_md_path} (use --dials or -f/--force to override).")
+        else:
+            try:
+                with open(design_md_path, "r", encoding="utf-8") as f:
+                    content = f.read()
 
-            content = re.sub(r"`DESIGN_VARIANCE`:\s*[0-9]+", f"`DESIGN_VARIANCE`: {config['variance']}", content)
-            content = re.sub(r"`VISUAL_DENSITY`:\s*[0-9]+", f"`VISUAL_DENSITY`: {config['density']}", content)
-            content = re.sub(r"`MOTION_INTENSITY`:\s*[0-9]+", f"`MOTION_INTENSITY`: {config['motion']}", content)
+                content = re.sub(r"`DESIGN_VARIANCE`:\s*[0-9]+", f"`DESIGN_VARIANCE`: {variance}", content)
+                content = re.sub(r"`VISUAL_DENSITY`:\s*[0-9]+", f"`VISUAL_DENSITY`: {density}", content)
+                content = re.sub(r"`MOTION_INTENSITY`:\s*[0-9]+", f"`MOTION_INTENSITY`: {motion}", content)
 
-            with open(design_md_path, "w", encoding="utf-8") as f:
-                f.write(content)
-            print(f"Applied preset '{preset_name}' (Variance={config['variance']}, Density={config['density']}, Motion={config['motion']}) to DESIGN.md")
-        except Exception as e:
-            print(f"Notice: Failed to update DESIGN.md with preset ({e})")
+                with open(design_md_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                print(f"Applied dials (Variance={variance}, Density={density}, Motion={motion}) to DESIGN.md")
+            except Exception as e:
+                print(f"Notice: Failed to update DESIGN.md with preset ({e})")
 
-    # 2. Inject Curated Domain Palette into colors.json
+
+    # 2. Inject Curated Domain Palette into colors.json (Skip if already exists unless force=True)
     if "colors" in config:
-        try:
-            existing_colors = {}
-            if os.path.exists(colors_json_path):
-                with open(colors_json_path, "r", encoding="utf-8") as f:
-                    existing_colors = json.load(f)
+        colors_existed = os.path.exists(colors_json_path)
+        if colors_existed and not force:
+            print(f"Preserved existing colors in {colors_json_path} (use -f/--force to overwrite with preset palette).")
+        else:
+            try:
+                existing_colors = {}
+                if colors_existed:
+                    with open(colors_json_path, "r", encoding="utf-8") as f:
+                        existing_colors = json.load(f)
 
-            for group, vals in config["colors"].items():
-                if group not in existing_colors:
-                    existing_colors[group] = {}
-                existing_colors[group].update(vals)
+                for group, vals in config["colors"].items():
+                    if group not in existing_colors:
+                        existing_colors[group] = {}
+                    existing_colors[group].update(vals)
 
-            with open(colors_json_path, "w", encoding="utf-8") as f:
-                json.dump(existing_colors, f, indent=2, ensure_ascii=False)
-            print(f"Injected curated domain colors for '{preset_name}' into {colors_json_path}")
-        except Exception as e:
-            print(f"Notice: Failed to update colors.json with preset ({e})")
+                with open(colors_json_path, "w", encoding="utf-8") as f:
+                    json.dump(existing_colors, f, indent=2, ensure_ascii=False)
+                print(f"Injected curated domain colors for '{preset_name}' into {colors_json_path}")
+            except Exception as e:
+                print(f"Notice: Failed to update colors.json with preset ({e})")
 
-    # 3. Inject Curated Typography into typography.json
+    # 3. Inject Curated Typography into typography.json (Skip if already exists unless force=True)
     if "typography" in config and os.path.exists(typography_json_path):
-        try:
-            with open(typography_json_path, "r", encoding="utf-8") as f:
-                existing_typo = json.load(f)
-            if "imports" in config["typography"]:
-                existing_typo["imports"] = config["typography"]["imports"]
-            if "families" in config["typography"]:
-                existing_typo["families"].update(config["typography"]["families"])
-            with open(typography_json_path, "w", encoding="utf-8") as f:
-                json.dump(existing_typo, f, indent=2, ensure_ascii=False)
-            print(f"Injected curated typography for '{preset_name}' into {typography_json_path}")
-        except Exception as e:
-            print(f"Notice: Failed to update typography.json with preset ({e})")
+        if not force:
+            print(f"Preserved existing typography in {typography_json_path} (use -f/--force to overwrite with preset fonts).")
+        else:
+            try:
+                with open(typography_json_path, "r", encoding="utf-8") as f:
+                    existing_typo = json.load(f)
+                if "imports" in config["typography"]:
+                    existing_typo["imports"] = config["typography"]["imports"]
+                if "families" in config["typography"]:
+                    existing_typo["families"].update(config["typography"]["families"])
+                with open(typography_json_path, "w", encoding="utf-8") as f:
+                    json.dump(existing_typo, f, indent=2, ensure_ascii=False)
+                print(f"Injected curated typography for '{preset_name}' into {typography_json_path}")
+            except Exception as e:
+                print(f"Notice: Failed to update typography.json with preset ({e})")
 
 def generate_css_bridges(target_dir, style_engine, force=False):
     tokens_dir = os.path.join(target_dir, "tokens")
     colors_file = os.path.join(tokens_dir, "colors.json")
     shadows_file = os.path.join(tokens_dir, "shadows.json")
     typography_file = os.path.join(tokens_dir, "typography.json")
+    radii_file = os.path.join(tokens_dir, "radii.json")
+    motion_file = os.path.join(tokens_dir, "motion.json")
 
-    colors = {}
-    if os.path.exists(colors_file):
-        try:
-            with open(colors_file, "r", encoding="utf-8") as f:
-                colors = json.load(f)
-        except Exception:
-            pass
+    def load_json(path):
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return {}
 
-    shadows = {}
-    if os.path.exists(shadows_file):
-        try:
-            with open(shadows_file, "r", encoding="utf-8") as f:
-                shadows = json.load(f)
-        except Exception:
-            pass
-
-    typography = {}
-    if os.path.exists(typography_file):
-        try:
-            with open(typography_file, "r", encoding="utf-8") as f:
-                typography = json.load(f)
-        except Exception:
-            pass
+    colors = load_json(colors_file)
+    shadows = load_json(shadows_file)
+    typography = load_json(typography_file)
+    radii = load_json(radii_file)
+    motion = load_json(motion_file)
 
     bg_primary = colors.get("background", {}).get("primary", "#09090b")
     bg_surface = colors.get("background", {}).get("surface", "#18181b")
@@ -218,6 +235,11 @@ def generate_css_bridges(target_dir, style_engine, force=False):
     text_muted = colors.get("text", {}).get("muted", "#71717a")
     accent_primary = colors.get("accent", {}).get("primary", "#2563eb")
     border_default = colors.get("border", {}).get("default", "#27272a")
+
+    status_error = colors.get("status", {}).get("error", "#ef4444")
+    status_success = colors.get("status", {}).get("success", "#22c55e")
+    status_warning = colors.get("status", {}).get("warning", "#eab308")
+    status_info = colors.get("status", {}).get("info", "#3b82f6")
 
     font_imports = typography.get("imports", [])
     font_families = typography.get("families", {})
@@ -236,6 +258,15 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         f"  --muted: {text_muted};",
         f"  --accent: {accent_primary};",
         f"  --border: {border_default};",
+        f"  --border-border-default: {border_default};",
+        f"  --primary: {accent_primary};",
+        f"  --primary-foreground: #ffffff;",
+        f"  --danger: {status_error};",
+        f"  --danger-foreground: #ffffff;",
+        f"  --status-error: {status_error};",
+        f"  --status-success: {status_success};",
+        f"  --status-warning: {status_warning};",
+        f"  --status-info: {status_info};",
     ])
     for fam_key, fam_list in font_families.items():
         formatted_fam = ", ".join([f'"{f}"' if " " in f else f for f in fam_list])
@@ -243,6 +274,12 @@ def generate_css_bridges(target_dir, style_engine, force=False):
     for key, val in shadows.items():
         if key.startswith("elevation-"):
             tokens_css_lines.append(f"  --shadow-{key}: {val};")
+    for r_k, r_v in radii.items():
+        tokens_css_lines.append(f"  --radius-{r_k}: {r_v};")
+    for d_k, d_v in motion.get("duration", {}).items():
+        tokens_css_lines.append(f"  --duration-{d_k}: {d_v};")
+    for e_k, e_v in motion.get("easing", {}).items():
+        tokens_css_lines.append(f"  --ease-{e_k}: {e_v};")
     tokens_css_lines.append("}\n")
     safe_write(os.path.join(tokens_dir, "tokens.css"), "\n".join(tokens_css_lines), force=force)
 
@@ -261,6 +298,15 @@ def generate_css_bridges(target_dir, style_engine, force=False):
             "  --color-muted: var(--muted);",
             "  --color-accent: var(--accent);",
             "  --color-border: var(--border);",
+            "  --color-border-border-default: var(--border-border-default);",
+            "  --color-primary: var(--primary);",
+            "  --color-primary-foreground: var(--primary-foreground);",
+            "  --color-danger: var(--danger);",
+            "  --color-danger-foreground: var(--danger-foreground);",
+            "  --color-status-error: var(--status-error);",
+            "  --color-status-success: var(--status-success);",
+            "  --color-status-warning: var(--status-warning);",
+            "  --color-status-info: var(--status-info);",
         ])
         for fam_key, fam_list in font_families.items():
             formatted_fam = ", ".join([f'"{f}"' if " " in f else f for f in fam_list])
@@ -268,6 +314,12 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         for key in shadows:
             if key.startswith("elevation-"):
                 theme_css_lines.append(f"  --shadow-{key}: var(--shadow-{key});")
+        for r_k in radii:
+            theme_css_lines.append(f"  --radius-{r_k}: var(--radius-{r_k});")
+        for d_k in motion.get("duration", {}):
+            theme_css_lines.append(f"  --duration-{d_k}: var(--duration-{d_k});")
+        for e_k in motion.get("easing", {}):
+            theme_css_lines.append(f"  --ease-{e_k}: var(--ease-{e_k});")
         theme_css_lines.append("}\n")
         safe_write(os.path.join(tokens_dir, "theme.css"), "\n".join(theme_css_lines), force=force)
 
@@ -278,6 +330,15 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         )
         font_entries = ",\n".join(
             [f'        "{k}": ["var(--font-{k})"]' for k in font_families]
+        )
+        radii_entries = ",\n".join(
+            [f'        "{k}": "var(--radius-{k})"' for k in radii]
+        )
+        duration_entries = ",\n".join(
+            [f'        "{k}": "var(--duration-{k})"' for k in motion.get("duration", {})]
+        )
+        easing_entries = ",\n".join(
+            [f'        "{k}": "var(--ease-{k})"' for k in motion.get("easing", {})]
         )
         preset_content = f"""/** Tailwind v3 preset bridge */
 module.exports = {{
@@ -293,6 +354,24 @@ module.exports = {{
         muted: "var(--muted)",
         accent: "var(--accent)",
         border: "var(--border)",
+        "border-default": "var(--border-border-default)",
+        primary: "var(--primary)",
+        "primary-foreground": "var(--primary-foreground)",
+        danger: "var(--danger)",
+        "danger-foreground": "var(--danger-foreground)",
+        "status-error": "var(--status-error)",
+        "status-success": "var(--status-success)",
+        "status-warning": "var(--status-warning)",
+        "status-info": "var(--status-info)",
+      }},
+      borderRadius: {{
+{radii_entries}
+      }},
+      transitionDuration: {{
+{duration_entries}
+      }},
+      transitionTimingFunction: {{
+{easing_entries}
       }},
       boxShadow: {{
 {shadow_entries}
@@ -302,6 +381,7 @@ module.exports = {{
 }};
 """
         safe_write(os.path.join(tokens_dir, "tailwind.preset.js"), preset_content, force=force)
+
 
 def resolve_design_target(custom_target=None):
     if custom_target:
@@ -332,6 +412,12 @@ def verify_design_spec(target_dir=None):
         print(f"[HARD-GUARD FAIL] {design_md} is missing one of DESIGN_VARIANCE, VISUAL_DENSITY, MOTION_INTENSITY.", file=sys.stderr)
         return False
 
+    v_val, d_val, m_val = int(variance.group(1)), int(density.group(1)), int(motion.group(1))
+    for name, val in [("DESIGN_VARIANCE", v_val), ("VISUAL_DENSITY", d_val), ("MOTION_INTENSITY", m_val)]:
+        if not (1 <= val <= 10):
+            print(f"[HARD-GUARD FAIL] {name} value {val} out of bounds. Must be an integer between 1 and 10.", file=sys.stderr)
+            return False
+
     if not os.path.exists(colors_json):
         print(f"[HARD-GUARD FAIL] {colors_json} does not exist.", file=sys.stderr)
         return False
@@ -340,18 +426,23 @@ def verify_design_spec(target_dir=None):
         with open(colors_json, "r", encoding="utf-8") as f:
             colors = json.load(f)
         required = [("background", "surface"), ("background", "primary"), ("accent", "primary"), ("border", "default")]
+        hex_pattern = re.compile(r"^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
         for sec, key in required:
-            if not colors.get(sec, {}).get(key):
+            val = colors.get(sec, {}).get(key)
+            if not val:
                 print(f"[HARD-GUARD FAIL] {colors_json} missing required token '{sec}.{key}'.", file=sys.stderr)
+                return False
+            if not hex_pattern.match(str(val)):
+                print(f"[HARD-GUARD FAIL] Token '{sec}.{key}' has invalid hex value '{val}'.", file=sys.stderr)
                 return False
     except Exception as e:
         print(f"[HARD-GUARD FAIL] Failed to parse {colors_json}: {e}", file=sys.stderr)
         return False
 
-    print(f"[HARD-GUARD PASS] Design specification and tokens in '{resolved}' are valid (Variance={variance.group(1)}, Density={density.group(1)}, Motion={motion.group(1)}).")
+    print(f"[HARD-GUARD PASS] Design specification and tokens in '{resolved}' are valid (Variance={v_val}, Density={d_val}, Motion={m_val}).")
     return True
 
-def scaffold_reference(target_dir=None, force=False, preset="default"):
+def scaffold_reference(target_dir=None, force=False, preset="default", dials_override=None):
     target_dir = resolve_design_target(target_dir)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     templates_dir = os.path.join(os.path.dirname(script_dir), "templates")
@@ -385,7 +476,7 @@ def scaffold_reference(target_dir=None, force=False, preset="default"):
         safe_copy(design_src, os.path.join(target_dir, "DESIGN.md"), force=force)
 
     # Apply selected Taste preset
-    apply_preset(target_dir, preset)
+    apply_preset(target_dir, preset, dials_override=dials_override, force=force)
 
     # Update .gitignore
     update_gitignore(target_dir)
@@ -413,11 +504,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scaffold production-grade UI design reference and pattern architecture")
     parser.add_argument("target", nargs="?", default=None, help="Target directory (default: .design or reference fallback)")
     parser.add_argument("-f", "--force", action="store_true", help="Force overwrite existing template files")
-    parser.add_argument("-p", "--preset", choices=list(PRESETS.keys()), default="default", help="Design taste preset")
+    parser.add_argument("-p", "--preset", default="default", help="Design taste preset (apple-fluid, b2b-dense, editorial-minimal, technical-mono, etc.)")
+    parser.add_argument("--dials", default=None, help="Custom dial override in format: 'variance,density,motion' (e.g. '7,4,8')")
     parser.add_argument("--verify-spec", action="store_true", help="Verify integrity of design specification and tokens (Hard-Guard)")
+    parser.add_argument("--bridge-only", action="store_true", help="Regenerate CSS and Tailwind bridges only from tokens")
     args = parser.parse_args()
 
     if args.verify_spec:
         sys.exit(0 if verify_design_spec(args.target) else 1)
 
-    scaffold_reference(args.target, force=args.force, preset=args.preset)
+    if args.bridge_only:
+        target = resolve_design_target(args.target)
+        project_base = os.path.dirname(os.path.abspath(target))
+        ctx = detect_project_context(base_dir=project_base)
+        generate_css_bridges(target, ctx["style_engine"], force=True)
+        print(f"Regenerated CSS bridges for '{target}'.")
+        sys.exit(0)
+
+    scaffold_reference(args.target, force=args.force, preset=args.preset, dials_override=args.dials)
+
