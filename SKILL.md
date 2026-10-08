@@ -48,7 +48,7 @@ python "$HOME/.gemini/config/skills/init-design-reference/scripts/adapter.py" --
 
 ### Available Presets (`--preset`)
 - `default`: Balanced modern SaaS baseline (Variance 5, Density 7, Motion 4)
-- `b2b-dense`: High-density data cockpit & telemetry (Variance 3, Density 9, Motion 2)
+- `b2b-dense`: High-density data cockpit & telemetry (Variance 3, Density 9, Motion 2) — **Data Preservation Mandate**: "정보 생략 금지 + 단위 면적당 텔레메트리 수용 극대화", Load avg, Swap margin, Rx/Tx split 필수 수납, `max-w-7xl` 금지 및 `w-full` 전폭 확장, 수치 우측 정렬(`text-right`), 심각도 우선(Severity-first) 정렬
 - `editorial-minimal`: Airy asymmetric showcase & landing (Variance 8, Density 3, Motion 5)
 - `technical-mono`: Terminal/developer tool aesthetic (Variance 4, Density 8, Motion 1)
 - `apple-fluid`: Tactile spring physics & fluid gestures (Variance 6, Density 5, Motion 9)
@@ -119,11 +119,13 @@ Upon Gate 0 approval, execute Gates 1 through 4 continuously without asking inte
 #### Gate 1: `/craft` (Semantic Skeleton)
 - Construct semantic DOM hierarchy (`<header>`, `<main>`, `<aside>`, `<table>`, `<article>`).
 - Apply **zero styling or decorative colors**. Focus exclusively on structural hierarchy, responsive flex/grid layouts, and Radix/ARIA accessibility roles (`role="table"`, `aria-expanded`).
+- **High-Density Cockpit Rule (Density >= 8)**: B2B 관제 대시보드에서는 `max-w-7xl` 등 인위적 래퍼 폭 제한을 전면 금지하고 `w-full` 전폭을 사용한다. 1440x900 단일 뷰포트 기준 스크롤 0px 수납을 기본으로 삼되, 데이터 생략 대신 1개 셀 내 복합 수납(Primary + Slim Gauge + Secondary) 구조를 설계한다.
 
 #### Gate 2: `/bind` (Token & Surface Binding)
 - Bind styles exclusively using semantic CSS tokens (`bg-surface`, `text-foreground`, `border-border-default`, `shadow-elevation-1` to `shadow-elevation-4`).
 - **Surface Hierarchy Mandate**: Enforce Level 0 Canvas (`bg-background`) vs Level 1 Surface (`bg-surface`) contrast. Embedded panels and cards must sit on Level 1.
 - **Font & CSS Bridge Rule**: Ensure `@import "../.design/tokens/theme.css";` is placed at Line 1 of the global CSS before any other CSS rules to prevent W3C `@import` dropping. Monospace font stacks must include Korean glyph fallbacks (`Pretendard`, `D2Coding`) to prevent Windows OS GulimChe fallback.
+- **Data Preservation Mandate**: 텔레메트리 화면에서 Load average, Swap margin, Rx/Tx split, 스파크라인 등 24/7 관제 핵심 지표를 절제/미니멀리즘을 이유로 누락하는 것을 엄격히 금지한다. 모든 수치 데이터는 우측 정렬(`text-right`)을 적용하고 상태는 심각도 우선(Severity-first)으로 바인딩한다.
 - **Strict Rule**: Zero hardcoded hex colors (`#6366f1`), arbitrary padding (`p-[18px]`), or generic Tailwind colors (`bg-slate-900`).
 
 #### Gate 3: `/critique` (Deterministic Lint & Self-Healing Loop)

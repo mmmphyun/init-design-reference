@@ -60,6 +60,10 @@ def get_rule_suggestion(rule_id: str) -> str:
         return "Use purposeful solid surface (bg-surface) or subtle single-axis contrast"
     if rule_id == "cliche-tracking-uppercase":
         return "Use standard sentence case or normal tracking (tracking-normal)"
+    if rule_id == "b2b-max-width-wrapper":
+        return "Replace with 'w-full' to prevent lateral whitespace abandonment in B2B cockpit"
+    if rule_id == "numeric-column-text-left":
+        return "Change 'text-left' to 'text-right' (and justify-end) for numeric telemetry metrics"
     return ""
 
 # Supported file extensions for frontend source code
@@ -277,6 +281,74 @@ def scan_file(file_path: str) -> List[Dict]:
                     "suggestion": "Add alt=\"...\" description or alt=\"\" for decorative images",
                     "snippet": full_tag.strip().splitlines()[0]
                 })
+
+    # 4. High-Density B2B Cockpit Specialized Checks
+    is_cockpit_context = bool(
+        re.search(r"\b(?:telemetry|dashboard|cockpit|console|monitor|node)\b", raw_content, re.I) or
+        re.search(r"telemetry|dashboard|cockpit|node", file_path, re.I)
+    )
+
+    if is_cockpit_context:
+        # Check max-width constraint wrapper
+        for line_num, line in enumerate(clean_lines, start=1):
+            if is_line_ignored(line):
+                continue
+            if re.search(r"\bmax-w-(?:[5-7]xl|screen-(?:xl|2xl))\b", line):
+                violations.append({
+                    "file": file_path,
+                    "line": line_num,
+                    "rule_id": "b2b-max-width-wrapper",
+                    "severity": "ERROR",
+                    "message": "Restricted max-width wrapper (max-w-7xl/6xl/etc.) detected in B2B cockpit. Enforce w-full to prevent lateral whitespace abandonment.",
+                    "suggestion": get_rule_suggestion("b2b-max-width-wrapper"),
+                    "snippet": line.strip()
+                })
+
+        # Check numeric table headers and cells using text-left
+        NUMERIC_HEADER_KEYWORDS = re.compile(
+            r"(?:CPU|메모리|Memory|부하|점유|로드|Load|스왑|Swap|디스크|Disk|네트워크|Network|IOPS|Throughput|대역폭|가동\s*시간|Uptime|Latency|QPS|RPS|%)",
+            re.I
+        )
+        NUMERIC_CELL_KEYWORDS = re.compile(
+            r"(?:usagePercent|loadAvg|iops|Throughput|swapMargin|cores|uptimePercent|\b\d+(?:\.\d+)?%\b)",
+            re.I
+        )
+
+        for m in re.finditer(r"<th\b([^>]*)>([\s\S]*?)</th>", clean_content, re.IGNORECASE):
+            th_attrs = m.group(1)
+            th_content = m.group(2)
+            if re.search(r"\btext-left\b", th_attrs) and NUMERIC_HEADER_KEYWORDS.search(th_content):
+                start_pos = m.start()
+                line_num = clean_content[:start_pos].count("\n") + 1
+                full_match = m.group(0).strip().splitlines()[0]
+                if not is_line_ignored(full_match):
+                    violations.append({
+                        "file": file_path,
+                        "line": line_num,
+                        "rule_id": "numeric-column-text-left",
+                        "severity": "ERROR",
+                        "message": "Numeric metric table header using 'text-left'. Enforce 'text-right' alignment for numeric comparison readability.",
+                        "suggestion": get_rule_suggestion("numeric-column-text-left"),
+                        "snippet": full_match
+                    })
+
+        for m in re.finditer(r"<td\b([^>]*)>([\s\S]*?)</td>", clean_content, re.IGNORECASE):
+            td_attrs = m.group(1)
+            td_content = m.group(2)
+            if re.search(r"\btext-left\b", td_attrs) and NUMERIC_CELL_KEYWORDS.search(td_content):
+                start_pos = m.start()
+                line_num = clean_content[:start_pos].count("\n") + 1
+                full_match = m.group(0).strip().splitlines()[0]
+                if not is_line_ignored(full_match):
+                    violations.append({
+                        "file": file_path,
+                        "line": line_num,
+                        "rule_id": "numeric-column-text-left",
+                        "severity": "ERROR",
+                        "message": "Numeric telemetry table cell using 'text-left'. Enforce 'text-right' alignment for numeric data.",
+                        "suggestion": get_rule_suggestion("numeric-column-text-left"),
+                        "snippet": full_match
+                    })
 
     # 4. Line-by-line regex rule scanning on uncommented code
     for line_num, line in enumerate(clean_lines, start=1):
