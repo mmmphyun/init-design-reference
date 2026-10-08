@@ -202,13 +202,15 @@ def check_linter_behavior():
             log("Linter failed to catch intentional hardcoded hex / cliché!", "FAIL")
             return False
 
-        # Create a bad telemetry cockpit file testing b2b-max-width-wrapper and numeric-column-text-left
+        # Create a bad telemetry cockpit file testing b2b-max-width-wrapper, numeric-column-text-left, gauge-too-slender, b2b-illegal-truncate
         bad_telemetry = os.path.join(temp_dir, "bad_telemetry.tsx")
         with open(bad_telemetry, "w", encoding="utf-8") as f:
             f.write(
                 'export function BadDashboard() {\n'
                 '  return (\n'
                 '    <div className="max-w-7xl mx-auto">\n'
+                '      <div className="truncate text-xs">ap-northeast-2c (부산 DR)</div>\n'
+                '      <div className="w-full bg-background rounded-full h-1 overflow-hidden" />\n'
                 '      <table>\n'
                 '        <thead>\n'
                 '          <tr>\n'
@@ -236,6 +238,12 @@ def check_linter_behavior():
         if "numeric-column-text-left" not in res_bad_telem.stdout:
             log("Linter failed to catch numeric-column-text-left in table header/cell!", "FAIL")
             return False
+        if "gauge-too-slender" not in res_bad_telem.stdout:
+            log("Linter failed to catch gauge-too-slender in cockpit file!", "FAIL")
+            return False
+        if "b2b-illegal-truncate" not in res_bad_telem.stdout:
+            log("Linter failed to catch b2b-illegal-truncate on AZ in cockpit file!", "FAIL")
+            return False
 
         # Run linter on good file (must pass with exit code 0)
         res_good = subprocess.run([sys.executable, linter_path, good_file], capture_output=True, text=True)
@@ -243,7 +251,7 @@ def check_linter_behavior():
             log(f"Linter falsely flagged clean file:\n{res_good.stdout}", "FAIL")
             return False
 
-        log("Linter correctly caught anti-patterns (including B2B max-w & numeric text-left) and passed clean code.", "PASS")
+        log("Linter correctly caught anti-patterns (B2B max-w, numeric text-left, slender gauge, illegal truncate) and passed clean code.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

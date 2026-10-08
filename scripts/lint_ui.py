@@ -64,6 +64,10 @@ def get_rule_suggestion(rule_id: str) -> str:
         return "Replace with 'w-full' to prevent lateral whitespace abandonment in B2B cockpit"
     if rule_id == "numeric-column-text-left":
         return "Change 'text-left' to 'text-right' (and justify-end) for numeric telemetry metrics"
+    if rule_id == "gauge-too-slender":
+        return "Use 'h-1.5' (6px) or larger for preattentive alert visibility in 24/7 cockpits"
+    if rule_id == "b2b-illegal-truncate":
+        return "Remove 'truncate' and fixed 'max-w-[...]' to ensure 100% full visibility of infrastructure identities"
     return ""
 
 # Supported file extensions for frontend source code
@@ -349,6 +353,37 @@ def scan_file(file_path: str) -> List[Dict]:
                         "suggestion": get_rule_suggestion("numeric-column-text-left"),
                         "snippet": full_match
                     })
+
+        # Check anemic slender gauges (h-0.5 or h-1) in cockpit (w-full progress bar contexts)
+        for line_num, line in enumerate(clean_lines, start=1):
+            if is_line_ignored(line):
+                continue
+            if re.search(r"\bw-full\b", line) and re.search(r"\b(?:h-0\.5|h-1)(?![.\d])\b", line) and re.search(r"rounded|bg-|bar|gauge|overflow-hidden", line):
+                violations.append({
+                    "file": file_path,
+                    "line": line_num,
+                    "rule_id": "gauge-too-slender",
+                    "severity": "ERROR",
+                    "message": "Anemic slender gauge bar (h-0.5 or h-1) detected in cockpit. Enforce minimum h-1.5 (6px) for preattentive alert visibility.",
+                    "suggestion": get_rule_suggestion("gauge-too-slender"),
+                    "snippet": line.strip()
+                })
+
+        # Check illegal truncation on mission-critical infrastructure metadata (region, zone, AZ)
+        TRUNCATE_TARGET_KEYWORDS = re.compile(r"(?:region|zone|DC|DR|ap-northeast|가용영역)", re.I)
+        for line_num, line in enumerate(clean_lines, start=1):
+            if is_line_ignored(line):
+                continue
+            if re.search(r"\b(?:truncate|max-w-\[\d+px\])\b", line) and TRUNCATE_TARGET_KEYWORDS.search(line):
+                violations.append({
+                    "file": file_path,
+                    "line": line_num,
+                    "rule_id": "b2b-illegal-truncate",
+                    "severity": "ERROR",
+                    "message": "Truncation detected on mission-critical infrastructure metadata (region/zone/AZ). Enforce zero-truncation to prevent datacenter misidentification.",
+                    "suggestion": get_rule_suggestion("b2b-illegal-truncate"),
+                    "snippet": line.strip()
+                })
 
     # 4. Line-by-line regex rule scanning on uncommented code
     for line_num, line in enumerate(clean_lines, start=1):
