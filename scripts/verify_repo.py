@@ -187,30 +187,45 @@ def check_scaffold_and_idempotency():
             log(f"--bridge-only failed:\n{run_bridge.stderr}", "FAIL")
             return False
         tokens_css_path = os.path.join(target_design, "tokens", "tokens.css")
-        # Test dynamic status alpha derivation in CSS bridge
-        with open(tokens_css_path, "r", encoding="utf-8") as f:
-            t_css = f.read()
-        if "--radius-btn:" not in t_css or "--radius-card:" not in t_css or "--status-error-bg:" not in t_css or "--surface-secondary:" not in t_css or "--border-default:" not in t_css:
-            log("Bridge generation missing semantic radii or status tokens!", "FAIL")
-            return False
-        if "rgba(" not in t_css:
-            log("Dynamic status background/border color alpha derivation missing from bridge!", "FAIL")
+        # Test dynamic status alpha derivation in CSS bridge (including 4-digit and custom HEX)
+        tokens_json_path = os.path.join(target_design, "tokens", "colors.json")
+        with open(tokens_json_path, "r", encoding="utf-8") as f:
+            c_data = json.load(f)
+        c_data.setdefault("status", {})["error"] = "#f00f"  # 4-digit hex (#RGBA)
+        with open(tokens_json_path, "w", encoding="utf-8") as f:
+            json.dump(c_data, f, indent=2)
+
+        run_bridge2 = subprocess.run([sys.executable, adapter_path, target_design, "--bridge-only"], capture_output=True, text=True, cwd=temp_dir)
+        if run_bridge2.returncode != 0:
+            log(f"--bridge-only with custom status failed:\n{run_bridge2.stderr}", "FAIL")
             return False
 
-        # Test token preservation when DESIGN.md is absent (e.g. existing custom colors.json)
+        with open(tokens_css_path, "r", encoding="utf-8") as f:
+            t_css_custom = f.read()
+        if "--status-error-bg: rgba(255, 0, 0, 0.12);" not in t_css_custom:
+            log(f"Dynamic status alpha derivation failed for 4-digit hex #f00f! Got:\n{t_css_custom}", "FAIL")
+            return False
+
+        # Test token preservation when DESIGN.md is absent with overlapping preset keys (background.primary)
         isolated_dir = tempfile.mkdtemp(prefix="token_preserv_test_")
         try:
             iso_target = os.path.join(isolated_dir, ".design")
             os.makedirs(os.path.join(iso_target, "tokens"), exist_ok=True)
             custom_colors_path = os.path.join(iso_target, "tokens", "colors.json")
             with open(custom_colors_path, "w", encoding="utf-8") as f:
-                json.dump({"custom": {"brand": "#123456"}}, f)
+                json.dump({
+                    "background": {"primary": "#112233"},
+                    "custom": {"brand": "#123456"}
+                }, f)
             # Scaffold without DESIGN.md initially present
             subprocess.run([sys.executable, adapter_path, iso_target, "--preset", "apple-fluid"], capture_output=True, text=True, cwd=isolated_dir)
             with open(custom_colors_path, "r", encoding="utf-8") as f:
                 read_colors = json.load(f)
-            if "custom" not in read_colors or read_colors["custom"].get("brand") != "#123456":
-                log("Token preservation failed: existing colors.json was overridden when DESIGN.md was absent!", "FAIL")
+            if read_colors.get("background", {}).get("primary") != "#112233":
+                log("Token preservation failed: overlapping key 'background.primary' was overridden by preset!", "FAIL")
+                return False
+            if read_colors.get("custom", {}).get("brand") != "#123456":
+                log("Token preservation failed: custom key was lost!", "FAIL")
                 return False
         finally:
             shutil.rmtree(isolated_dir, ignore_errors=True)

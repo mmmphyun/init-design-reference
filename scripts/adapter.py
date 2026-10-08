@@ -214,6 +214,12 @@ def hex_to_rgba(hex_code, alpha):
     h = str(hex_code).lstrip("#")
     if len(h) == 3:
         h = "".join([c * 2 for c in h])
+    elif len(h) == 4:
+        # 4-digit hex (#RGBA) -> expand RGB, keep original alpha scaled if needed or extract RGB
+        h = "".join([c * 2 for c in h[:3]])
+    elif len(h) == 8:
+        # 8-digit hex (#RRGGBBAA) -> extract RGB part
+        h = h[:6]
     try:
         r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
         return f"rgba({r}, {g}, {b}, {alpha})"
