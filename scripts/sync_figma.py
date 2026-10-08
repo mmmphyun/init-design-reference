@@ -36,7 +36,23 @@ def fetch_figma_variables(file_key, token):
         print(f"Network error connecting to Figma: {e}", file=sys.stderr)
     return None
 
-def parse_and_sync(variables_payload, target_tokens_dir="reference/tokens"):
+def load_json_or_empty(path):
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def resolve_tokens_target(target=None):
+    if target:
+        return target
+    base = ".design" if os.path.exists(".design") or not os.path.exists("reference") else "reference"
+    return os.path.join(base, "tokens")
+
+def parse_and_sync(variables_payload, target_tokens_dir=None):
+    target_tokens_dir = resolve_tokens_target(target_tokens_dir)
     os.makedirs(target_tokens_dir, exist_ok=True)
     meta = variables_payload.get("meta", {})
     variables = meta.get("variables", {})
@@ -46,7 +62,7 @@ def parse_and_sync(variables_payload, target_tokens_dir="reference/tokens"):
     radii = {}
 
     for var_id, var_data in variables.items():
-        name = var_data.get("name", "").lower().replace("/", ".")
+        name = var_data.get("name", "").lower()
         var_type = var_data.get("resolvedType")
         values_by_mode = var_data.get("valuesByMode", {})
         if not values_by_mode:
@@ -58,40 +74,56 @@ def parse_and_sync(variables_payload, target_tokens_dir="reference/tokens"):
             g = first_val.get("g", 0)
             b = first_val.get("b", 0)
             a = first_val.get("a", 1.0)
-            colors[name] = rgba_to_hex(r, g, b, a)
+            hex_val = rgba_to_hex(r, g, b, a)
+            parts = [p.strip() for p in name.replace("/", ".").split(".") if p.strip()]
+            if len(parts) >= 2:
+                group, key = parts[0], ".".join(parts[1:])
+            else:
+                group, key = "custom", parts[0] if parts else "unnamed"
+            colors.setdefault(group, {})[key] = hex_val
 
         elif var_type == "FLOAT" and isinstance(first_val, (int, float)):
+            clean_name = name.replace("/", "-").strip("-")
             if "radius" in name or "radii" in name or "corner" in name:
-                radii[name] = f"{int(first_val)}px"
+                radii[clean_name] = f"{int(first_val)}px"
             else:
-                spacing[name] = f"{int(first_val)}px"
+                spacing[clean_name] = f"{int(first_val)}px"
 
-    # Merge into reference/tokens
+    # Deep merge into target tokens directory
     if colors:
         c_path = os.path.join(target_tokens_dir, "colors.json")
+        existing_colors = load_json_or_empty(c_path)
+        for g, vals in colors.items():
+            if not isinstance(existing_colors.get(g), dict):
+                existing_colors[g] = {}
+            existing_colors[g].update(vals)
         with open(c_path, "w", encoding="utf-8") as f:
-            json.dump(colors, f, indent=2)
-        print(f"Synced {len(colors)} color tokens -> {c_path}")
+            json.dump(existing_colors, f, indent=2)
+        print(f"Synced {len(colors)} color groups -> {c_path}")
 
     if spacing:
         s_path = os.path.join(target_tokens_dir, "spacing.json")
+        existing_spacing = load_json_or_empty(s_path)
+        existing_spacing.update(spacing)
         with open(s_path, "w", encoding="utf-8") as f:
-            json.dump(spacing, f, indent=2)
+            json.dump(existing_spacing, f, indent=2)
         print(f"Synced {len(spacing)} spacing tokens -> {s_path}")
 
     if radii:
         r_path = os.path.join(target_tokens_dir, "radii.json")
+        existing_radii = load_json_or_empty(r_path)
+        existing_radii.update(radii)
         with open(r_path, "w", encoding="utf-8") as f:
-            json.dump(radii, f, indent=2)
+            json.dump(existing_radii, f, indent=2)
         print(f"Synced {len(radii)} radii tokens -> {r_path}")
 
     return True
 
 def main():
-    parser = argparse.ArgumentParser(description="Sync Figma Variables to reference/tokens/*.json")
+    parser = argparse.ArgumentParser(description="Sync Figma Variables to design tokens (*.json)")
     parser.add_argument("--file-key", help="Figma File Key (from URL: figma.com/file/<key>/...)")
     parser.add_argument("--token", help="Figma Personal Access Token (or FIGMA_ACCESS_TOKEN env)")
-    parser.add_argument("--target-dir", default="reference/tokens", help="Target tokens directory")
+    parser.add_argument("--target-dir", default=None, help="Target tokens directory (default: auto-detected .design/tokens or reference/tokens)")
     args = parser.parse_args()
 
     token = args.token or os.environ.get("FIGMA_ACCESS_TOKEN")
@@ -112,6 +144,7 @@ def main():
     parse_and_sync(payload, args.target_dir)
     print("Figma token synchronization complete.")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())
