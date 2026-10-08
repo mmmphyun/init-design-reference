@@ -187,12 +187,33 @@ def check_scaffold_and_idempotency():
             log(f"--bridge-only failed:\n{run_bridge.stderr}", "FAIL")
             return False
         tokens_css_path = os.path.join(target_design, "tokens", "tokens.css")
+        # Test dynamic status alpha derivation in CSS bridge
         with open(tokens_css_path, "r", encoding="utf-8") as f:
             t_css = f.read()
         if "--radius-btn:" not in t_css or "--radius-card:" not in t_css or "--status-error-bg:" not in t_css or "--surface-secondary:" not in t_css or "--border-default:" not in t_css:
             log("Bridge generation missing semantic radii or status tokens!", "FAIL")
             return False
+        if "rgba(" not in t_css:
+            log("Dynamic status background/border color alpha derivation missing from bridge!", "FAIL")
+            return False
 
+        # Test token preservation when DESIGN.md is absent (e.g. existing custom colors.json)
+        isolated_dir = tempfile.mkdtemp(prefix="token_preserv_test_")
+        try:
+            iso_target = os.path.join(isolated_dir, ".design")
+            os.makedirs(os.path.join(iso_target, "tokens"), exist_ok=True)
+            custom_colors_path = os.path.join(iso_target, "tokens", "colors.json")
+            with open(custom_colors_path, "w", encoding="utf-8") as f:
+                json.dump({"custom": {"brand": "#123456"}}, f)
+            # Scaffold without DESIGN.md initially present
+            subprocess.run([sys.executable, adapter_path, iso_target, "--preset", "apple-fluid"], capture_output=True, text=True, cwd=isolated_dir)
+            with open(custom_colors_path, "r", encoding="utf-8") as f:
+                read_colors = json.load(f)
+            if "custom" not in read_colors or read_colors["custom"].get("brand") != "#123456":
+                log("Token preservation failed: existing colors.json was overridden when DESIGN.md was absent!", "FAIL")
+                return False
+        finally:
+            shutil.rmtree(isolated_dir, ignore_errors=True)
 
         # 3rd run with --force: must overwrite
         run3 = subprocess.run([sys.executable, adapter_path, target_design, "--force"], capture_output=True, text=True, cwd=temp_dir)
@@ -204,7 +225,7 @@ def check_scaffold_and_idempotency():
             log("Force flag violated: did not report recreated files.", "FAIL")
             return False
 
-        log("Scaffolding, idempotency, preset, hard-guard, dial preservation, and force overwrite verified.", "PASS")
+        log("Scaffolding, idempotency, preset, hard-guard, dial/token preservation, and force overwrite verified.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

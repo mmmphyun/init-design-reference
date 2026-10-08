@@ -122,7 +122,7 @@ def safe_write(dst_file, content, force=False):
     print(f"Created: {dst_file}")
     return True
 
-def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_new=False):
+def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_new=False, design_existed=None, colors_existed=None, typography_existed=None):
     if preset_name not in PRESETS:
         print(f"Notice: Preset '{preset_name}' not in predefined templates. Falling back to baseline 'default' with custom tuning.")
         preset_name = "default"
@@ -145,9 +145,13 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_n
     colors_json_path = os.path.join(target_dir, "tokens", "colors.json")
     typography_json_path = os.path.join(target_dir, "tokens", "typography.json")
 
+    has_design = design_existed if design_existed is not None else (not is_new if os.path.exists(design_md_path) else False)
+    has_colors = colors_existed if colors_existed is not None else (not is_new if os.path.exists(colors_json_path) else False)
+    has_typo = typography_existed if typography_existed is not None else (not is_new if os.path.exists(typography_json_path) else False)
+
     # 1. Update DESIGN.md Dials
     if os.path.exists(design_md_path):
-        if not force and not dials_override and not is_new:
+        if not force and not dials_override and has_design:
             print(f"Preserved existing dials in {design_md_path} (use --dials or -f/--force to override).")
         else:
             try:
@@ -165,15 +169,14 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_n
                 print(f"Notice: Failed to update DESIGN.md with preset ({e})")
 
 
-    # 2. Inject Curated Domain Palette into colors.json (Skip if already exists unless force=True or is_new=True)
+    # 2. Inject Curated Domain Palette into colors.json (Skip if already exists unless force=True)
     if "colors" in config:
-        colors_existed = os.path.exists(colors_json_path)
-        if colors_existed and not force and not is_new:
+        if has_colors and not force:
             print(f"Preserved existing colors in {colors_json_path} (use -f/--force to overwrite with preset palette).")
         else:
             try:
                 existing_colors = {}
-                if colors_existed:
+                if os.path.exists(colors_json_path):
                     with open(colors_json_path, "r", encoding="utf-8") as f:
                         existing_colors = json.load(f)
 
@@ -188,9 +191,9 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_n
             except Exception as e:
                 print(f"Notice: Failed to update colors.json with preset ({e})")
 
-    # 3. Inject Curated Typography into typography.json (Skip if already exists unless force=True or is_new=True)
+    # 3. Inject Curated Typography into typography.json (Skip if already exists unless force=True)
     if "typography" in config and os.path.exists(typography_json_path):
-        if not force and not is_new:
+        if has_typo and not force:
             print(f"Preserved existing typography in {typography_json_path} (use -f/--force to overwrite with preset fonts).")
         else:
 
@@ -206,6 +209,16 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_n
                 print(f"Injected curated typography for '{preset_name}' into {typography_json_path}")
             except Exception as e:
                 print(f"Notice: Failed to update typography.json with preset ({e})")
+
+def hex_to_rgba(hex_code, alpha):
+    h = str(hex_code).lstrip("#")
+    if len(h) == 3:
+        h = "".join([c * 2 for c in h])
+    try:
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        return f"rgba({r}, {g}, {b}, {alpha})"
+    except Exception:
+        return str(hex_code)
 
 def generate_css_bridges(target_dir, style_engine, force=False):
     tokens_dir = os.path.join(target_dir, "tokens")
@@ -271,14 +284,14 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         f"  --danger: {status_error};",
         f"  --danger-foreground: #ffffff;",
         f"  --status-error: {status_error};",
-        "  --status-error-bg: rgba(239, 68, 68, 0.12);",
-        "  --status-error-border: rgba(239, 68, 68, 0.25);",
+        f"  --status-error-bg: {hex_to_rgba(status_error, 0.12)};",
+        f"  --status-error-border: {hex_to_rgba(status_error, 0.25)};",
         f"  --status-success: {status_success};",
-        "  --status-success-bg: rgba(34, 197, 94, 0.12);",
-        "  --status-success-border: rgba(34, 197, 94, 0.25);",
+        f"  --status-success-bg: {hex_to_rgba(status_success, 0.12)};",
+        f"  --status-success-border: {hex_to_rgba(status_success, 0.25)};",
         f"  --status-warning: {status_warning};",
-        "  --status-warning-bg: rgba(234, 179, 8, 0.12);",
-        "  --status-warning-border: rgba(234, 179, 8, 0.25);",
+        f"  --status-warning-bg: {hex_to_rgba(status_warning, 0.12)};",
+        f"  --status-warning-border: {hex_to_rgba(status_warning, 0.25)};",
         f"  --status-info: {status_info};",
         f"  --skeleton: {bg_surface};",
         f"  --skeleton-subtle: {bg_primary};",
@@ -482,7 +495,10 @@ def verify_design_spec(target_dir=None):
 
 def scaffold_reference(target_dir=None, force=False, preset="default", dials_override=None):
     target_dir = resolve_design_target(target_dir)
-    is_new = not os.path.exists(os.path.join(target_dir, "DESIGN.md"))
+    design_existed = os.path.exists(os.path.join(target_dir, "DESIGN.md"))
+    colors_existed = os.path.exists(os.path.join(target_dir, "tokens", "colors.json"))
+    typography_existed = os.path.exists(os.path.join(target_dir, "tokens", "typography.json"))
+    is_new = not design_existed and not colors_existed and not typography_existed
     script_dir = os.path.dirname(os.path.abspath(__file__))
     templates_dir = os.path.join(os.path.dirname(script_dir), "templates")
 
@@ -515,7 +531,16 @@ def scaffold_reference(target_dir=None, force=False, preset="default", dials_ove
         safe_copy(design_src, os.path.join(target_dir, "DESIGN.md"), force=force)
 
     # Apply selected Taste preset
-    apply_preset(target_dir, preset, dials_override=dials_override, force=force, is_new=is_new)
+    apply_preset(
+        target_dir,
+        preset,
+        dials_override=dials_override,
+        force=force,
+        is_new=is_new,
+        design_existed=design_existed,
+        colors_existed=colors_existed,
+        typography_existed=typography_existed,
+    )
 
 
     # Update .gitignore
