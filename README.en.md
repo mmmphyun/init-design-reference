@@ -52,8 +52,9 @@ Lint PASSED.
 
 ---
 
-### ③ Gate 0 Specification Hard-Guard (Policy-as-Code)
-If required design tokens or Taste dials are omitted or corrupted, the hard-guard immediately halts pipeline execution.
+### ③ Design Specification Static Hard-Guard (`--verify-spec`)
+Statically verifies that required design tokens and Taste dials (1-10 bounds, valid hex format) are properly configured, preventing defect propagation before frontend code generation.
+
 
 ```console
 $ python scripts/adapter.py --verify-spec

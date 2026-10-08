@@ -52,8 +52,9 @@ Lint PASSED.
 
 ---
 
-### ③ Gate 0 스펙 하드가드 (Policy-as-Code)
-필수 디자인 토큰이나 Taste 다이얼 설정이 누락되면 하드가드가 즉시 파이프라인을 중단하여 결함 전파를 차단합니다.
+### ③ 디자인 스펙 정적 하드가드 (`--verify-spec`)
+필수 디자인 토큰이나 Taste 다이얼 설정(1~10 범위, 유효 hex 포맷)의 결함을 정적으로 검증하여 스펙 오류 전파를 차단합니다. 에이전트의 사용자 승인 완료 후 코드 생성 직전에 실행되어 설정 무결성을 보장합니다.
+
 
 ```console
 $ python scripts/adapter.py --verify-spec
