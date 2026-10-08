@@ -103,6 +103,9 @@ def capture_ui(url=None, output_dir=None, allow_missing=False):
             context_mobile = browser.new_context(viewport={"width": 375, "height": 812}, is_mobile=True)
             page_mobile = context_mobile.new_page()
 
+            page_mobile.on("console", lambda msg: console_logs.append({"type": msg.type, "text": f"[Mobile] {msg.text}"}))
+            page_mobile.on("pageerror", lambda err: page_errors.append(f"[Mobile] {err}"))
+
             print("Capturing Mobile viewport (375x812)...")
             page_mobile.goto(url, wait_until="networkidle", timeout=15000)
             mobile_path = os.path.join(output_dir, "mobile_375.png")
