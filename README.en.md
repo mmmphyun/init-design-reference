@@ -80,7 +80,9 @@ When tasked with frontend code, LLMs routinely converge toward generic purple/in
 ### Framework Support & Architecture Neutrality
 - **Tier 1 Supported Stacks**: React / Next.js, Vue / Nuxt, Svelte / SvelteKit, Vanilla CSS.
 - **Build Tool Separation**: Vite is categorized as a bundler/build tool rather than a framework; actual framework conventions govern code generation.
-- **Neutral Core**: Semantic DOM, ARIA accessibility, design token SSOT, 4-state lifecycle, and motion physics remain strictly framework-neutral.
+- **Core Principles vs Pattern Examples**:
+  - **Universal Core Support**: Semantic DOM, ARIA accessibility, design token SSOT, 4-state lifecycle, and motion physics remain strictly framework-neutral across all stacks.
+  - **Code Pattern Scope**: Full production recipes are provided in React/TSX as baseline. Vue 3 and Svelte 5 implementations are provided for core interactive and input patterns (`micro-interactions.md`, `forms-inputs.md`). For other patterns, agents follow the headless composition idioms in `COMPONENTS.md` using the target framework's primitives.
 - **Bridge Support Scope**:
   - Automatically generated: Tailwind v4 (`theme.css` via `@theme`), Tailwind v3 (`tailwind.preset.js` via `presets` & `tokens.css`), Vanilla CSS (`tokens.css` via `:root`).
   - Unsupported runtime engines (CSS-in-JS like styled-components, Emotion, Panda CSS): Reference `:root` CSS variables in `tokens.css`.

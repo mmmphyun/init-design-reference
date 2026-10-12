@@ -80,7 +80,9 @@ LLM에게 프론트엔드 코딩을 맡기면 보라색·인디고 그라디언�
 ### 프레임워크 지원 범위 & 아키텍처 중립성
 - **1차 우선 지원 스택**: React / Next.js, Vue / Nuxt, Svelte / SvelteKit, 일반 CSS (Vanilla CSS).
 - **빌드 도구 분리**: Vite는 번들러/빌드 도구로 분류되며, 프레임워크와 혼동하지 않고 프로젝트의 실제 프레임워크 관례를 따릅니다.
-- **아키텍처 중립 코어**: 시맨틱 DOM, ARIA 접근성 규약, 3-Dial Taste 체계, 4-State 생명주기 및 모션 물리는 프레임워크에 독립적인 단일 헌법으로 동작합니다.
+- **핵심 원칙 전면 지원 vs 패턴 예시 범위**:
+  - **프레임워크 중립 코어 (전면 지원)**: 시맨틱 DOM, ARIA 접근성 규약, 3-Dial Taste 체계, 4-State 생명주기 및 모션 물리는 모든 스택에서 100% 동일한 규약으로 동작합니다.
+  - **코드 패턴 예시 범위**: React/TSX를 기본 기준선 레시피로 전 패턴에 제공하며, Vue 3 및 Svelte 5는 문법과 상태 바인딩이 차별화되는 핵심 패턴(`micro-interactions.md`, `forms-inputs.md`)의 구체적 구현을 제공합니다. 타 패턴은 `COMPONENTS.md`의 헤드리스 합성 규약(Radix Vue, Bits UI 등)을 준수하여 작성합니다.
 - **스타일 브리지 지원 범위**:
   - 자동 생성: Tailwind v4 (`theme.css` via `@theme`), Tailwind v3 (`tailwind.preset.js` via `presets` & `tokens.css`), Vanilla CSS (`tokens.css` via `:root`).
   - 미지원 런타임 엔진 (CSS-in-JS: Styled Components, Emotion, Panda CSS): `tokens.css`의 `:root` CSS 변수를 수동 참조하여 연동합니다.
