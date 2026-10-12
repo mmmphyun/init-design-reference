@@ -82,8 +82,8 @@ The development lifecycle enforces a strict **Golden Boundary**:
      │
      ▼
 【Gate 0: Smart Alignment Deep Probe】 (High-Touch Dialog)
-  - Turn-Budgeted Probe (최대 2~3턴, 턴당 1~2개 질문)
-  - 6-Decision Matrix Tracking (확인 / 프로젝트 추출 / 미정 / 가정)
+  - Turn-Budgeted Probe (권장 2~3턴, 턴당 1~2개 질문, 미정 항목 연장 가능)
+  - 7-Decision Matrix Tracking (확인 / 프로젝트 추출 / 미정 / 가정)
   - Dynamic Theme Synthesis (3 Dials 1~10 + Token Composition)
   - Synthesis Briefing & User Approval Gate
      │

@@ -66,7 +66,9 @@ export function FormInput({
 }
 ```
 
-### Vue 3 (`<script setup lang="ts">`)
+### Vue 3 (`<script setup lang="ts">` - Vue 3.5+ 또는 ID 주입)
+
+> **호환성 안내**: `useId()`는 Vue 3.5+ 표준 API입니다. Vue 3.4 이하에서는 `props.id`를 필수 전달하거나 `nanoid`/SSR-safe ID 플러그인을 주입하십시오.
 
 ```vue
 <script setup lang="ts">
@@ -90,8 +92,9 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
 }>();
 
-const autoId = useId();
-const inputId = props.id || autoId;
+// Vue 3.5+ 내장 useId 사용 (하위 버전에서는 props.id 명시 필요)
+const autoId = typeof useId === "function" ? useId() : undefined;
+const inputId = props.id || autoId || "form-input";
 const errorId = `${inputId}-error`;
 const hintId = `${inputId}-hint`;
 </script>
@@ -130,31 +133,31 @@ const hintId = `${inputId}-hint`;
 
 ### Svelte 5 (`<script lang="ts">`)
 
+> **SSR 안정성 안내**: SvelteKit 등 SSR 환경에서 클라이언트 하이드레이션 불일치를 방지하기 위해 `id` prop을 명시적으로 전달받는 계약을 권장합니다.
+
 ```svelte
 <script lang="ts">
   interface Props {
     label: string;
+    id: string; // SSR/SvelteKit 하이드레이션 일관성을 위해 명시적 id 권장
     value?: string;
     hint?: string;
     error?: string;
-    id?: string;
     disabled?: boolean;
     class?: string;
   }
 
   let {
     label,
+    id: inputId,
     value = $bindable(''),
     hint,
     error,
-    id: explicitId,
     disabled = false,
     class: className = '',
     ...rest
   }: Props = $props();
 
-  const generatedId = `input-${Math.random().toString(36).slice(2, 9)}`;
-  const inputId = explicitId || generatedId;
   const errorId = `${inputId}-error`;
   const hintId = `${inputId}-hint`;
 </script>

@@ -158,7 +158,7 @@ python "scripts/adapter.py" --preset apple-fluid
 에이전트는 프론트엔드 작업 시 다음 게이트 파이프라인을 기계적으로 준수합니다:
 
 1. **Gate 0: Smart Alignment (High-Touch Dialog & Hard-Guard)**:
-   - 기존 프로젝트 정체성 파악 및 6-Decision Matrix 추적 (확인 / 프로젝트 추출 / 미정 / 가정).
+   - 기존 프로젝트 정체성 파악 및 7-Decision Matrix 추적 (확인 / 프로젝트 추출 / 미정 / 가정).
    - 다중 앱 모노레포 및 다중 CSS 진입점 후보의 모호성을 선제 확인하고 해소.
    - Adaptive Deep Probe를 통해 합의된 Taste 3-다이얼(1~10) 및 브랜드 토큰 동적 합성.
    - **사용자 승인 락(Strict Lock)**: 사용자 명시 승인 전까지 파일 작성 및 `adapter.py` 실행 금지.

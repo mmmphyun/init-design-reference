@@ -158,7 +158,7 @@ python "scripts/adapter.py" --preset apple-fluid
 Agents strictly adhere to the 5-Gate Golden Boundary:
 
 1. **Gate 0: Smart Alignment (High-Touch Dialog & Hard-Guard)**:
-   - Identify existing project identity & track the 6-Decision Matrix (confirmed / existing project / undefined / assumption).
+   - Identify existing project identity & track the 7-Decision Matrix (confirmed / existing project / undefined / assumption).
    - Detect workspace monorepos and clarify ambiguous CSS entrypoints.
    - Adaptive Deep Probe dynamically synthesizes 3 Taste dials (1~10) and brand tokens.
    - **User Approval Gate (Strict Lock)**: Execution of `adapter.py` and file generation is strictly blocked until explicit user confirmation.

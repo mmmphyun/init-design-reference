@@ -7,15 +7,16 @@ Synthesizes Jakub Krehel's design brief extraction protocol with deterministic t
 
 ## 1. Gate 0: Alignment Protocol & Decision Matrix Tracking
 
-Before touching layout or code, the agent extracts requirements using a structured **6-Decision Matrix**:
+Before touching layout or code, the agent extracts requirements using a structured **7-Decision Matrix**:
 
-### 6-Decision Matrix Tracking
+### 7-Decision Matrix Tracking
 1. **Target User & Context**: Internal operators vs consumers / casual users.
 2. **Hero Action & Screen**: The single most critical operation or viewport.
-3. **Interaction & Motion Vibe**: Immediate/understated reaction vs organic/spring feedback.
-4. **Visual Density**: Information-dense multi-metric cockpit vs airy typographical rhythm.
-5. **Device Scope**: Desktop workspace vs mobile-first responsive.
-6. **Brand Constraints & Accessibility**: Specific brand colors, contrast targets, compliance.
+3. **Visual Direction & References**: Tonal mood, surface brightness (dark vs light vs warm neutral), typographic character (sans vs serif vs mono), benchmark aesthetics.
+4. **Interaction & Motion Vibe**: Immediate/understated reaction vs organic/spring feedback.
+5. **Visual Density**: Information-dense multi-metric cockpit vs airy typographical rhythm.
+6. **Device Scope**: Desktop workspace vs mobile-first responsive.
+7. **Brand Constraints & Accessibility**: Specific brand colors, contrast targets, compliance.
 
 ### Turn-Budgeted Deep Probe
 - **Budget**: Recommended 2~3 dialog turns total (max 1 follow-up probe per specific topic). Continue inquiry only when high-impact architecture items remain undefined.
