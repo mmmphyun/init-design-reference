@@ -77,6 +77,16 @@ When tasked with frontend code, LLMs routinely converge toward generic purple/in
 
 ---
 
+### Framework Support & Architecture Neutrality
+- **Tier 1 Supported Stacks**: React / Next.js, Vue / Nuxt, Svelte / SvelteKit, Vanilla CSS.
+- **Build Tool Separation**: Vite is categorized as a bundler/build tool rather than a framework; actual framework conventions govern code generation.
+- **Neutral Core**: Semantic DOM, ARIA accessibility, design token SSOT, 4-state lifecycle, and motion physics remain strictly framework-neutral.
+- **Bridge Support Scope**:
+  - Automatically generated: Tailwind v4 (`theme.css` via `@theme`), Tailwind v3 (`tailwind.preset.js` via `presets` & `tokens.css`), Vanilla CSS (`tokens.css` via `:root`).
+  - Unsupported runtime engines (CSS-in-JS like styled-components, Emotion, Panda CSS): Reference `:root` CSS variables in `tokens.css`.
+
+---
+
 ## 3. Directory Layout (.design Goldilocks Architecture)
 
 ```
@@ -92,7 +102,7 @@ When tasked with frontend code, LLMs routinely converge toward generic purple/in
     motion.json         # Durations, Apple spring physics & gesture constraints (Emil Kowalski)
     theme.css           # Runtime CSS bridge (Tailwind v4 / Vanilla CSS)
     tailwind.preset.js  # Runtime preset bridge (Tailwind v3)
-  patterns/             # Production React/TSX + Tailwind component recipes
+  patterns/             # Production component recipes (React/TSX, Vue 3, Svelte 5)
     layout-shells.md    # High-density cockpit & asymmetric hero layouts
     data-display.md     # 4-state data tables & anti-cliché telemetry cards
     forms-inputs.md     # Accessible validated inputs & filter toolbars
@@ -123,6 +133,12 @@ python "scripts/adapter.py"
 # High-density B2B data cockpit & telemetry (Variance: 3, Density: 9, Motion: 2)
 python "scripts/adapter.py" --preset b2b-dense
 
+# Workspace Monorepo Target (--app)
+python "scripts/adapter.py" --preset b2b-dense --app apps/web
+
+# Explicit CSS Entrypoint Override (--css)
+python "scripts/adapter.py" --css src/styles/main.css
+
 # Airy asymmetric showcase & landing (Variance: 8, Density: 3, Motion: 5)
 python "scripts/adapter.py" --preset editorial-minimal
 
@@ -141,11 +157,12 @@ Agents strictly adhere to the 5-Gate Golden Boundary:
 
 1. **Gate 0: Smart Alignment (High-Touch Dialog & Hard-Guard)**:
    - Identify existing project identity & track the 6-Decision Matrix (confirmed / existing project / undefined / assumption).
+   - Detect workspace monorepos and clarify ambiguous CSS entrypoints.
    - Adaptive Deep Probe dynamically synthesizes 3 Taste dials (1~10) and brand tokens.
    - **User Approval Gate (Strict Lock)**: Execution of `adapter.py` and file generation is strictly blocked until explicit user confirmation.
    - Run `python scripts/adapter.py --verify-spec` to enforce specification validity (dials 1~10 and required tokens).
-2. **Phase 1: Semantic Skeleton (Craft)**: Structural hierarchy and pure ARIA roles without decorative styling.
-3. **Phase 2: Token & Surface Binding (Bind)**: Bind exclusively to `.design/tokens/*.json` semantic classes (zero hardcoded hex).
+2. **Phase 1: Semantic Skeleton (Craft)**: Structural hierarchy and pure ARIA roles without decorative styling (React, Vue, Svelte, HTML common).
+3. **Phase 2: Token & Surface Binding (Bind)**: Bind exclusively to `.design/tokens/*.json` semantic classes and CSS variables (zero hardcoded hex).
 4. **Phase 3: Deterministic Lint & Self-Healing (Critique)**:
    ```powershell
    python scripts/lint_ui.py src/
@@ -157,7 +174,7 @@ Agents strictly adhere to the 5-Gate Golden Boundary:
      ```powershell
      python scripts/capture_ui.py
      ```
-   - On styling feedback (colors, spacing, fonts), update tokens in `tokens/*.json`. On layout/structural feedback, modify component TSX.
+   - On styling feedback (colors, spacing, fonts), update tokens in `tokens/*.json`. On layout/structural feedback, modify framework component code (TSX / Vue / Svelte / HTML).
 
 ---
 

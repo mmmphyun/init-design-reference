@@ -12,6 +12,8 @@ Production-grade structural shells enforcing visual rhythm, responsive breakpoin
 
 A dense, non-collapsing multi-pane layout maximizing data density without visual clutter.
 
+### React (TSX)
+
 ```tsx
 import React from "react";
 
@@ -51,6 +53,8 @@ export function DashboardShell({ sidebar, header, children }: DashboardShellProp
 ## 2. Asymmetric Editorial Grid (Landing / Showcase)
 
 Avoids the standard 3-card centered generic hero. Breaks symmetry with an intentional focal anchor.
+
+### React (TSX)
 
 ```tsx
 import React from "react";

@@ -7,6 +7,8 @@ Form controls designed for keyboard accessibility (WCAG 2.1 AA/AAA), determinist
 
 Avoids ambient glow focus rings. Uses high-contrast 2px focus-visible rings with explicit error and hint slots.
 
+### React (TSX)
+
 ```tsx
 import React, { useId } from "react";
 
@@ -67,6 +69,8 @@ export function FormInput({
 ## 2. Accessible Filter Toolbar with Status Select
 
 Standard compact action bar for data querying with explicit ARIA labels and keyboard focus contracts.
+
+### React (TSX)
 
 ```tsx
 import React from "react";

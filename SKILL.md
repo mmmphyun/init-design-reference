@@ -9,6 +9,15 @@ Scaffolds a `.design/` directory structure within the project root to enforce de
 
 Integrates proven design engineering standards from the open-source ecosystem (`shadcn/ui`, `emilkowalski/apple-design`, `MengTo/beautiful-shadows`, `addyosmani/accessibility`, `Superfuture/design-review`, `pbakaus/impeccable`, `jakubkrehel/skills`, `wshobson/interaction-design`). See `NOTICE.md` for license notices.
 
+### Framework Support & Architecture Neutrality
+- **Tier 1 Supported Stacks**: React / Next.js, Vue / Nuxt, Svelte / SvelteKit, Vanilla CSS.
+- **Build Tool Separation**: Vite is categorized as a bundler/build tool, not a framework. Framework-specific conventions take precedence.
+- **Neutral Core**: Semantic DOM, ARIA accessibility, design token SSOT, 4-state lifecycle, and motion physics remain strictly framework-neutral.
+- **Unknown / Legacy Stacks**: Apply framework-neutral semantic HTML and CSS Custom Properties (`:root`). Escalate critical ambiguities (target app, styling entrypoint) to Gate 0.
+- **Bridge Support Scope**:
+  - Automatically generated: Tailwind v4 (`theme.css`), Tailwind v3 (`tailwind.preset.js` & `tokens.css`), Vanilla CSS (`tokens.css`).
+  - Unsupported runtime engines (CSS-in-JS like styled-components, Emotion, Panda CSS): Manually reference `:root` CSS variables exported in `tokens.css`.
+
 ## 1. Directory Structure (.design Goldilocks Architecture)
 
 ```
@@ -24,7 +33,7 @@ Integrates proven design engineering standards from the open-source ecosystem (`
     motion.json         # Durations, Apple spring physics & gesture constraints (Emil Kowalski)
     theme.css           # Runtime CSS bridge (Tailwind v4 / Vanilla CSS variables)
     tailwind.preset.js  # Runtime preset bridge (Tailwind v3)
-  patterns/             # Production-grade React/TSX + Tailwind component recipes
+  patterns/             # Production-grade component recipes (React/TSX, Vue 3, Svelte 5)
     layout-shells.md    # High-density cockpit & asymmetric hero layouts
     data-display.md     # 4-state data tables & anti-cliché telemetry cards
     forms-inputs.md     # Accessible validated inputs & filter toolbars
@@ -39,11 +48,14 @@ Integrates proven design engineering standards from the open-source ecosystem (`
 Run the framework adapter with an optional domain preset (defaults to `.design`, falls back to existing `reference`):
 
 ```powershell
-# Windows
+# Standard Single App
 python "$env:USERPROFILE/.gemini/config/skills/init-design-reference/scripts/adapter.py" --preset b2b-dense
 
-# macOS / Linux
-python "$HOME/.gemini/config/skills/init-design-reference/scripts/adapter.py" --preset b2b-dense
+# Workspace Monorepo Target
+python "$env:USERPROFILE/.gemini/config/skills/init-design-reference/scripts/adapter.py" --preset b2b-dense --app apps/web
+
+# Explicit CSS Entrypoint Override
+python "$env:USERPROFILE/.gemini/config/skills/init-design-reference/scripts/adapter.py" --css src/styles/main.css
 ```
 
 ### Available Presets (`--preset`)
@@ -53,7 +65,7 @@ python "$HOME/.gemini/config/skills/init-design-reference/scripts/adapter.py" --
 - `technical-mono`: Terminal/developer tool aesthetic (Variance 4, Density 8, Motion 1)
 - `apple-fluid`: Tactile spring physics & fluid gestures (Variance 6, Density 5, Motion 9)
 
-Use `--force` or `-f` to overwrite existing templates.
+Use `--force` or `-f` to overwrite existing templates. `--app <dir>` specifies the workspace subproject, and `--css <path>` specifies the CSS entrypoint.
 
 ---
 
@@ -93,7 +105,8 @@ The development lifecycle enforces a strict **Golden Boundary**:
 
 1. **7-Decision Matrix & Existing Project Inspection**:
    - 에이전트는 기존 프로젝트가 있을 경우 먼저 정체성을 파악한다:
-     - 검사 대상: `AGENTS.md`, `.design/DESIGN.md`, `tokens/*.json`, `tailwind.config.*`, 전역 CSS, 대표 페이지 TSX.
+     - 검사 대상: 루트 및 하위 워크스페이스 `package.json`, `pnpm-workspace.yaml`, `AGENTS.md`, `.design/DESIGN.md`, `tokens/*.json`, `tailwind.config.*`, 전역 CSS, 대표 화면 컴포넌트.
+     - **스택 탐지 및 모호성 해결**: React/Next.js, Vue/Nuxt, Svelte/SvelteKit, Vanilla CSS 여부 및 빌드 도구(Vite)를 구분한다. 다중 앱 모노레포(`apps/*`)이거나 CSS 엔트리포인트 후보가 복수일 경우 임의로 특정 앱을 단정하지 않고 사용자 확인 또는 CLI 옵션(`--app`, `--css`)으로 해결한다.
    - 7대 결정 항목 매트릭스를 추적 관리한다:
      1. **대상 사용자와 사용 맥락 (Context)**
      2. **핵심 작업 및 주요 화면 (Hero Action / Screen)**
@@ -145,13 +158,13 @@ The development lifecycle enforces a strict **Golden Boundary**:
 Gate 0 승인 즉시 Phase 1부터 Phase 4까지 중간 질문 없이 한 호흡으로 연속 실행한다. 단, 화면 구조, 핵심 도메인 식별자, 브랜드/접근성 제약 등 사전 인터뷰에서 드러나지 않은 새로운 중대 결정([미정])이 발생한 경우에 한하여 예외적으로 사용자에게 에스컬레이션하여 확인을 구한다. 그 외의 세부 구현 선택은 자율 실행한다.
 
 #### Phase 1: Semantic Skeleton (Craft)
-- Semantic DOM 계층 구조(`header`, `main`, `aside`, `table`, `article`) 구축.
-- **장식용 스타일/색상 배제**. 구조적 계층, 반응형 Flex/Grid, Radix/ARIA 접근성 역할(`role="table"`, `aria-expanded`)에 집중.
+- Semantic DOM 계층 구조(`header`, `main`, `aside`, `table`, `article`) 구축 (React, Vue, Svelte, HTML 공통).
+- **장식용 스타일/색상 배제**. 구조적 계층, 반응형 Flex/Grid, W3C ARIA 접근성 역할(`role="table"`, `aria-expanded`)에 집중.
 - **고밀도 화면 규칙 (사용자가 확정한 Density >= 8)**: 사용자가 고밀도 구성을 선택한 경우에 한하여 전폭(`w-full`) 레이아웃을 사용하고 불필요한 공백 방치를 지양한다. 여유로운 밀도를 선택한 일반 뷰에서는 적절한 최대 폭(`max-w-*`)을 유지한다.
 - **Zero-Truncation Policy**: 핵심 도메인 식별자(ID, 코드, 식별 번호 등)에 무분별한 `truncate`를 걸어 식별을 방해하는 행위를 지양한다.
 
 #### Phase 2: Token & Surface Binding (Bind)
-- 시맨틱 CSS 토큰(`bg-surface`, `text-foreground`, `border-border-default` 등)으로 스타일 바인딩.
+- 시맨틱 CSS 토큰(`bg-surface`, `text-foreground`, `border-border-default` 등)으로 스타일 바인딩 (프레임워크 템플릿 문법에 맞춤 바인딩).
 - **Surface 계층 구조**: Level 0 Canvas(`bg-background`)와 Level 1 Surface(`bg-surface`) 간의 대비를 보장한다.
 - **Font & CSS Bridge Rule**: 토큰 브리지 import(`@import "../.design/tokens/theme.css";` 또는 해당 CSS 파일 위치 기준 상대 경로)가 전역 CSS 최상단(Line 1)에 위치하도록 보장한다. Monospace 폰트 스택에는 한글 폴백(`Pretendard`, `D2Coding`)을 필수로 포함한다.
 - **데이터 정렬 및 인디케이터 표준**: 다중 행 수치 비교가 필요한 데이터 표(Table)의 수치 열은 우측 정렬(`text-right`)을 적용한다.
@@ -174,8 +187,8 @@ Gate 0 승인 즉시 Phase 1부터 Phase 4까지 중간 질문 없이 한 호흡
      ```
 3. **폐루프 시각 피드백 원칙 (Token & Structure Separation)**:
    - 캡처된 뷰포트 스크린샷을 사용자에게 제시한다.
-   - **스타일 피드백 (색상, 간격, 폰트)**: TSX를 건드리지 않고 `.design/tokens/*.json`을 수정한 뒤 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)하여 전역 일관성을 유지한다.
-   - **구조적 피드백 (컴포넌트 배치, 정보 구조, DOM 변경)**: 컴포넌트 TSX 코드를 직접 수정하여 사용자 요구를 충실히 반영한다.
+   - **스타일 피드백 (색상, 간격, 폰트)**: 컴포넌트 코드를 건드리지 않고 `.design/tokens/*.json`을 수정한 뒤 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)하여 전역 일관성을 유지한다.
+   - **구조적 피드백 (컴포넌트 배치, 정보 구조, DOM 변경)**: 프레임워크 컴포넌트 코드(TSX / Vue / Svelte / HTML)를 직접 수정하여 사용자 요구를 충실히 반영한다.
 
 ---
 

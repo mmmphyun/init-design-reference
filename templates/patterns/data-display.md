@@ -28,6 +28,8 @@ Deterministic components for high-density tabular metrics, telemetry, and struct
 
 Hobson 4-State Contract (Loading Skeleton, Actionable Error, Actionable Empty, Populated)를 100% 준수하며 복합 커널 메트릭과 전주의적 경보를 수납하는 고밀도 테이블 컴포넌트입니다.
 
+### React (TSX)
+
 ```tsx
 "use client";
 

@@ -14,7 +14,9 @@ Derived from `emilkowalski/skills` and `pbakaus/impeccable` motion engineering p
 
 ## 2. Interactive Tactile Button (Tactile Press Feedback)
 
-Implements `scale(0.98)` active press physics, high-contrast focus rings, and hardware acceleration hints.
+Implements `scale(0.98)` active press physics, high-contrast focus rings, and hardware acceleration hints across frameworks.
+
+### React (TSX)
 
 ```tsx
 import React from "react";
@@ -55,9 +57,91 @@ export function TactileButton({
 }
 ```
 
+### Vue 3 (`<script setup lang="ts">`)
+
+```vue
+<script setup lang="ts">
+interface Props {
+  variant?: "primary" | "secondary" | "danger";
+  size?: "sm" | "md";
+  disabled?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: "primary",
+  size: "md",
+  disabled: false,
+});
+
+defineEmits<{ (e: "click", event: MouseEvent): void }>();
+</script>
+
+<template>
+  <button
+    :disabled="disabled"
+    :class="[
+      'inline-flex items-center justify-center font-sans font-medium rounded-btn select-none transition duration-fast ease-apple-snappy active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none will-change-transform',
+      variant === 'primary' && 'bg-primary text-primary-foreground shadow-elevation-1 hover:shadow-elevation-2 active:shadow-elevation-1 hover:brightness-105 active:brightness-95',
+      variant === 'secondary' && 'bg-surface text-foreground border border-border shadow-elevation-1 hover:bg-background active:bg-surface',
+      variant === 'danger' && 'bg-danger text-danger-foreground shadow-elevation-1 hover:brightness-105 active:brightness-95',
+      size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm',
+    ]"
+    @click="$emit('click', $event)"
+  >
+    <slot />
+  </button>
+</template>
+```
+
+### Svelte 5 (`<script lang="ts">`)
+
+```svelte
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+
+  interface Props {
+    variant?: 'primary' | 'secondary' | 'danger';
+    size?: 'sm' | 'md';
+    disabled?: boolean;
+    onclick?: (e: MouseEvent) => void;
+    children?: Snippet;
+    class?: string;
+  }
+
+  let {
+    variant = 'primary',
+    size = 'md',
+    disabled = false,
+    onclick,
+    children,
+    class: className = '',
+    ...rest
+  }: Props = $props();
+
+  const variantStyle = $derived({
+    primary: 'bg-primary text-primary-foreground shadow-elevation-1 hover:shadow-elevation-2 active:shadow-elevation-1 hover:brightness-105 active:brightness-95',
+    secondary: 'bg-surface text-foreground border border-border shadow-elevation-1 hover:bg-background active:bg-surface',
+    danger: 'bg-danger text-danger-foreground shadow-elevation-1 hover:brightness-105 active:brightness-95'
+  }[variant]);
+
+  const sizeStyle = $derived(size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm');
+</script>
+
+<button
+  {disabled}
+  {onclick}
+  class="inline-flex items-center justify-center font-sans font-medium rounded-btn select-none transition duration-fast ease-apple-snappy active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:pointer-events-none will-change-transform {variantStyle} {sizeStyle} {className}"
+  {...rest}
+>
+  {#if children}{@render children()}{/if}
+</button>
+```
+
 ## 3. Drawer / Sheet Enter & Exit Physics
 
 Emil Kowalski spring parameters mapped to CSS transitions: Enter utilizes spring deceleration, Exit utilizes snappy acceleration.
+
+### React (TSX)
 
 ```tsx
 import React, { useEffect } from "react";

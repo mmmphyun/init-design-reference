@@ -77,6 +77,16 @@ LLM에게 프론트엔드 코딩을 맡기면 보라색·인디고 그라디언�
 
 ---
 
+### 프레임워크 지원 범위 & 아키텍처 중립성
+- **1차 우선 지원 스택**: React / Next.js, Vue / Nuxt, Svelte / SvelteKit, 일반 CSS (Vanilla CSS).
+- **빌드 도구 분리**: Vite는 번들러/빌드 도구로 분류되며, 프레임워크와 혼동하지 않고 프로젝트의 실제 프레임워크 관례를 따릅니다.
+- **아키텍처 중립 코어**: 시맨틱 DOM, ARIA 접근성 규약, 3-Dial Taste 체계, 4-State 생명주기 및 모션 물리는 프레임워크에 독립적인 단일 헌법으로 동작합니다.
+- **스타일 브리지 지원 범위**:
+  - 자동 생성: Tailwind v4 (`theme.css` via `@theme`), Tailwind v3 (`tailwind.preset.js` via `presets` & `tokens.css`), Vanilla CSS (`tokens.css` via `:root`).
+  - 미지원 런타임 엔진 (CSS-in-JS: Styled Components, Emotion, Panda CSS): `tokens.css`의 `:root` CSS 변수를 수동 참조하여 연동합니다.
+
+---
+
 ## 3. 디렉토리 구조 (.design 골디락스 아키텍처)
 
 ```
@@ -92,7 +102,7 @@ LLM에게 프론트엔드 코딩을 맡기면 보라색·인디고 그라디언�
     motion.json         # 애니메이션 지속 시간 및 Emil Kowalski 스프링 물리 계수
     theme.css           # 런타임 CSS 브리지 (Tailwind v4 / Vanilla CSS)
     tailwind.preset.js  # 런타임 프리셋 브리지 (Tailwind v3)
-  patterns/             # 프로덕션 React/TSX + Tailwind 컴포넌트 패턴
+  patterns/             # 프로덕션 컴포넌트 패턴 (React/TSX, Vue 3, Svelte 5)
     layout-shells.md    # 고밀도 B2B 콕핏 및 비대칭 에디토리얼 그리드
     data-display.md     # 4대 상태(Loading/Empty/Error/Populated) 완비 데이터 테이블
     forms-inputs.md     # 키보드 접근성 폼 필드 및 필터 툴바
@@ -123,6 +133,12 @@ python "scripts/adapter.py"
 # 고밀도 B2B 데이터 콕핏 & 텔레메트리 (Variance: 3, Density: 9, Motion: 2)
 python "scripts/adapter.py" --preset b2b-dense
 
+# 다중 앱 워크스페이스 모노레포 타겟팅 (--app)
+python "scripts/adapter.py" --preset b2b-dense --app apps/web
+
+# 사용자 지정 CSS 진입 파일 명시 (--css)
+python "scripts/adapter.py" --css src/styles/main.css
+
 # 비대칭 에디토리얼 쇼케이스 & 랜딩 (Variance: 8, Density: 3, Motion: 5)
 python "scripts/adapter.py" --preset editorial-minimal
 
@@ -141,11 +157,12 @@ python "scripts/adapter.py" --preset apple-fluid
 
 1. **Gate 0: Smart Alignment (High-Touch Dialog & Hard-Guard)**:
    - 기존 프로젝트 정체성 파악 및 6-Decision Matrix 추적 (확인 / 프로젝트 추출 / 미정 / 가정).
+   - 다중 앱 모노레포 및 다중 CSS 진입점 후보의 모호성을 선제 확인하고 해소.
    - Adaptive Deep Probe를 통해 합의된 Taste 3-다이얼(1~10) 및 브랜드 토큰 동적 합성.
    - **사용자 승인 락(Strict Lock)**: 사용자 명시 승인 전까지 파일 작성 및 `adapter.py` 실행 금지.
    - `python scripts/adapter.py --verify-spec` 하드가드 통과 검증 (다이얼 범위 1~10 및 필수 토큰 유효성).
-2. **Phase 1: Semantic Skeleton (Craft)**: 색상이나 장식 없이 시맨틱 DOM 트리, 접근성(ARIA) 구조, 반응형 그리드 구축.
-3. **Phase 2: Token & Surface Binding (Bind)**: `.design/tokens/*.json` 시맨틱 유틸리티 클래스 매핑 (하드코딩 hex 및 임의 Tailwind 색상 금지).
+2. **Phase 1: Semantic Skeleton (Craft)**: 색상이나 장식 없이 시맨틱 DOM 트리, 접근성(ARIA) 구조, 반응형 그리드 구축 (React, Vue, Svelte, HTML 공통).
+3. **Phase 2: Token & Surface Binding (Bind)**: `.design/tokens/*.json` 시맨틱 유틸리티 클래스 및 CSS 변수 매핑 (하드코딩 hex 및 임의 Tailwind 색상 금지).
 4. **Phase 3: Deterministic Lint & Self-Healing (Critique)**:
    ```powershell
    python scripts/lint_ui.py src/
@@ -157,7 +174,7 @@ python "scripts/adapter.py" --preset apple-fluid
      ```powershell
      python scripts/capture_ui.py
      ```
-   - 사용자 피드백 시 스타일(색상·간격·폰트)은 `tokens/*.json`으로 역추적하고, 컴포넌트 구조 변경은 TSX 코드를 수정하여 정밀 반영.
+   - 사용자 피드백 시 스타일(색상·간격·폰트)은 `tokens/*.json`으로 역추적하고, 컴포넌트 구조 변경은 프레임워크 컴포넌트 코드(TSX / Vue / Svelte / HTML)를 수정하여 정밀 반영.
 
 ---
 

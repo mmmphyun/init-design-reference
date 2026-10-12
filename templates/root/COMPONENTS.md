@@ -44,7 +44,10 @@ For pressable, navigable, or input components:
 
 ---
 
-## 3. Unstyled Radix Composition (shadcn/ui Paradigm)
-- Separate structural accessibility logic from visual styling tokens.
-- Favor compositional primitives (`Slot`, `asChild`) over monolithic nested components.
-- Zero hardcoded arbitrary Tailwind classes (`p-[13px]`, `bg-[#1e293b]`). All styles bind directly to `reference/tokens/*.json`.
+## 3. Component Composition & Primitives (Framework Integration)
+- **Framework-Neutral Principle**: Separate structural accessibility (ARIA) logic from visual styling tokens. All visual values must bind to `.design/tokens/` (or `reference/tokens/`) without hardcoded arbitrary values (`p-[13px]`, `bg-[#1e293b]`).
+- **Framework-Specific Idioms**:
+  - **React / Next.js**: Favor unstyled headless composition (`Slot`, `asChild` via Radix UI) and typed props interfaces (`React.ButtonHTMLAttributes`).
+  - **Vue 3 / Nuxt**: Use `<script setup lang="ts">`, scoped slots, and headless primitives (Radix Vue / Reka UI) with `as-child`.
+  - **Svelte 5 / SvelteKit**: Utilize Svelte 5 snippets (`{#snippet ...}`, `{@render ...}`) and headless primitives (Bits UI) with typed props.
+  - **Vanilla / Web Components**: Use semantic HTML5 elements or Custom Elements encapsulating ARIA states and binding to CSS Custom Properties (`var(--...)`).
