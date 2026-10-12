@@ -525,6 +525,24 @@ def check_workspace_framework_and_css_resolution():
             log(f"Targeting apps/web failed: {web_ctx}", "FAIL")
             return False
 
+        # 2-b. Hoisted Tailwind in root + Next.js only in subproject + tailwind.config.js in subproject
+        hoist_mono = os.path.join(temp_dir, "hoist_monorepo")
+        os.makedirs(os.path.join(hoist_mono, "apps", "web"), exist_ok=True)
+        with open(os.path.join(hoist_mono, "package.json"), "w", encoding="utf-8") as f:
+            json.dump({"name": "hoist-root", "devDependencies": {"tailwindcss": "^3.4.1"}}, f)
+        with open(os.path.join(hoist_mono, "apps", "web", "package.json"), "w", encoding="utf-8") as f:
+            json.dump({"name": "web-app", "dependencies": {"next": "^14.0.0"}}, f)
+        with open(os.path.join(hoist_mono, "apps", "web", "tailwind.config.js"), "w", encoding="utf-8") as f:
+            f.write("module.exports = {};")
+
+        hoist_ctx = adapter.detect_project_context(base_dir=hoist_mono, app_dir="apps/web")
+        if hoist_ctx["framework"] != "nextjs":
+            log(f"Hoisted mono framework detection failed: expected 'nextjs', got '{hoist_ctx['framework']}'", "FAIL")
+            return False
+        if hoist_ctx["style_engine"] != "tailwind-v3":
+            log(f"Hoisted mono style_engine detection failed: expected 'tailwind-v3', got '{hoist_ctx['style_engine']}'", "FAIL")
+            return False
+
         # 3. Multiple CSS candidates: detecting ambiguity vs explicit override
         with open(os.path.join(web_dir, "src", "index.css"), "w") as f: f.write("/* 1 */")
         with open(os.path.join(web_dir, "src", "main.css"), "w") as f: f.write("/* 2 */")

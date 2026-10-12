@@ -61,8 +61,8 @@ def detect_project_context(base_dir=".", app_dir=None):
             if "@tailwindcss/postcss" in deps or "@tailwindcss/vite" in deps:
                 style = "tailwind-v4"
             elif "tailwindcss" in deps:
-                tw_ver = str(deps.get("tailwindcss", ""))
-                if re.search(r"[\^~>=]?\s*4\.", tw_ver):
+                tw_ver = str(deps.get("tailwindcss", "")).strip()
+                if re.match(r"^[\^~>=]?\s*4\.", tw_ver):
                     style = "tailwind-v4"
                 else:
                     style = "tailwind-v3"
@@ -88,92 +88,98 @@ def detect_project_context(base_dir=".", app_dir=None):
         clean_app = app_dir.replace("\\", "/").strip("./")
         context["subproject_dir"] = clean_app
         sub_pkg_path = os.path.join(base_dir, clean_app, "package.json")
-        if os.path.exists(sub_pkg_path):
+        sub_info = inspect_pkg(sub_pkg_path) if os.path.exists(sub_pkg_path) else None
+        if sub_info:
             context["has_package_json"] = True
-            sub_info = inspect_pkg(sub_pkg_path)
-            if sub_info:
-                context["framework"] = sub_info["framework"]
-                context["build_tool"] = sub_info["build_tool"]
-                context["style_engine"] = sub_info["style_engine"]
-        elif root_has_pkg and root_info:
-            context["has_package_json"] = True
-            context["framework"] = root_info["framework"]
-            context["build_tool"] = root_info["build_tool"]
-            context["style_engine"] = root_info["style_engine"]
-        return context
+            context["framework"] = sub_info["framework"]
+            context["build_tool"] = sub_info["build_tool"]
+            context["style_engine"] = sub_info["style_engine"]
 
-    # Discover workspace apps / subpackages
-    discovered_pkgs = []
-    search_dirs = ["apps", "packages"]
-    for s_dir in search_dirs:
-        full_s = os.path.join(base_dir, s_dir)
-        if os.path.isdir(full_s):
+        # Merge hoisted dependencies from root package.json if subproject didn't define them
+        if root_info:
+            context["has_package_json"] = True
+            if context["framework"] == "unknown" and root_info["framework"] != "unknown":
+                context["framework"] = root_info["framework"]
+            if not context["build_tool"] and root_info["build_tool"]:
+                context["build_tool"] = root_info["build_tool"]
+            if context["style_engine"] == "css" and root_info["style_engine"] != "css":
+                context["style_engine"] = root_info["style_engine"]
+    else:
+        # Discover workspace apps / subpackages
+        discovered_pkgs = []
+        search_dirs = ["apps", "packages"]
+        for s_dir in search_dirs:
+            full_s = os.path.join(base_dir, s_dir)
+            if os.path.isdir(full_s):
+                try:
+                    for entry in sorted(os.listdir(full_s)):
+                        sub = os.path.join(full_s, entry)
+                        if os.path.isdir(sub) and os.path.exists(os.path.join(sub, "package.json")):
+                            rel = os.path.relpath(sub, base_dir).replace("\\", "/")
+                            discovered_pkgs.append(rel)
+                except Exception:
+                    pass
+
+        if not discovered_pkgs:
             try:
-                for entry in sorted(os.listdir(full_s)):
-                    sub = os.path.join(full_s, entry)
-                    if os.path.isdir(sub) and os.path.exists(os.path.join(sub, "package.json")):
-                        rel = os.path.relpath(sub, base_dir).replace("\\", "/")
-                        discovered_pkgs.append(rel)
+                for entry in sorted(os.listdir(base_dir)):
+                    entry_path = os.path.join(base_dir, entry)
+                    if os.path.isdir(entry_path) and not entry.startswith(".") and entry not in {
+                        "node_modules", "reference", ".design", "dist", "build", "templates", "scripts", "coverage", "public"
+                    }:
+                        if os.path.exists(os.path.join(entry_path, "package.json")):
+                            discovered_pkgs.append(entry)
             except Exception:
                 pass
 
-    if not discovered_pkgs:
-        try:
-            for entry in sorted(os.listdir(base_dir)):
-                entry_path = os.path.join(base_dir, entry)
-                if os.path.isdir(entry_path) and not entry.startswith(".") and entry not in {
-                    "node_modules", "reference", ".design", "dist", "build", "templates", "scripts", "coverage", "public"
-                }:
-                    if os.path.exists(os.path.join(entry_path, "package.json")):
-                        discovered_pkgs.append(entry)
-        except Exception:
-            pass
+        ui_apps = []
+        for app_rel in discovered_pkgs:
+            sub_pkg = os.path.join(base_dir, app_rel, "package.json")
+            info = inspect_pkg(sub_pkg)
+            if info:
+                if info["framework"] != "unknown" or info["style_engine"] != "css":
+                    ui_apps.append((app_rel, info))
 
-    ui_apps = []
-    for app_rel in discovered_pkgs:
-        sub_pkg = os.path.join(base_dir, app_rel, "package.json")
-        info = inspect_pkg(sub_pkg)
-        if info:
-            if info["framework"] != "unknown" or info["style_engine"] != "css":
-                ui_apps.append((app_rel, info))
-
-    if root_info and root_info["framework"] != "unknown":
-        context["framework"] = root_info["framework"]
-        context["build_tool"] = root_info["build_tool"]
-        context["style_engine"] = root_info["style_engine"]
-        context["has_package_json"] = True
-        if ui_apps:
-            context["ambiguous_apps"] = [app_rel for app_rel, _ in ui_apps]
-    elif len(ui_apps) == 1:
-        app_rel, info = ui_apps[0]
-        context["subproject_dir"] = app_rel
-        context["framework"] = info["framework"]
-        context["build_tool"] = info["build_tool"]
-        context["style_engine"] = info["style_engine"]
-        context["has_package_json"] = True
-    elif len(ui_apps) > 1:
-        context["ambiguous_apps"] = [app_rel for app_rel, _ in ui_apps]
-        context["has_package_json"] = True
-        fw_set = {info["framework"] for _, info in ui_apps}
-        if len(fw_set) == 1:
-            context["framework"] = list(fw_set)[0]
-    elif len(discovered_pkgs) == 1 and not root_has_pkg:
-        app_rel = discovered_pkgs[0]
-        sub_pkg = os.path.join(base_dir, app_rel, "package.json")
-        info = inspect_pkg(sub_pkg)
-        context["subproject_dir"] = app_rel
-        context["has_package_json"] = True
-        if info:
+        if root_info and root_info["framework"] != "unknown":
+            context["framework"] = root_info["framework"]
+            context["build_tool"] = root_info["build_tool"]
+            context["style_engine"] = root_info["style_engine"]
+            context["has_package_json"] = True
+            if ui_apps:
+                context["ambiguous_apps"] = [app_rel for app_rel, _ in ui_apps]
+        elif len(ui_apps) == 1:
+            app_rel, info = ui_apps[0]
+            context["subproject_dir"] = app_rel
             context["framework"] = info["framework"]
             context["build_tool"] = info["build_tool"]
             context["style_engine"] = info["style_engine"]
-    elif root_info:
-        context["framework"] = root_info["framework"]
-        context["build_tool"] = root_info["build_tool"]
-        context["style_engine"] = root_info["style_engine"]
-        context["has_package_json"] = True
+            context["has_package_json"] = True
+            # Inherit hoisted root style engine if sub-app is css only
+            if context["style_engine"] == "css" and root_info and root_info["style_engine"] != "css":
+                context["style_engine"] = root_info["style_engine"]
+        elif len(ui_apps) > 1:
+            context["ambiguous_apps"] = [app_rel for app_rel, _ in ui_apps]
+            context["has_package_json"] = True
+            fw_set = {info["framework"] for _, info in ui_apps}
+            if len(fw_set) == 1:
+                context["framework"] = list(fw_set)[0]
+        elif len(discovered_pkgs) == 1 and not root_has_pkg:
+            app_rel = discovered_pkgs[0]
+            sub_pkg = os.path.join(base_dir, app_rel, "package.json")
+            info = inspect_pkg(sub_pkg)
+            context["subproject_dir"] = app_rel
+            context["has_package_json"] = True
+            if info:
+                context["framework"] = info["framework"]
+                context["build_tool"] = info["build_tool"]
+                context["style_engine"] = info["style_engine"]
+        elif root_info:
+            context["framework"] = root_info["framework"]
+            context["build_tool"] = root_info["build_tool"]
+            context["style_engine"] = root_info["style_engine"]
+            context["has_package_json"] = True
 
-    # Fallback style engine check if still css
+    # Fallback style engine check if still css (inspect both subproject and root for tailwind config)
     if context["style_engine"] == "css":
         check_roots = []
         if context.get("subproject_dir"):
@@ -840,14 +846,14 @@ def scaffold_reference(target_dir=None, force=False, preset="default", dials_ove
     print(f"Detected Environment: Framework={ctx['framework']}, StyleEngine={ctx['style_engine']}{sub_info}{bt_info}")
 
     if ctx.get("ambiguous_apps"):
-        print(f"Notice: Multiple workspace apps detected: [{', '.join(ctx['ambiguous_apps'])}]. Specify --app <dir> to target a specific app.")
+        print(f"Notice: Multiple workspace apps detected: [{', '.join(ctx['ambiguous_apps'])}]. Note: Automatically selecting an arbitrary app is disabled. Pass '--app <dir>' to target a specific app.")
 
     paths = resolve_css_integration_paths(project_base, target_dir, subproject_dir=ctx.get("subproject_dir"), custom_css=css_entry)
     css_entry_display = paths["display_entry"]
     inferred_hint = " (inferred; adjust if your CSS location differs)" if paths["is_inferred"] else ""
 
     if paths.get("ambiguous"):
-        print(f"Notice: Multiple CSS entrypoint candidates found: [{', '.join(paths['candidates'])}]. Using '{css_entry_display}' as reference. Pass --css <path> to specify.")
+        print(f"Notice: Multiple CSS entrypoint candidates found: [{', '.join(paths['candidates'])}]. Note: '{css_entry_display}' was NOT auto-selected; displaying as a reference fallback only. Pass '--css <path>' to explicitly confirm your entrypoint.")
 
     clean_target = target_dir.replace("\\", "/").strip("./")
     if ctx["style_engine"] == "tailwind-v4":
