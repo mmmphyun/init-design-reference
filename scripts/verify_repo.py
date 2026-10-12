@@ -543,6 +543,29 @@ def check_workspace_framework_and_css_resolution():
             log(f"Hoisted mono style_engine detection failed: expected 'tailwind-v3', got '{hoist_ctx['style_engine']}'", "FAIL")
             return False
 
+        # 2-c. Root tailwind.config.js only (no tailwind in package.json, subproject css)
+        root_tw_mono = os.path.join(temp_dir, "root_tw_mono")
+        os.makedirs(os.path.join(root_tw_mono, "apps", "client"), exist_ok=True)
+        with open(os.path.join(root_tw_mono, "package.json"), "w", encoding="utf-8") as f:
+            json.dump({"name": "root-tw-only"}, f)
+        with open(os.path.join(root_tw_mono, "tailwind.config.js"), "w", encoding="utf-8") as f:
+            f.write("module.exports = {};")
+        with open(os.path.join(root_tw_mono, "apps", "client", "package.json"), "w", encoding="utf-8") as f:
+            json.dump({"name": "client-app"}, f)
+
+        root_tw_ctx = adapter.detect_project_context(base_dir=root_tw_mono, app_dir="apps/client")
+        if root_tw_ctx["style_engine"] != "tailwind-v3":
+            log(f"Root tailwind config only detection failed: expected 'tailwind-v3', got '{root_tw_ctx['style_engine']}'", "FAIL")
+            return False
+
+        # 2-d. Invalid --app path handling: must raise FileNotFoundError and CLI fail
+        try:
+            adapter.detect_project_context(base_dir=mono_dir, app_dir="apps/nonexistent")
+            log("detect_project_context failed to raise on nonexistent --app", "FAIL")
+            return False
+        except FileNotFoundError:
+            pass  # Expected
+
         # 3. Multiple CSS candidates: detecting ambiguity vs explicit override
         with open(os.path.join(web_dir, "src", "index.css"), "w") as f: f.write("/* 1 */")
         with open(os.path.join(web_dir, "src", "main.css"), "w") as f: f.write("/* 2 */")
@@ -592,6 +615,18 @@ def check_workspace_framework_and_css_resolution():
             return False
         if "Framework=nextjs" not in run_res.stdout or "apps/web/src/styles/deep/app.css" not in run_res.stdout:
             log(f"CLI output missing framework or custom css entrypoint:\n{run_res.stdout}", "FAIL")
+            return False
+
+        # 5-b. CLI execution with invalid --app: must fail with nonzero exit code
+        run_fail = subprocess.run([
+            sys.executable, adapter_path, target_design,
+            "--app", "apps/invalid_app"
+        ], capture_output=True, text=True, cwd=mono_dir)
+        if run_fail.returncode == 0:
+            log("CLI adapter run with invalid --app unexpectedly succeeded", "FAIL")
+            return False
+        if "does not exist" not in run_fail.stderr:
+            log(f"CLI error message for invalid --app unexpected:\n{run_fail.stderr}", "FAIL")
             return False
 
         log("Workspace monorepo, framework detection, and ambiguous CSS resolution verified.", "PASS")

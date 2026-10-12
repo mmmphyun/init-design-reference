@@ -86,9 +86,15 @@ def detect_project_context(base_dir=".", app_dir=None):
     # Handle explicit app_dir override
     if app_dir:
         clean_app = app_dir.replace("\\", "/").strip("./")
+        target_app_dir = os.path.join(base_dir, clean_app)
+        if not os.path.isdir(target_app_dir):
+            raise FileNotFoundError(f"Specified --app directory does not exist: '{clean_app}'")
+        sub_pkg_path = os.path.join(target_app_dir, "package.json")
+        if not os.path.isfile(sub_pkg_path):
+            raise FileNotFoundError(f"Specified --app directory does not contain package.json: '{clean_app}'")
+
         context["subproject_dir"] = clean_app
-        sub_pkg_path = os.path.join(base_dir, clean_app, "package.json")
-        sub_info = inspect_pkg(sub_pkg_path) if os.path.exists(sub_pkg_path) else None
+        sub_info = inspect_pkg(sub_pkg_path)
         if sub_info:
             context["has_package_json"] = True
             context["framework"] = sub_info["framework"]
@@ -836,7 +842,11 @@ def scaffold_reference(target_dir=None, force=False, preset="default", dials_ove
 
     # Inspect context & generate CSS bridges
     project_base = os.path.dirname(os.path.abspath(target_dir))
-    ctx = detect_project_context(base_dir=project_base, app_dir=app_dir)
+    try:
+        ctx = detect_project_context(base_dir=project_base, app_dir=app_dir)
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
     generate_css_bridges(target_dir, ctx["style_engine"], force=force)
 
     sub_info = f" (detected in ./{ctx['subproject_dir']})" if ctx.get("subproject_dir") else ""
@@ -881,7 +891,11 @@ if __name__ == "__main__":
     if args.bridge_only:
         target = resolve_design_target(args.target)
         project_base = os.path.dirname(os.path.abspath(target))
-        ctx = detect_project_context(base_dir=project_base, app_dir=args.app)
+        try:
+            ctx = detect_project_context(base_dir=project_base, app_dir=args.app)
+        except FileNotFoundError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
         generate_css_bridges(target, ctx["style_engine"], force=True)
         print(f"Regenerated CSS bridges for '{target}'.")
         sys.exit(0)
