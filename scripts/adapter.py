@@ -78,6 +78,67 @@ def detect_project_context(base_dir="."):
 
     return context
 
+def resolve_css_integration_paths(project_base, target_dir, subproject_dir=None):
+    """
+    Locates actual CSS entrypoints or calculates deterministic relative import paths
+    from the CSS entrypoint directory to generated tokens.
+    """
+    search_roots = []
+    if subproject_dir:
+        search_roots.append(os.path.join(project_base, subproject_dir))
+    search_roots.append(project_base)
+
+    css_filenames = [
+        "src/index.css",
+        "src/app/globals.css",
+        "src/globals.css",
+        "src/main.css",
+        "src/styles.css",
+        "app/globals.css",
+        "index.css",
+        "styles.css"
+    ]
+
+    found_entry_abs = None
+    for root in search_roots:
+        for fname in css_filenames:
+            candidate = os.path.join(root, fname)
+            if os.path.exists(candidate):
+                found_entry_abs = candidate
+                break
+        if found_entry_abs:
+            break
+
+    if not found_entry_abs:
+        default_rel = "src/index.css"
+        found_entry_abs = os.path.join(search_roots[0], default_rel)
+        is_inferred = True
+    else:
+        is_inferred = False
+
+    css_dir = os.path.dirname(os.path.abspath(found_entry_abs))
+    theme_css_abs = os.path.abspath(os.path.join(target_dir, "tokens", "theme.css"))
+    tokens_css_abs = os.path.abspath(os.path.join(target_dir, "tokens", "tokens.css"))
+    preset_js_abs = os.path.abspath(os.path.join(target_dir, "tokens", "tailwind.preset.js"))
+
+    rel_theme = os.path.relpath(theme_css_abs, css_dir).replace("\\", "/")
+    rel_tokens = os.path.relpath(tokens_css_abs, css_dir).replace("\\", "/")
+    tailwind_cfg_dir = search_roots[0]
+    rel_preset = os.path.relpath(preset_js_abs, tailwind_cfg_dir).replace("\\", "/")
+
+    def format_rel(path_str):
+        return path_str if path_str.startswith(".") else f"./{path_str}"
+
+    display_entry = os.path.relpath(found_entry_abs, project_base).replace("\\", "/")
+
+    return {
+        "display_entry": display_entry,
+        "is_inferred": is_inferred,
+        "import_theme": format_rel(rel_theme),
+        "import_tokens": format_rel(rel_tokens),
+        "import_preset": format_rel(rel_preset)
+    }
+
 def update_gitignore(target_dir):
     project_base = os.path.dirname(os.path.abspath(target_dir))
     gitignore_path = os.path.join(project_base, ".gitignore")
@@ -562,16 +623,17 @@ def scaffold_reference(target_dir=None, force=False, preset="default", dials_ove
     print(f"Preset Applied: {preset} ({PRESETS.get(preset, {}).get('desc', '')})")
     print(f"Detected Environment: Framework={ctx['framework']}, StyleEngine={ctx['style_engine']}{sub_info}")
 
+    paths = resolve_css_integration_paths(project_base, target_dir, subproject_dir=ctx.get("subproject_dir"))
+    css_entry = paths["display_entry"]
+    inferred_hint = " (inferred; adjust if your CSS location differs)" if paths["is_inferred"] else ""
+
     clean_target = target_dir.replace("\\", "/").strip("./")
-    css_entry = f"{ctx['subproject_dir']}/src/index.css" if ctx.get("subproject_dir") else "your CSS entrypoint"
-    rel_prefix = "../" if (ctx.get("subproject_dir") or "src" in css_entry) else "./"
-    import_path = f"{rel_prefix}{clean_target}/tokens/theme.css"
     if ctx["style_engine"] == "tailwind-v4":
-        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"{import_path}\";' at Line 1 of {css_entry} (before '@import \"tailwindcss\";') to prevent W3C font drop.")
+        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"{paths['import_theme']}\";' at Line 1 of {css_entry}{inferred_hint} (before '@import \"tailwindcss\";') to prevent W3C font drop.")
     elif ctx["style_engine"] == "tailwind-v3":
-        print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"{rel_prefix}{clean_target}/tokens/tailwind.preset.js\")]' to tailwind.config.js, and import {rel_prefix}{clean_target}/tokens/tokens.css in {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"{paths['import_preset']}\")]' to tailwind.config.js, and import '{paths['import_tokens']}' in {css_entry}{inferred_hint}.")
     else:
-        print(f"Integration: Generated {clean_target}/tokens/tokens.css. Add '@import \"{rel_prefix}{clean_target}/tokens/tokens.css\";' to {css_entry}.")
+        print(f"Integration: Generated {clean_target}/tokens/tokens.css. Add '@import \"{paths['import_tokens']}\";' to {css_entry}{inferred_hint}.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scaffold production-grade UI design reference and pattern architecture")

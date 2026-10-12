@@ -72,7 +72,7 @@ When tasked with frontend code, LLMs routinely converge toward generic purple/in
 `init-design-reference` eliminates this across **4 Engineering Pillars**:
 1. **Tokens & 3-Dial Taste Knobs (`DESIGN.md`, `.design/tokens/*.json`)**: Adopts `leonxlnx/taste-skill` numeric dials (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`, scaled 1–10).
 2. **Proven Component Recipes (`.design/patterns/*.md`)**: Production React/TSX + Tailwind blocks for dense data tables, shells, forms, and spring physics.
-3. **Deterministic Linter (`scripts/lint_ui.py`)**: Regex-based static analysis inspired by `pbakaus/impeccable` patterns, mechanically blocking key accessibility defects (WCAG), generic clichés, and hardcoded tokens offline.
+3. **Deterministic Linter (`scripts/lint_ui.py`)**: Regex-based static analysis inspired by `pbakaus/impeccable` patterns, mechanically blocking key accessibility defects (WCAG) and hardcoded tokens with `[ERROR]`, while flagging generic AI clichés and layout-thrashing risks as non-blocking `[WARN]`.
 4. **Closed-Loop Vision Feedback (`scripts/capture_ui.py`)**: Uses Playwright to capture desktop/mobile viewports and collect console errors for vision-model self-correction.
 
 ---

@@ -72,7 +72,7 @@ LLM에게 프론트엔드 코딩을 맡기면 보라색·인디고 그라디언�
 `init-design-reference`는 이 문제를 **4대 핵심 엔지니어링 레이어**로 원천 차단합니다:
 1. **토큰 & 3대 Taste 다이얼 (`DESIGN.md`, `.design/tokens/*.json`)**: `leonxlnx/taste-skill`의 3대 정량 다이얼(`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`)을 수치(1~10)로 통제.
 2. **검증된 컴포넌트 레시피 (`.design/patterns/*.md`)**: React/TSX + Tailwind 기반의 표준 레이아웃, 데이터 테이블, 폼, 스프링 마이크로 인터랙션 제공.
-3. **결정론적 정적 린터 (`scripts/lint_ui.py`)**: `pbakaus/impeccable`의 패턴 검출 철학을 정규식 기반으로 구현하여 접근성 결함(WCAG)과 하드코딩된 토큰을 오프라인에서 기계적으로 차단.
+3. **결정론적 정적 린터 (`scripts/lint_ui.py`)**: `pbakaus/impeccable`의 패턴 검출 철학을 정규식 기반으로 구현하여 접근성 결함(WCAG)과 하드코딩된 토큰을 `[ERROR]`로 기계적 차단하고, 일반 AI 클리셰 및 모션 결함은 논블로킹 `[WARN]`으로 감지.
 4. **시각 피드백 폐루프 (`scripts/capture_ui.py`)**: Playwright 기반으로 뷰포트 캡처 및 콘솔 런타임 에러를 수집하여 모델이 시각적으로 자가 교정하도록 유도.
 
 ---

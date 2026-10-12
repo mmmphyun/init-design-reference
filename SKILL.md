@@ -103,10 +103,11 @@ The development lifecycle enforces a strict **Golden Boundary**:
      6. **지원 기기 및 뷰포트 범위 (Device Scope)**
      7. **브랜드/접근성 제약 (Constraints & Brand)**
    - 각 항목의 상태를 **[사용자 확인] / [기존 프로젝트에서 확인] / [미정] / [에이전트 가정]**으로 분류한다.
-   - **기존 디자인 시스템 수동 매핑 프로토콜 (Legacy Design System Mapping)**:
+   - **기존 디자인 시스템 전수 매핑 및 단일 원천(SSOT) 프로토콜 (Legacy Design System Mapping)**:
      - 기존 프로젝트에 `.design/tokens/*.json`이 없더라도 `tailwind.config.*`의 커스텀 테마나 전역 CSS의 커스텀 속성(`--*`)이 존재하는 경우:
-     - 에이전트는 기존 파일에서 브랜드 컬러(배경, 텍스트, 액센트, 보더)와 폰트를 직접 식별하여 **[기존 프로젝트에서 확인]**으로 기록한다.
-     - 스캐폴딩 후 임의의 프리셋 기본값으로 방치하지 않고, 식별된 기존 값을 `.design/tokens/colors.json`과 `typography.json`에 매핑 반영한 뒤 `python scripts/adapter.py --bridge-only`를 실행한다.
+     - **전수 토큰 식별**: 색상(배경, 텍스트, 액센트, 보더)과 폰트뿐 아니라, 기존 시스템에 명시된 간격 스케일(`spacing`), 보더 반경(`radii`), 입체감/그림자(`shadows`), 모션 곡선(`motion`)까지 전수 식별하여 **[기존 프로젝트에서 확인]**으로 기록한다.
+     - **토큰 전사 및 SSOT 동기화**: 스캐폴딩 후 임의의 프리셋 기본값으로 덮어쓰지 않고, 식별된 기존 값을 대응하는 토큰 파일(`.design/tokens/colors.json`, `typography.json`, `spacing.json`, `radii.json`, `shadows.json`, `motion.json`)에 전사 주입한다. 기존에 미정의된 영역에 한해서만 프리셋 기본값을 보완재로 채택한다.
+     - **브리지 동기화**: 수동 매핑 완료 후 `python scripts/adapter.py --bridge-only`를 실행하여 런타임 CSS 브리지(`theme.css`, `tokens.css`)를 재생성한다.
 
 2. **Adaptive Deep Probe (설문지형 일괄 질문 엄격 금지)**:
    - 턴당 **최대 1~2개의 핵심 질문**만 제시하며, 결과를 실질적으로 바꿀 **[미정]** 항목에 대해서만 질문한다.
@@ -130,7 +131,7 @@ The development lifecycle enforces a strict **Golden Boundary**:
      ```powershell
      python scripts/adapter.py --preset <base-preset> --dials <v,d,m>
      ```
-   - **Token Injection Mandate**: 기존 프로젝트 토큰이 없는 신규 스캐폴딩의 경우, 사용자와 합의된 고유 브랜드 컬러 및 폰트를 `.design/tokens/colors.json`, `typography.json`에 직접 반영하고 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)한다. 기존 토큰이 이미 있는 프로젝트에서는 기존 값을 보존한다.
+   - **Token Injection Mandate**: 기존 프로젝트 토큰이 없는 신규 스캐폴딩의 경우, 사용자와 합의된 고유 브랜드 컬러 및 폰트를 `.design/tokens/colors.json`, `typography.json`에 직접 반영하고 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)한다. 기존 프로젝트에 커스텀 디자인 시스템(CSS 변수, Tailwind 테마)이 확립된 경우 앞선 전수 매핑 프로토콜에 따라 기존 값을 토큰 파일들에 전사하여 완전히 보존한다.
    - 스펙 검증 하드가드 실행:
      ```powershell
      python scripts/adapter.py --verify-spec

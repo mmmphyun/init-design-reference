@@ -5,7 +5,7 @@ Derived from `emilkowalski/skills` and `pbakaus/impeccable` motion engineering p
 
 ## 1. Golden Rules of Interface Motion
 
-1. **Transform & Opacity Only**: Never animate layout geometry properties (`width`, `height`, `top`, `left`, `margin`, `padding`). Animate ONLY `transform` and `opacity` to avoid sub-pixel layout thrashing and maintain 60/120fps.
+1. **No Layout-Thrashing Properties**: Never animate reflow-inducing layout geometry (`width`, `height`, `top`, `left`, `margin`, `padding`) or use blunt catch-all transitions (`transition-all`). Animate GPU-composited properties (`transform`, `opacity`) for spatial motion, and lightweight paint properties (`color`, `background-color`, `border-color`, `box-shadow`) via targeted transitions (`transition-colors`, `transition-shadow`) for interactive states to maintain 60/120fps.
 2. **Spring Physics for Physical Reality**: Use non-linear springs for interactive surfaces. Avoid mechanical linear transitions on pressable components.
 3. **Interruptibility & Timing Budget**:
    - Micro-interaction duration MUST NOT exceed 350ms (`maxMicroInteractionDuration`).
