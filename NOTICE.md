@@ -258,3 +258,13 @@ This project incorporates, adapts, and builds upon ideas, architectures, specifi
 - **Reference**: Figma Developer Platform & Model Context Protocol Specifications
 - **Usage in this project**:
   - Variables and design tokens extraction bridge in `scripts/sync_figma.py`.
+
+---
+
+## 13. transitions.dev (Conceptual Reference)
+- **Author / Publisher**: transitions.dev
+- **Reference / Terms**: [https://transitions.dev/terms.html](https://transitions.dev/terms.html) (Reviewed: 2026-10-12)
+- **Usage in this project**:
+  - Conceptual inspiration for interaction trigger taxonomy and motion scenario boundaries (anchored overlays, dialogs, disclosures, feedback) reflected in `templates/notes/interaction.md`.
+  - **License & Non-Distribution Note**: No code, CSS/JS implementations, recipes, animations, tokens, scales, CSS variables, `_root.css`, or descriptive text from transitions.dev are copied, bundled, distributed, or licensed under MIT in this project. All guidelines, constraints, and tokens are independently authored using this repository's native token schemas (`templates/tokens/motion.json`) and existing design system conventions.
+

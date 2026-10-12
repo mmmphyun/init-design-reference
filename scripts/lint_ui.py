@@ -131,7 +131,7 @@ RULES: List[Rule] = [
     Rule(
         rule_id="layout-thrashing-animation",
         severity="WARN",
-        message="Layout thrashing animation detected (transition-all or animating layout geometry). Avoid animating width/height/top/left/margin/padding; animate transform, opacity, colors, or shadows.",
+        message="Layout thrashing animation detected (transition-all or animating layout geometry). Avoid animating width/height/top/left/margin/padding; animate spatial properties (transform, opacity) or state feedback properties (color, background-color, border-color, box-shadow).",
         pattern=re.compile(r"\btransition-all\b|\btransition-\[(?:width|height|top|left|margin|padding)\]")
     ),
 

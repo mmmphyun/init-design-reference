@@ -64,6 +64,7 @@ def check_required_templates():
         "NOTICE.md",
         "templates/notes/do-not-copy.md",
         "templates/notes/layout.md",
+        "templates/notes/interaction.md",
         "templates/tokens/colors.json",
         "templates/tokens/typography.json",
         "templates/tokens/spacing.json",
@@ -330,13 +331,52 @@ def check_linter_behavior():
             log("Linter failed to catch critical-identifier-truncate in high-density file!", "FAIL")
             return False
 
+        # Test motion linter behavior: layout-thrashing violation vs valid spatial and state feedback transitions
+        motion_bad_file = os.path.join(temp_dir, "bad_motion.tsx")
+        with open(motion_bad_file, "w", encoding="utf-8") as f:
+            f.write(
+                'export function BadMotion() {\n'
+                '  return (\n'
+                '    <div>\n'
+                '      <div className="transition-all duration-200">Catch-all transition</div>\n'
+                '      <div className="transition-[height] duration-200">Animating layout geometry</div>\n'
+                '    </div>\n'
+                '  );\n'
+                '}\n'
+            )
+
+        res_bad_motion = subprocess.run([sys.executable, linter_path, motion_bad_file], capture_output=True, text=True)
+        if "layout-thrashing-animation" not in res_bad_motion.stdout:
+            log("Linter failed to catch layout-thrashing-animation on transition-all / transition-[height]!", "FAIL")
+            return False
+        if res_bad_motion.stdout.count("layout-thrashing-animation") < 2:
+            log("Linter failed to catch both layout-thrashing occurrences!", "FAIL")
+            return False
+
+        motion_good_file = os.path.join(temp_dir, "good_motion.tsx")
+        with open(motion_good_file, "w", encoding="utf-8") as f:
+            f.write(
+                'export function GoodMotion() {\n'
+                '  return (\n'
+                '    <button className="transition-colors transition-transform duration-fast ease-out hover:bg-surface active:scale-[0.98] focus-visible:ring-2">\n'
+                '      <span className="transition-opacity transition-shadow duration-normal">Valid motion properties</span>\n'
+                '    </button>\n'
+                '  );\n'
+                '}\n'
+            )
+
+        res_good_motion = subprocess.run([sys.executable, linter_path, motion_good_file], capture_output=True, text=True)
+        if "layout-thrashing-animation" in res_good_motion.stdout:
+            log(f"Linter falsely flagged valid motion properties:\n{res_good_motion.stdout}", "FAIL")
+            return False
+
         # Run linter on good file (must pass with exit code 0)
         res_good = subprocess.run([sys.executable, linter_path, good_file], capture_output=True, text=True)
         if res_good.returncode != 0:
             log(f"Linter falsely flagged clean file:\n{res_good.stdout}", "FAIL")
             return False
 
-        log("Linter correctly caught anti-patterns (max-w constraint, numeric text-left, slender indicator, critical identifier truncate, untokenized color) and passed clean code.", "PASS")
+        log("Linter correctly caught anti-patterns (max-w constraint, numeric text-left, slender indicator, critical identifier truncate, untokenized color, layout thrashing) and passed valid motion.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)

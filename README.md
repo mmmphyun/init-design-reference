@@ -112,7 +112,7 @@ LLM에게 프론트엔드 코딩을 맡기면 보라색·인디고 그라디언�
   DESIGN.md             # 코어 디자인 헌법 및 3-Dial Taste 설정
 ```
 
-> **Zero Repo Pollution**: 정적 가이드라인 문서(`notes/*.md`, `REVIEW_CHECKLIST.md` 등)는 전역 스킬 내부에 격리 보존되어 레포지토리를 오염시키지 않으며, 에이전트가 JIT 방식으로 참조합니다.
+> **Zero Repo Pollution**: 정적 가이드라인 문서(`notes/*.md`, `REVIEW_CHECKLIST.md` 등)는 전역 스킬 내부에 격리 보존되어 레포지토리를 오염시키지 않으며, 에이전트가 컴포넌트 상호작용 및 모션 바인딩 시점에 `notes/interaction.md` 등을 JIT 방식으로 참조합니다.
 
 ---
 

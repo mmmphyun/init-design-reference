@@ -55,6 +55,9 @@
   "constraints": {
     "maxMicroInteractionDuration": "350ms",
     "tactilePressScale": 0.98,
-    "allowedMotionProperties": ["transform", "opacity", "filter"]
+    "allowedSpatialMotionProperties": ["transform", "opacity", "filter"],
+    "allowedStateFeedbackProperties": ["color", "background-color", "border-color", "box-shadow", "outline-color"],
+    "allowedMotionProperties": ["transform", "opacity", "filter", "color", "background-color", "border-color", "box-shadow", "outline-color"]
   }
 }
+

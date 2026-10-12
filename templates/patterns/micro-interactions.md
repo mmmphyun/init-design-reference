@@ -5,12 +5,13 @@ Derived from `emilkowalski/skills` and `pbakaus/impeccable` motion engineering p
 
 ## 1. Golden Rules of Interface Motion
 
-1. **No Layout-Thrashing Properties**: Never animate reflow-inducing layout geometry (`width`, `height`, `top`, `left`, `margin`, `padding`) or use blunt catch-all transitions (`transition-all`). Animate GPU-composited properties (`transform`, `opacity`) for spatial motion, and lightweight paint properties (`color`, `background-color`, `border-color`, `box-shadow`) via targeted transitions (`transition-colors`, `transition-shadow`) for interactive states to maintain 60/120fps.
+1. **No Layout-Thrashing Properties**: Never animate reflow-inducing layout geometry (`width`, `height`, `top`, `left`, `margin`, `padding`) or use blunt catch-all transitions (`transition-all`). Enforce the dual motion contract: animate GPU-composited properties (`transform`, `opacity`, `filter`) for spatial motion, and targeted paint properties (`color`, `background-color`, `border-color`, `box-shadow`, `outline-color`) via specific transitions (`transition-colors`, `transition-shadow`) for interactive state feedback.
 2. **Spring Physics for Physical Reality**: Use non-linear springs for interactive surfaces. Avoid mechanical linear transitions on pressable components.
 3. **Interruptibility & Timing Budget**:
    - Micro-interaction duration MUST NOT exceed 350ms (`maxMicroInteractionDuration`).
    - Exit transitions must be faster (~100-150ms) than enter transitions (~200-250ms).
    - Press feedback must execute within 100ms (`active:scale-[0.98]`).
+4. **Reduced Motion Parity**: Respect `@media (prefers-reduced-motion: reduce)` by disabling spatial displacement, spring overshoot, and loop animations while preserving immediate functional state changes.
 
 ## 2. Interactive Tactile Button (Tactile Press Feedback)
 

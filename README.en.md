@@ -112,7 +112,7 @@ When tasked with frontend code, LLMs routinely converge toward generic purple/in
   DESIGN.md             # Single design constitution & 3-Dial Taste Configuration
 ```
 
-> **Zero Repo Pollution**: Static guidelines (`notes/*.md`, `REVIEW_CHECKLIST.md`) remain isolated in the global skill and are referenced Just-In-Time (JIT) without cluttering the project codebase.
+> **Zero Repo Pollution**: Static guidelines (`notes/*.md`, `REVIEW_CHECKLIST.md`) remain isolated in the global skill and are referenced Just-In-Time (JIT) during component interaction and motion binding (`notes/interaction.md`) without cluttering the project codebase.
 
 ---
 

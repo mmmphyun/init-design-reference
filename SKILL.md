@@ -170,6 +170,9 @@ Gate 0 승인 즉시 Phase 1부터 Phase 4까지 중간 질문 없이 한 호흡
 - **Surface 계층 구조**: Level 0 Canvas(`bg-background`)와 Level 1 Surface(`bg-surface`) 간의 대비를 보장한다.
 - **Font & CSS Bridge Rule**: 토큰 브리지 import(`@import "../.design/tokens/theme.css";` 또는 해당 CSS 파일 위치 기준 상대 경로)가 전역 CSS 최상단(Line 1)에 위치하도록 보장한다. Monospace 폰트 스택에는 한글 폴백(`Pretendard`, `D2Coding`)을 필수로 포함한다.
 - **데이터 정렬 및 인디케이터 표준**: 다중 행 수치 비교가 필요한 데이터 표(Table)의 수치 열은 우측 정렬(`text-right`)을 적용한다.
+- **모션 및 상호작용 바인딩 (Motion Contract)**:
+  - 컴포넌트 상호작용 설계 시 `templates/notes/interaction.md`를 JIT 참조하여 모션 경계(메뉴, 대화상자, 아코디언, 피드백)와 사용자 의도(`MOTION_INTENSITY`)를 준수한다.
+  - 공간 이동은 GPU 가속 속성(`transform`, `opacity`, `filter`), 상태 피드백은 페인트 속성(`color`, `background-color`, `border-color`, `box-shadow`)으로 한정하며 `prefers-reduced-motion` 대등성을 보장한다.
 - **Strict Rule**: 하드코딩된 hex 코드(`#6366f1`) 또는 임의의 Tailwind 기본 색상(`bg-slate-900`) 직접 사용 금지.
 
 #### Phase 3: Deterministic Lint & Self-Healing Loop (Critique)
