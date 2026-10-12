@@ -21,7 +21,7 @@ def log(msg, status="INFO"):
 
 def check_python_syntax():
     log("Validating Python syntax for all scripts...", "TEST")
-    scripts = ["adapter.py", "lint_ui.py", "capture_ui.py", "sync_figma.py", "verify_repo.py"]
+    scripts = ["adapter.py", "lint_ui.py", "capture_ui.py", "sync_figma.py", "verify_motion_scenarios.py", "verify_repo.py"]
     for s in scripts:
         script_path = os.path.join(REPO_ROOT, "scripts", s)
         res = subprocess.run([sys.executable, "-m", "py_compile", script_path], capture_output=True, text=True)
@@ -80,7 +80,8 @@ def check_required_templates():
         "templates/root/REVIEW_CHECKLIST.md",
         "scripts/lint_ui.py",
         "scripts/capture_ui.py",
-        "scripts/sync_figma.py"
+        "scripts/sync_figma.py",
+        "scripts/verify_motion_scenarios.py"
     ]
 
     missing = []
@@ -674,6 +675,16 @@ def check_workspace_framework_and_css_resolution():
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
+def check_motion_scenarios_behavior():
+    log("Verifying finite motion scenarios suite (scripts/verify_motion_scenarios.py)...", "TEST")
+    scenario_script = os.path.join(REPO_ROOT, "scripts", "verify_motion_scenarios.py")
+    res = subprocess.run([sys.executable, scenario_script], capture_output=True, text=True)
+    if res.returncode != 0:
+        log(f"Motion scenarios test failed:\n{res.stdout}\n{res.stderr}", "FAIL")
+        return False
+    log("Motion scenarios suite passed cleanly.", "PASS")
+    return True
+
 def main():
     print("=" * 60)
     print("init-design-reference: Repository Integrity Test")
@@ -689,7 +700,8 @@ def main():
         check_figma_sync,
         check_css_bridge_completeness,
         check_css_path_resolution,
-        check_workspace_framework_and_css_resolution
+        check_workspace_framework_and_css_resolution,
+        check_motion_scenarios_behavior
     ]
 
 
