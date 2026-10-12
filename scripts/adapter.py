@@ -23,62 +23,176 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 _TEMPLATES_DIR = os.path.join(os.path.dirname(_SCRIPT_DIR), "templates")
 PRESETS = load_presets(_TEMPLATES_DIR)
 
-def detect_project_context(base_dir="."):
+def detect_project_context(base_dir=".", app_dir=None):
     context = {
         "framework": "unknown",
+        "build_tool": None,
         "style_engine": "css",
         "has_package_json": False,
-        "subproject_dir": None
+        "subproject_dir": None,
+        "ambiguous_apps": []
     }
 
-    candidate_pkg_paths = [os.path.join(base_dir, "package.json")]
-    if not os.path.exists(candidate_pkg_paths[0]):
+    def inspect_pkg(pkg_path):
+        try:
+            with open(pkg_path, "r", encoding="utf-8") as f:
+                pkg = json.load(f)
+            deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+
+            # Framework Detection (Meta-frameworks take precedence; Vite is a build tool)
+            fw = "unknown"
+            if "next" in deps:
+                fw = "nextjs"
+            elif "nuxt" in deps:
+                fw = "nuxt"
+            elif "@sveltejs/kit" in deps:
+                fw = "sveltekit"
+            elif "svelte" in deps:
+                fw = "svelte"
+            elif "vue" in deps:
+                fw = "vue"
+            elif "react" in deps:
+                fw = "react"
+
+            bt = "vite" if "vite" in deps else None
+
+            # Style Engine Detection
+            style = "css"
+            if "@tailwindcss/postcss" in deps or "@tailwindcss/vite" in deps:
+                style = "tailwind-v4"
+            elif "tailwindcss" in deps:
+                tw_ver = str(deps.get("tailwindcss", ""))
+                if re.search(r"[\^~>=]?\s*4\.", tw_ver):
+                    style = "tailwind-v4"
+                else:
+                    style = "tailwind-v3"
+            elif "@pandacss/dev" in deps:
+                style = "pandacss"
+
+            return {
+                "framework": fw,
+                "build_tool": bt,
+                "style_engine": style,
+                "deps": deps
+            }
+        except Exception as e:
+            print(f"Notice: Failed to parse {pkg_path} ({e})")
+            return None
+
+    root_pkg_path = os.path.join(base_dir, "package.json")
+    root_has_pkg = os.path.exists(root_pkg_path)
+    root_info = inspect_pkg(root_pkg_path) if root_has_pkg else None
+
+    # Handle explicit app_dir override
+    if app_dir:
+        clean_app = app_dir.replace("\\", "/").strip("./")
+        context["subproject_dir"] = clean_app
+        sub_pkg_path = os.path.join(base_dir, clean_app, "package.json")
+        if os.path.exists(sub_pkg_path):
+            context["has_package_json"] = True
+            sub_info = inspect_pkg(sub_pkg_path)
+            if sub_info:
+                context["framework"] = sub_info["framework"]
+                context["build_tool"] = sub_info["build_tool"]
+                context["style_engine"] = sub_info["style_engine"]
+        elif root_has_pkg and root_info:
+            context["has_package_json"] = True
+            context["framework"] = root_info["framework"]
+            context["build_tool"] = root_info["build_tool"]
+            context["style_engine"] = root_info["style_engine"]
+        return context
+
+    # Discover workspace apps / subpackages
+    discovered_pkgs = []
+    search_dirs = ["apps", "packages"]
+    for s_dir in search_dirs:
+        full_s = os.path.join(base_dir, s_dir)
+        if os.path.isdir(full_s):
+            try:
+                for entry in sorted(os.listdir(full_s)):
+                    sub = os.path.join(full_s, entry)
+                    if os.path.isdir(sub) and os.path.exists(os.path.join(sub, "package.json")):
+                        rel = os.path.relpath(sub, base_dir).replace("\\", "/")
+                        discovered_pkgs.append(rel)
+            except Exception:
+                pass
+
+    if not discovered_pkgs:
         try:
             for entry in sorted(os.listdir(base_dir)):
                 entry_path = os.path.join(base_dir, entry)
-                if os.path.isdir(entry_path) and not entry.startswith(".") and entry not in {"node_modules", "reference", "dist", "build", "templates", "scripts"}:
-                    sub_pkg = os.path.join(entry_path, "package.json")
-                    if os.path.exists(sub_pkg):
-                        candidate_pkg_paths.append(sub_pkg)
+                if os.path.isdir(entry_path) and not entry.startswith(".") and entry not in {
+                    "node_modules", "reference", ".design", "dist", "build", "templates", "scripts", "coverage", "public"
+                }:
+                    if os.path.exists(os.path.join(entry_path, "package.json")):
+                        discovered_pkgs.append(entry)
         except Exception:
             pass
 
-    for pkg_path in candidate_pkg_paths:
-        if os.path.exists(pkg_path):
-            context["has_package_json"] = True
-            rel_dir = os.path.relpath(os.path.dirname(pkg_path), base_dir)
-            if rel_dir and rel_dir != ".":
-                context["subproject_dir"] = rel_dir.replace("\\", "/")
-            try:
-                with open(pkg_path, "r", encoding="utf-8") as f:
-                    pkg = json.load(f)
-                deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+    ui_apps = []
+    for app_rel in discovered_pkgs:
+        sub_pkg = os.path.join(base_dir, app_rel, "package.json")
+        info = inspect_pkg(sub_pkg)
+        if info:
+            if info["framework"] != "unknown" or info["style_engine"] != "css":
+                ui_apps.append((app_rel, info))
 
-                # Detect Framework
-                if "next" in deps:
-                    context["framework"] = "nextjs"
-                elif "vite" in deps:
-                    context["framework"] = "vite"
-                elif "nuxt" in deps:
-                    context["framework"] = "nuxt"
-                elif "svelte" in deps or "@sveltejs/kit" in deps:
-                    context["framework"] = "svelte"
+    if root_info and root_info["framework"] != "unknown":
+        context["framework"] = root_info["framework"]
+        context["build_tool"] = root_info["build_tool"]
+        context["style_engine"] = root_info["style_engine"]
+        context["has_package_json"] = True
+        if ui_apps:
+            context["ambiguous_apps"] = [app_rel for app_rel, _ in ui_apps]
+    elif len(ui_apps) == 1:
+        app_rel, info = ui_apps[0]
+        context["subproject_dir"] = app_rel
+        context["framework"] = info["framework"]
+        context["build_tool"] = info["build_tool"]
+        context["style_engine"] = info["style_engine"]
+        context["has_package_json"] = True
+    elif len(ui_apps) > 1:
+        context["ambiguous_apps"] = [app_rel for app_rel, _ in ui_apps]
+        context["has_package_json"] = True
+        fw_set = {info["framework"] for _, info in ui_apps}
+        if len(fw_set) == 1:
+            context["framework"] = list(fw_set)[0]
+    elif len(discovered_pkgs) == 1 and not root_has_pkg:
+        app_rel = discovered_pkgs[0]
+        sub_pkg = os.path.join(base_dir, app_rel, "package.json")
+        info = inspect_pkg(sub_pkg)
+        context["subproject_dir"] = app_rel
+        context["has_package_json"] = True
+        if info:
+            context["framework"] = info["framework"]
+            context["build_tool"] = info["build_tool"]
+            context["style_engine"] = info["style_engine"]
+    elif root_info:
+        context["framework"] = root_info["framework"]
+        context["build_tool"] = root_info["build_tool"]
+        context["style_engine"] = root_info["style_engine"]
+        context["has_package_json"] = True
 
-                # Detect Style Engine
-                if "@tailwindcss/postcss" in deps or "@tailwindcss/vite" in deps:
-                    context["style_engine"] = "tailwind-v4"
-                elif "tailwindcss" in deps:
-                    context["style_engine"] = "tailwind-v3"
-                elif "@pandacss/dev" in deps:
-                    context["style_engine"] = "pandacss"
-
+    # Fallback style engine check if still css
+    if context["style_engine"] == "css":
+        check_roots = []
+        if context.get("subproject_dir"):
+            check_roots.append(os.path.join(base_dir, context["subproject_dir"]))
+        check_roots.append(base_dir)
+        for r in check_roots:
+            tw_cfgs = [
+                os.path.join(r, "tailwind.config.js"),
+                os.path.join(r, "tailwind.config.ts"),
+                os.path.join(r, "tailwind.config.cjs"),
+                os.path.join(r, "tailwind.config.mjs"),
+            ]
+            if any(os.path.exists(cfg) for cfg in tw_cfgs):
+                context["style_engine"] = "tailwind-v3"
                 break
-            except Exception as e:
-                print(f"Notice: Failed to parse {pkg_path} ({e})")
 
     return context
 
-def resolve_css_integration_paths(project_base, target_dir, subproject_dir=None):
+def resolve_css_integration_paths(project_base, target_dir, subproject_dir=None, custom_css=None):
     """
     Locates actual CSS entrypoints or calculates deterministic relative import paths
     from the CSS entrypoint directory to generated tokens.
@@ -94,46 +208,81 @@ def resolve_css_integration_paths(project_base, target_dir, subproject_dir=None)
         "src/globals.css",
         "src/main.css",
         "src/styles.css",
+        "src/style.css",
         "app/globals.css",
         "index.css",
-        "styles.css"
+        "styles.css",
+        "style.css"
     ]
 
     found_entry_abs = None
-    for root in search_roots:
-        for fname in css_filenames:
-            candidate = os.path.join(root, fname)
-            if os.path.exists(candidate):
-                found_entry_abs = candidate
-                break
-        if found_entry_abs:
-            break
+    is_inferred = False
+    ambiguous = False
+    candidates = []
 
-    if not found_entry_abs:
-        # Scan search roots for any existing CSS entrypoints (up to depth 3, skipping build/vendor dirs)
-        for root in search_roots:
-            if not os.path.exists(root):
-                continue
-            for r, dirs, files in os.walk(root):
-                dirs[:] = [d for d in dirs if not d.startswith(".") and d not in {"node_modules", "dist", "build", "reference", ".design", "public", ".next"}]
-                rel_depth = len(os.path.relpath(r, root).split(os.sep))
-                if rel_depth > 3:
-                    continue
-                for f in sorted(files):
-                    if f.endswith(".css"):
-                        found_entry_abs = os.path.join(r, f)
-                        break
-                if found_entry_abs:
-                    break
-            if found_entry_abs:
-                break
-
-    if not found_entry_abs:
-        default_rel = "src/index.css"
-        found_entry_abs = os.path.join(search_roots[0], default_rel)
-        is_inferred = True
+    if custom_css:
+        custom_abs = custom_css if os.path.isabs(custom_css) else os.path.join(project_base, custom_css)
+        found_entry_abs = custom_abs
+        is_inferred = not os.path.exists(custom_abs)
+        candidates = [os.path.relpath(custom_abs, project_base).replace("\\", "/")]
     else:
-        is_inferred = False
+        std_found = []
+        for root in search_roots:
+            for fname in css_filenames:
+                candidate = os.path.join(root, fname)
+                if os.path.exists(candidate) and candidate not in std_found:
+                    std_found.append(candidate)
+
+        if len(std_found) == 1:
+            found_entry_abs = std_found[0]
+            candidates = [os.path.relpath(found_entry_abs, project_base).replace("\\", "/")]
+        elif len(std_found) > 1:
+            candidates = [os.path.relpath(c, project_base).replace("\\", "/") for c in std_found]
+            found_entry_abs = std_found[0]
+            ambiguous = True
+        else:
+            scanned = []
+            for root in search_roots:
+                if not os.path.exists(root):
+                    continue
+                for r, dirs, files in os.walk(root):
+                    dirs[:] = [d for d in dirs if not d.startswith(".") and d not in {
+                        "node_modules", "dist", "build", "reference", ".design", "public", ".next", ".nuxt", "coverage"
+                    }]
+                    rel_depth = len(os.path.relpath(r, root).split(os.sep))
+                    if rel_depth > 3:
+                        continue
+                    for f in sorted(files):
+                        if f.endswith(".css"):
+                            scanned.append(os.path.join(r, f))
+
+            unique_scanned = []
+            for s in scanned:
+                if s not in unique_scanned:
+                    unique_scanned.append(s)
+
+            if len(unique_scanned) == 1:
+                found_entry_abs = unique_scanned[0]
+                candidates = [os.path.relpath(found_entry_abs, project_base).replace("\\", "/")]
+            elif len(unique_scanned) > 1:
+                candidates = [os.path.relpath(c, project_base).replace("\\", "/") for c in unique_scanned]
+                found_entry_abs = sorted(unique_scanned)[0]
+                ambiguous = True
+            else:
+                default_rel = "src/index.css"
+                found_entry_abs = os.path.join(search_roots[0], default_rel)
+                is_inferred = True
+                candidates = [os.path.relpath(found_entry_abs, project_base).replace("\\", "/")]
+
+    # Locate Tailwind config directory
+    tailwind_cfg_names = ["tailwind.config.js", "tailwind.config.ts", "tailwind.config.cjs", "tailwind.config.mjs"]
+    tailwind_cfg_dir = None
+    for root in search_roots:
+        if any(os.path.exists(os.path.join(root, cfg)) for cfg in tailwind_cfg_names):
+            tailwind_cfg_dir = root
+            break
+    if not tailwind_cfg_dir:
+        tailwind_cfg_dir = search_roots[0]
 
     css_dir = os.path.dirname(os.path.abspath(found_entry_abs))
     theme_css_abs = os.path.abspath(os.path.join(target_dir, "tokens", "theme.css"))
@@ -142,7 +291,6 @@ def resolve_css_integration_paths(project_base, target_dir, subproject_dir=None)
 
     rel_theme = os.path.relpath(theme_css_abs, css_dir).replace("\\", "/")
     rel_tokens = os.path.relpath(tokens_css_abs, css_dir).replace("\\", "/")
-    tailwind_cfg_dir = search_roots[0]
     rel_preset = os.path.relpath(preset_js_abs, tailwind_cfg_dir).replace("\\", "/")
 
     def format_rel(path_str):
@@ -153,9 +301,12 @@ def resolve_css_integration_paths(project_base, target_dir, subproject_dir=None)
     return {
         "display_entry": display_entry,
         "is_inferred": is_inferred,
+        "ambiguous": ambiguous,
+        "candidates": candidates,
         "import_theme": format_rel(rel_theme),
         "import_tokens": format_rel(rel_tokens),
-        "import_preset": format_rel(rel_preset)
+        "import_preset": format_rel(rel_preset),
+        "tailwind_cfg_dir": os.path.relpath(tailwind_cfg_dir, project_base).replace("\\", "/")
     }
 
 def update_gitignore(target_dir):
@@ -625,7 +776,7 @@ def verify_design_spec(target_dir=None):
     print(f"[HARD-GUARD PASS] Design specification and tokens in '{resolved}' are valid (Variance={v_val}, Density={d_val}, Motion={m_val}).")
     return True
 
-def scaffold_reference(target_dir=None, force=False, preset="default", dials_override=None):
+def scaffold_reference(target_dir=None, force=False, preset="default", dials_override=None, app_dir=None, css_entry=None):
     target_dir = resolve_design_target(target_dir)
     design_existed = os.path.exists(os.path.join(target_dir, "DESIGN.md"))
     colors_existed = os.path.exists(os.path.join(target_dir, "tokens", "colors.json"))
@@ -674,31 +825,37 @@ def scaffold_reference(target_dir=None, force=False, preset="default", dials_ove
         typography_existed=typography_existed,
     )
 
-
     # Update .gitignore
     update_gitignore(target_dir)
 
     # Inspect context & generate CSS bridges
     project_base = os.path.dirname(os.path.abspath(target_dir))
-    ctx = detect_project_context(base_dir=project_base)
+    ctx = detect_project_context(base_dir=project_base, app_dir=app_dir)
     generate_css_bridges(target_dir, ctx["style_engine"], force=force)
 
     sub_info = f" (detected in ./{ctx['subproject_dir']})" if ctx.get("subproject_dir") else ""
+    bt_info = f" (build_tool={ctx['build_tool']})" if ctx.get("build_tool") else ""
     print(f"\nScaffolding complete in: {os.path.abspath(target_dir)}")
     print(f"Preset Applied: {preset} ({PRESETS.get(preset, {}).get('desc', '')})")
-    print(f"Detected Environment: Framework={ctx['framework']}, StyleEngine={ctx['style_engine']}{sub_info}")
+    print(f"Detected Environment: Framework={ctx['framework']}, StyleEngine={ctx['style_engine']}{sub_info}{bt_info}")
 
-    paths = resolve_css_integration_paths(project_base, target_dir, subproject_dir=ctx.get("subproject_dir"))
-    css_entry = paths["display_entry"]
+    if ctx.get("ambiguous_apps"):
+        print(f"Notice: Multiple workspace apps detected: [{', '.join(ctx['ambiguous_apps'])}]. Specify --app <dir> to target a specific app.")
+
+    paths = resolve_css_integration_paths(project_base, target_dir, subproject_dir=ctx.get("subproject_dir"), custom_css=css_entry)
+    css_entry_display = paths["display_entry"]
     inferred_hint = " (inferred; adjust if your CSS location differs)" if paths["is_inferred"] else ""
+
+    if paths.get("ambiguous"):
+        print(f"Notice: Multiple CSS entrypoint candidates found: [{', '.join(paths['candidates'])}]. Using '{css_entry_display}' as reference. Pass --css <path> to specify.")
 
     clean_target = target_dir.replace("\\", "/").strip("./")
     if ctx["style_engine"] == "tailwind-v4":
-        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"{paths['import_theme']}\";' at Line 1 of {css_entry}{inferred_hint} (before '@import \"tailwindcss\";') to prevent W3C font drop.")
+        print(f"Integration: Generated {clean_target}/tokens/theme.css. Add '@import \"{paths['import_theme']}\";' at Line 1 of {css_entry_display}{inferred_hint} (before '@import \"tailwindcss\";') to prevent W3C font drop.")
     elif ctx["style_engine"] == "tailwind-v3":
-        print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"{paths['import_preset']}\")]' to tailwind.config.js, and import '{paths['import_tokens']}' in {css_entry}{inferred_hint}.")
+        print(f"Integration: Generated {clean_target}/tokens/tailwind.preset.js. Add 'presets: [require(\"{paths['import_preset']}\")]' to tailwind.config.js, and import '{paths['import_tokens']}' in {css_entry_display}{inferred_hint}.")
     else:
-        print(f"Integration: Generated {clean_target}/tokens/tokens.css. Add '@import \"{paths['import_tokens']}\";' to {css_entry}{inferred_hint}.")
+        print(f"Integration: Generated {clean_target}/tokens/tokens.css. Add '@import \"{paths['import_tokens']}\";' to {css_entry_display}{inferred_hint}.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scaffold production-grade UI design reference and pattern architecture")
@@ -706,6 +863,8 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--force", action="store_true", help="Force overwrite existing template files")
     parser.add_argument("-p", "--preset", default="default", help="Design taste preset (apple-fluid, b2b-dense, editorial-minimal, technical-mono, etc.)")
     parser.add_argument("--dials", default=None, help="Custom dial override in format: 'variance,density,motion' (e.g. '7,4,8')")
+    parser.add_argument("--app", default=None, help="Subproject / app directory path in a monorepo (e.g. 'apps/web')")
+    parser.add_argument("--css", default=None, help="Explicit CSS entrypoint file path (e.g. 'src/styles/custom.css')")
     parser.add_argument("--verify-spec", action="store_true", help="Verify integrity of design specification and tokens (Hard-Guard)")
     parser.add_argument("--bridge-only", action="store_true", help="Regenerate CSS and Tailwind bridges only from tokens")
     args = parser.parse_args()
@@ -716,10 +875,10 @@ if __name__ == "__main__":
     if args.bridge_only:
         target = resolve_design_target(args.target)
         project_base = os.path.dirname(os.path.abspath(target))
-        ctx = detect_project_context(base_dir=project_base)
+        ctx = detect_project_context(base_dir=project_base, app_dir=args.app)
         generate_css_bridges(target, ctx["style_engine"], force=True)
         print(f"Regenerated CSS bridges for '{target}'.")
         sys.exit(0)
 
-    scaffold_reference(args.target, force=args.force, preset=args.preset, dials_override=args.dials)
+    scaffold_reference(args.target, force=args.force, preset=args.preset, dials_override=args.dials, app_dir=args.app, css_entry=args.css)
 

@@ -464,6 +464,123 @@ def check_css_path_resolution():
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
+def check_workspace_framework_and_css_resolution():
+    log("Verifying workspace monorepo, framework detection, and ambiguous CSS resolution...", "TEST")
+    sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
+    import adapter
+
+    temp_dir = tempfile.mkdtemp(prefix="ws_fw_test_")
+    try:
+        # 1. Framework detection checks (React, Next.js, Vue, Nuxt, Svelte, SvelteKit, Vite separation, Vanilla)
+        test_cases = [
+            ({"next": "^14.0.0"}, "nextjs", None),
+            ({"react": "^18.0.0"}, "react", None),
+            ({"nuxt": "^3.0.0"}, "nuxt", None),
+            ({"vue": "^3.3.0"}, "vue", None),
+            ({"@sveltejs/kit": "^2.0.0"}, "sveltekit", None),
+            ({"svelte": "^4.0.0"}, "svelte", None),
+            ({"react": "^18.0.0", "vite": "^5.0.0"}, "react", "vite"),
+            ({"vite": "^5.0.0"}, "unknown", "vite"),
+            ({}, "unknown", None),
+        ]
+
+        for deps, expected_fw, expected_bt in test_cases:
+            case_dir = os.path.join(temp_dir, f"case_{expected_fw}_{expected_bt}")
+            os.makedirs(case_dir, exist_ok=True)
+            with open(os.path.join(case_dir, "package.json"), "w", encoding="utf-8") as f:
+                json.dump({"dependencies": deps}, f)
+            ctx = adapter.detect_project_context(base_dir=case_dir)
+            if ctx["framework"] != expected_fw:
+                log(f"Framework detection mismatch for deps {deps}: expected {expected_fw}, got {ctx['framework']}", "FAIL")
+                return False
+            if ctx["build_tool"] != expected_bt:
+                log(f"Build tool detection mismatch for deps {deps}: expected {expected_bt}, got {ctx['build_tool']}", "FAIL")
+                return False
+
+        # 2. Workspace Monorepo: Root package.json with multiple sub-apps (apps/web, apps/docs)
+        mono_dir = os.path.join(temp_dir, "monorepo")
+        os.makedirs(mono_dir, exist_ok=True)
+        with open(os.path.join(mono_dir, "package.json"), "w", encoding="utf-8") as f:
+            json.dump({"name": "mono-root", "workspaces": ["apps/*"]}, f)
+
+        web_dir = os.path.join(mono_dir, "apps", "web")
+        docs_dir = os.path.join(mono_dir, "apps", "docs")
+        os.makedirs(os.path.join(web_dir, "src"), exist_ok=True)
+        os.makedirs(os.path.join(docs_dir, "assets"), exist_ok=True)
+
+        with open(os.path.join(web_dir, "package.json"), "w", encoding="utf-8") as f:
+            json.dump({"name": "web", "dependencies": {"next": "^14.0.0", "tailwindcss": "^3.4.0"}}, f)
+        with open(os.path.join(docs_dir, "package.json"), "w", encoding="utf-8") as f:
+            json.dump({"name": "docs", "dependencies": {"nuxt": "^3.0.0"}}, f)
+
+        # Multiple apps without explicit --app: must detect ambiguity without arbitrary selection
+        mono_ctx = adapter.detect_project_context(base_dir=mono_dir)
+        if len(mono_ctx["ambiguous_apps"]) < 2:
+            log(f"Monorepo failed to report ambiguous apps: {mono_ctx}", "FAIL")
+            return False
+
+        # Targeting specific app via app_dir
+        web_ctx = adapter.detect_project_context(base_dir=mono_dir, app_dir="apps/web")
+        if web_ctx["framework"] != "nextjs" or web_ctx["subproject_dir"] != "apps/web":
+            log(f"Targeting apps/web failed: {web_ctx}", "FAIL")
+            return False
+
+        # 3. Multiple CSS candidates: detecting ambiguity vs explicit override
+        with open(os.path.join(web_dir, "src", "index.css"), "w") as f: f.write("/* 1 */")
+        with open(os.path.join(web_dir, "src", "main.css"), "w") as f: f.write("/* 2 */")
+
+        target_design = os.path.join(mono_dir, ".design")
+        paths_ambig = adapter.resolve_css_integration_paths(mono_dir, target_design, subproject_dir="apps/web")
+        if not paths_ambig["ambiguous"] or len(paths_ambig["candidates"]) != 2:
+            log(f"Multiple CSS candidates not flagged as ambiguous: {paths_ambig}", "FAIL")
+            return False
+
+        # Explicit CSS path override: must resolve deterministically without ambiguity
+        paths_explicit = adapter.resolve_css_integration_paths(
+            mono_dir, target_design, subproject_dir="apps/web", custom_css="apps/web/src/main.css"
+        )
+        if paths_explicit["ambiguous"] or paths_explicit["display_entry"] != "apps/web/src/main.css":
+            log(f"Explicit CSS override failed: {paths_explicit}", "FAIL")
+            return False
+
+        # 4. Non-standard CSS location & Tailwind config dir separation
+        deep_css_dir = os.path.join(web_dir, "src", "styles", "deep")
+        os.makedirs(deep_css_dir, exist_ok=True)
+        deep_css_file = os.path.join(deep_css_dir, "app.css")
+        with open(deep_css_file, "w") as f: f.write("/* deep */")
+        with open(os.path.join(web_dir, "tailwind.config.js"), "w") as f: f.write("module.exports = {};")
+
+        paths_separated = adapter.resolve_css_integration_paths(
+            mono_dir, target_design, subproject_dir="apps/web", custom_css=deep_css_file
+        )
+        # tailwind config is at apps/web -> relative preset path should be "../../.design/tokens/tailwind.preset.js"
+        # css is at apps/web/src/styles/deep -> relative theme path should be "../../../../../.design/tokens/theme.css"
+        if paths_separated["import_preset"] != "../../.design/tokens/tailwind.preset.js":
+            log(f"Relative preset path calculation incorrect: {paths_separated['import_preset']}", "FAIL")
+            return False
+        if paths_separated["import_theme"] != "../../../../../.design/tokens/theme.css":
+            log(f"Relative theme path calculation incorrect: {paths_separated['import_theme']}", "FAIL")
+            return False
+
+        # 5. CLI end-to-end execution with --app and --css options
+        adapter_path = os.path.join(REPO_ROOT, "scripts", "adapter.py")
+        run_res = subprocess.run([
+            sys.executable, adapter_path, target_design,
+            "--app", "apps/web",
+            "--css", "apps/web/src/styles/deep/app.css"
+        ], capture_output=True, text=True, cwd=mono_dir)
+        if run_res.returncode != 0:
+            log(f"CLI adapter run with --app and --css failed:\n{run_res.stderr}", "FAIL")
+            return False
+        if "Framework=nextjs" not in run_res.stdout or "apps/web/src/styles/deep/app.css" not in run_res.stdout:
+            log(f"CLI output missing framework or custom css entrypoint:\n{run_res.stdout}", "FAIL")
+            return False
+
+        log("Workspace monorepo, framework detection, and ambiguous CSS resolution verified.", "PASS")
+        return True
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
 def main():
     print("=" * 60)
     print("init-design-reference: Repository Integrity Test")
@@ -478,7 +595,8 @@ def main():
         check_linter_behavior,
         check_figma_sync,
         check_css_bridge_completeness,
-        check_css_path_resolution
+        check_css_path_resolution,
+        check_workspace_framework_and_css_resolution
     ]
 
 
