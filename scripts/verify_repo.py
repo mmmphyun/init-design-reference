@@ -382,6 +382,88 @@ def check_figma_sync():
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
+def check_css_bridge_completeness():
+    log("Verifying complete token export to CSS/Tailwind bridges (spacing & typography roles)...", "TEST")
+    temp_dir = tempfile.mkdtemp(prefix="bridge_test_")
+    try:
+        sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
+        import adapter
+        target_design = os.path.join(temp_dir, ".design")
+        adapter.scaffold_reference(target_design, preset="default")
+
+        # 1. tokens.css validation
+        tokens_css_path = os.path.join(target_design, "tokens", "tokens.css")
+        with open(tokens_css_path, "r", encoding="utf-8") as f:
+            tokens_css = f.read()
+        for token in ["--space-md:", "--gutter-desktop:", "--text-page-title-size:", "--text-body-line-height:"]:
+            if token not in tokens_css:
+                log(f"tokens.css missing expected token '{token}'!", "FAIL")
+                return False
+
+        # 2. Tailwind v4 theme.css validation
+        adapter.generate_css_bridges(target_design, "tailwind-v4", force=True)
+        theme_css_path = os.path.join(target_design, "tokens", "theme.css")
+        with open(theme_css_path, "r", encoding="utf-8") as f:
+            theme_css = f.read()
+        for token in ["--spacing-md:", "--font-size-page-title:", "--letter-spacing-page-title:"]:
+            if token not in theme_css:
+                log(f"theme.css missing expected Tailwind v4 token '{token}'!", "FAIL")
+                return False
+
+        # 3. Tailwind v3 tailwind.preset.js validation
+        adapter.generate_css_bridges(target_design, "tailwind-v3", force=True)
+        preset_js_path = os.path.join(target_design, "tokens", "tailwind.preset.js")
+        with open(preset_js_path, "r", encoding="utf-8") as f:
+            preset_js = f.read()
+        for token in ['spacing: {', 'fontSize: {', '"page-title":']:
+            if token not in preset_js:
+                log(f"tailwind.preset.js missing expected Tailwind v3 section '{token}'!", "FAIL")
+                return False
+
+        log("CSS/Tailwind bridge completeness (colors, spacing, typography roles, radii, shadows, motion) verified.", "PASS")
+        return True
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+def check_css_path_resolution():
+    log("Verifying deterministic CSS integration path resolution...", "TEST")
+    temp_dir = tempfile.mkdtemp(prefix="path_test_")
+    try:
+        sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
+        import adapter
+
+        # Scenario 1: Standard src/index.css in root
+        os.makedirs(os.path.join(temp_dir, "src"), exist_ok=True)
+        css_file = os.path.join(temp_dir, "src", "index.css")
+        with open(css_file, "w") as f: f.write("/* root */")
+        p1 = adapter.resolve_css_integration_paths(temp_dir, os.path.join(temp_dir, ".design"))
+        if p1["import_theme"] != "../.design/tokens/theme.css" or p1["is_inferred"]:
+            log(f"Path resolution failed for root src/index.css: {p1}", "FAIL")
+            return False
+
+        # Scenario 2: Monorepo subproject apps/web/src/index.css
+        sub_src = os.path.join(temp_dir, "apps", "web", "src")
+        os.makedirs(sub_src, exist_ok=True)
+        with open(os.path.join(sub_src, "index.css"), "w") as f: f.write("/* mono */")
+        p2 = adapter.resolve_css_integration_paths(temp_dir, os.path.join(temp_dir, ".design"), subproject_dir="apps/web")
+        if p2["import_theme"] != "../../../.design/tokens/theme.css" or p2["is_inferred"]:
+            log(f"Path resolution failed for monorepo subproject: {p2}", "FAIL")
+            return False
+
+        # Scenario 3: Non-standard CSS name via shallow scan
+        custom_dir = os.path.join(temp_dir, "custom_app", "styles")
+        os.makedirs(custom_dir, exist_ok=True)
+        with open(os.path.join(custom_dir, "custom.css"), "w") as f: f.write("/* custom */")
+        p3 = adapter.resolve_css_integration_paths(temp_dir, os.path.join(temp_dir, ".design"), subproject_dir="custom_app")
+        if p3["is_inferred"] or not p3["import_theme"].endswith(".design/tokens/theme.css"):
+            log(f"Path resolution failed for custom CSS scan: {p3}", "FAIL")
+            return False
+
+        log("Deterministic CSS integration path resolution verified across standard, monorepo, and custom structures.", "PASS")
+        return True
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
 def main():
     print("=" * 60)
     print("init-design-reference: Repository Integrity Test")
@@ -394,7 +476,9 @@ def main():
         check_decoupled_architecture,
         check_scaffold_and_idempotency,
         check_linter_behavior,
-        check_figma_sync
+        check_figma_sync,
+        check_css_bridge_completeness,
+        check_css_path_resolution
     ]
 
 

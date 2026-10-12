@@ -110,6 +110,25 @@ def resolve_css_integration_paths(project_base, target_dir, subproject_dir=None)
             break
 
     if not found_entry_abs:
+        # Scan search roots for any existing CSS entrypoints (up to depth 3, skipping build/vendor dirs)
+        for root in search_roots:
+            if not os.path.exists(root):
+                continue
+            for r, dirs, files in os.walk(root):
+                dirs[:] = [d for d in dirs if not d.startswith(".") and d not in {"node_modules", "dist", "build", "reference", ".design", "public", ".next"}]
+                rel_depth = len(os.path.relpath(r, root).split(os.sep))
+                if rel_depth > 3:
+                    continue
+                for f in sorted(files):
+                    if f.endswith(".css"):
+                        found_entry_abs = os.path.join(r, f)
+                        break
+                if found_entry_abs:
+                    break
+            if found_entry_abs:
+                break
+
+    if not found_entry_abs:
         default_rel = "src/index.css"
         found_entry_abs = os.path.join(search_roots[0], default_rel)
         is_inferred = True
@@ -271,6 +290,9 @@ def apply_preset(target_dir, preset_name, dials_override=None, force=False, is_n
             except Exception as e:
                 print(f"Notice: Failed to update typography.json with preset ({e})")
 
+def to_kebab_case(s):
+    return re.sub(r'([A-Z])', r'-\1', s).lower().lstrip('-')
+
 def hex_to_rgba(hex_code, alpha):
     h = str(hex_code).lstrip("#")
     if len(h) == 3:
@@ -292,6 +314,7 @@ def generate_css_bridges(target_dir, style_engine, force=False):
     colors_file = os.path.join(tokens_dir, "colors.json")
     shadows_file = os.path.join(tokens_dir, "shadows.json")
     typography_file = os.path.join(tokens_dir, "typography.json")
+    spacing_file = os.path.join(tokens_dir, "spacing.json")
     radii_file = os.path.join(tokens_dir, "radii.json")
     motion_file = os.path.join(tokens_dir, "motion.json")
 
@@ -307,8 +330,13 @@ def generate_css_bridges(target_dir, style_engine, force=False):
     colors = load_json(colors_file)
     shadows = load_json(shadows_file)
     typography = load_json(typography_file)
+    spacing = load_json(spacing_file)
     radii = load_json(radii_file)
     motion = load_json(motion_file)
+
+    spacing_scale = spacing.get("scale", {})
+    spacing_gutter = spacing.get("gutter", {})
+    typo_roles = typography.get("roles", {})
 
     bg_primary = colors.get("background", {}).get("primary", "#09090b")
     bg_surface = colors.get("background", {}).get("surface", "#18181b")
@@ -371,6 +399,20 @@ def generate_css_bridges(target_dir, style_engine, force=False):
             tokens_css_lines.append(f"  --shadow-{key}: {val};")
     for r_k, r_v in radii.items():
         tokens_css_lines.append(f"  --radius-{r_k}: {r_v};")
+    for sp_k, sp_v in spacing_scale.items():
+        tokens_css_lines.append(f"  --space-{sp_k}: {sp_v};")
+    for gt_k, gt_v in spacing_gutter.items():
+        tokens_css_lines.append(f"  --gutter-{gt_k}: {gt_v};")
+    for role_name, role_val in typo_roles.items():
+        role_kebab = to_kebab_case(role_name)
+        if "size" in role_val:
+            tokens_css_lines.append(f"  --text-{role_kebab}-size: {role_val['size']};")
+        if "weight" in role_val:
+            tokens_css_lines.append(f"  --text-{role_kebab}-weight: {role_val['weight']};")
+        if "lineHeight" in role_val:
+            tokens_css_lines.append(f"  --text-{role_kebab}-line-height: {role_val['lineHeight']};")
+        if "letterSpacing" in role_val:
+            tokens_css_lines.append(f"  --text-{role_kebab}-letter-spacing: {role_val['letterSpacing']};")
     for d_k, d_v in motion.get("duration", {}).items():
         tokens_css_lines.append(f"  --duration-{d_k}: {d_v};")
     for e_k, e_v in motion.get("easing", {}).items():
@@ -422,6 +464,14 @@ def generate_css_bridges(target_dir, style_engine, force=False):
                 theme_css_lines.append(f"  --shadow-{key}: var(--shadow-{key});")
         for r_k in radii:
             theme_css_lines.append(f"  --radius-{r_k}: var(--radius-{r_k});")
+        for sp_k in spacing_scale:
+            theme_css_lines.append(f"  --spacing-{sp_k}: var(--space-{sp_k});")
+        for role_name in typo_roles:
+            role_kebab = to_kebab_case(role_name)
+            theme_css_lines.append(f"  --font-size-{role_kebab}: var(--text-{role_kebab}-size);")
+            theme_css_lines.append(f"  --font-weight-{role_kebab}: var(--text-{role_kebab}-weight);")
+            theme_css_lines.append(f"  --line-height-{role_kebab}: var(--text-{role_kebab}-line-height);")
+            theme_css_lines.append(f"  --letter-spacing-{role_kebab}: var(--text-{role_kebab}-letter-spacing);")
         for d_k in motion.get("duration", {}):
             theme_css_lines.append(f"  --duration-{d_k}: var(--duration-{d_k});")
         for e_k in motion.get("easing", {}):
@@ -440,6 +490,15 @@ def generate_css_bridges(target_dir, style_engine, force=False):
         radii_entries = ",\n".join(
             [f'        "{k}": "var(--radius-{k})"' for k in radii]
         )
+        spacing_entries = ",\n".join(
+            [f'        "{k}": "var(--space-{k})"' for k in spacing_scale]
+        )
+        font_size_entries = ",\n".join(
+            [
+                f'        "{to_kebab_case(r_name)}": ["var(--text-{to_kebab_case(r_name)}-size)", {{ lineHeight: "var(--text-{to_kebab_case(r_name)}-line-height)", letterSpacing: "var(--text-{to_kebab_case(r_name)}-letter-spacing)", fontWeight: "var(--text-{to_kebab_case(r_name)}-weight)" }}]'
+                for r_name in typo_roles
+            ]
+        )
         duration_entries = ",\n".join(
             [f'        "{k}": "var(--duration-{k})"' for k in motion.get("duration", {})]
         )
@@ -452,6 +511,12 @@ module.exports = {{
     extend: {{
       fontFamily: {{
 {font_entries}
+      }},
+      fontSize: {{
+{font_size_entries}
+      }},
+      spacing: {{
+{spacing_entries}
       }},
       colors: {{
         background: "var(--background)",

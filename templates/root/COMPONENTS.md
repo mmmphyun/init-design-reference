@@ -37,7 +37,7 @@ For pressable, navigable, or input components:
 | Micro-State | Visual Requirement | ARIA / Accessibility | CSS / Tailwind Pattern |
 | :--- | :--- | :--- | :--- |
 | **Idle** | Token-defined surface & border | `aria-disabled="false"` | `bg-surface border-border text-foreground` |
-| **Hover** | 5% surface brightness or tint, no layout shift | N/A | `hover:brightness-105 transition-colors` |
+| **Hover** | 5% surface brightness or tint, no layout shift | N/A | `hover:brightness-105 transition` |
 | **Focus-Visible** | High-contrast 2px ring with 2px offset | Native focus tracking | `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2` |
 | **Active / Press** | Physical compression `scale(0.98)`, 100ms spring | N/A | `active:scale-[0.98] duration-press will-change-transform` |
 | **Disabled** | 50% opacity, no pointer events | `aria-disabled="true" disabled` | `disabled:opacity-50 disabled:pointer-events-none` |
