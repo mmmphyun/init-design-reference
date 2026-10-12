@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """
-scripts/verify_motion_scenarios.py - Four Motion Verification Scenarios & Headless Browser Interactive Auditor
+scripts/verify_motion_scenarios.py - Mechanical Motion Invariants & Browser Interaction Verification
 
-Evaluates four finite motion scenarios:
-1. Short new project request: Verifies that undetermined motion is not filled with agent arbitrary defaults.
-2. Direction-specified request: Verifies that subdued motion requests (MOTION_INTENSITY <= 3) strictly follow intent without bouncy/spring oscillations.
-3. Existing design system project: Verifies preservation of custom tokens, CSS variables, and component conventions.
-4. Reduced-motion environment: Verifies functional state transition (open/close) while suppressing animations/transitions in real headless browser.
+Evaluates mechanical motion constraints, token preservation, and browser interaction:
+1. Short new request invariant: Adapter applies baseline neutral dials (MOTION_INTENSITY=4) without arbitrary extremes.
+2. Subdued direction invariant: Adapter applies and preserves requested low motion dial (MOTION_INTENSITY=2) passing spec verification.
+3. Existing design system invariant: Custom team motion tokens/curves in motion.json survive subsequent adapter runs.
+4. Browser interactive & reduced-motion verification: Loads generated scaffold assets (tokens.css) and component markup
+   (micro-interactions.md TactileButton & Sheet) in Playwright Chromium, testing real interactive toggles and reduced-motion suppression.
 
-Includes an interactive Playwright test running against an ephemeral HTTP server to verify actual DOM interaction and reduced-motion emulation.
-Screenshots/captures are kept strictly ephemeral and never committed to the repository.
+Note on Scope:
+- This script tests mechanical invariants of the repository's tooling (adapter, tokens, linter, headless browser).
+- It does NOT evaluate interactive LLM chat session behavior (e.g. conversational prompt understanding).
+- Headless browser verification strictly requires Playwright; if Playwright is missing or fails, this test fails (no silent pass).
+- Ephemeral test artifacts and servers are destroyed after verification; nothing is committed to the repository.
 """
 
 import os
@@ -26,95 +30,77 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def log(msg, status="INFO"):
     print(f"[{status}] {msg}")
 
-def run_scenario_1_short_new_request():
+def run_invariant_1_short_new_request():
     """
-    Scenario 1: Short New Project Request
-    Requirement: Undetermined motion styles must not be filled with arbitrary agent defaults.
-    Pass Criteria: Default preset scaffolding assigns baseline neutral dials, and guidelines
-    mandate that critical motion decisions remain [Undetermined] or follow user confirmation.
+    Invariant 1: Short New Request Tooling Invariant
+    Verifies that scaffolding without explicit dials defaults to baseline neutral motion (MOTION_INTENSITY=4).
     """
-    log("Running Scenario 1: Short new project request (no arbitrary motion forced)...", "TEST")
+    log("Running Invariant 1: Baseline neutral motion dials on unconfigured scaffold...", "TEST")
     temp_dir = tempfile.mkdtemp(prefix="scenario_1_")
     try:
         adapter_path = os.path.join(REPO_ROOT, "scripts", "adapter.py")
         target_design = os.path.join(temp_dir, ".design")
 
-        # Run adapter with standard default
         res = subprocess.run([sys.executable, adapter_path, target_design], capture_output=True, text=True, cwd=temp_dir)
         if res.returncode != 0:
-            log(f"Scenario 1 failed: adapter exited with {res.returncode}", "FAIL")
+            log(f"Invariant 1 failed: adapter exited with {res.returncode}", "FAIL")
             return False
 
         design_md_path = os.path.join(target_design, "DESIGN.md")
         with open(design_md_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Motion intensity is set to baseline neutral dial (4) without extreme bounce
         if "`MOTION_INTENSITY`: 4" not in content:
-            log("Scenario 1 failed: default MOTION_INTENSITY is not standard baseline 4", "FAIL")
+            log("Invariant 1 failed: default MOTION_INTENSITY is not standard baseline 4", "FAIL")
             return False
 
-        # Verify interaction guide enforces user intent first and recipes are optional
-        interaction_guide = os.path.join(REPO_ROOT, "templates", "notes", "interaction.md")
-        with open(interaction_guide, "r", encoding="utf-8") as f:
-            guide_text = f.read()
-
-        if "Hierarchy of Motion Decision (User Intent First)" not in guide_text:
-            log("Scenario 1 failed: interaction guide does not enforce user intent hierarchy", "FAIL")
-            return False
-
-        log("Scenario 1 PASS: Default dials applied cleanly; arbitrary motion is not forced.", "PASS")
+        log("Invariant 1 PASS: Adapter establishes baseline neutral motion dials (MOTION_INTENSITY: 4).", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-def run_scenario_2_subdued_direction_request():
+def run_invariant_2_subdued_direction_request():
     """
-    Scenario 2: Explicit Subdued Motion Direction
-    Requirement: Subdued motion request (e.g. MOTION_INTENSITY=2) must enforce fast, non-bouncy constraints.
-    Pass Criteria: Dials override correctly to low motion (2), and interaction guidelines strictly prohibit
-    spring bounce or playful oscillation when MOTION_INTENSITY <= 3.
+    Invariant 2: Subdued Direction Tooling Invariant
+    Verifies that explicitly requested subdued motion (--dials 4,7,2) is applied and validated by --verify-spec.
     """
-    log("Running Scenario 2: Explicit subdued motion direction (no unsolicited bounce)...", "TEST")
+    log("Running Invariant 2: Explicit subdued motion dial persistence & spec validation...", "TEST")
     temp_dir = tempfile.mkdtemp(prefix="scenario_2_")
     try:
         adapter_path = os.path.join(REPO_ROOT, "scripts", "adapter.py")
         target_design = os.path.join(temp_dir, ".design")
 
-        # Scaffold with custom subdued dials (Variance=4, Density=7, Motion=2)
         res = subprocess.run([
             sys.executable, adapter_path, target_design,
             "--dials", "4,7,2"
         ], capture_output=True, text=True, cwd=temp_dir)
         if res.returncode != 0:
-            log(f"Scenario 2 failed: adapter execution failed", "FAIL")
+            log(f"Invariant 2 failed: adapter execution failed", "FAIL")
             return False
 
         with open(os.path.join(target_design, "DESIGN.md"), "r", encoding="utf-8") as f:
             content = f.read()
 
         if "`MOTION_INTENSITY`: 2" not in content:
-            log("Scenario 2 failed: custom dial MOTION_INTENSITY=2 was not preserved", "FAIL")
+            log("Invariant 2 failed: custom dial MOTION_INTENSITY=2 was not preserved", "FAIL")
             return False
 
-        # Verify spec hard-guard passes
         res_spec = subprocess.run([sys.executable, adapter_path, "--verify-spec", target_design], capture_output=True, text=True, cwd=temp_dir)
         if res_spec.returncode != 0:
-            log(f"Scenario 2 failed: --verify-spec failed on subdued dials:\n{res_spec.stderr}", "FAIL")
+            log(f"Invariant 2 failed: --verify-spec failed on subdued dials:\n{res_spec.stderr}", "FAIL")
             return False
 
-        log("Scenario 2 PASS: Subdued motion dial preserved and verified without bounce.", "PASS")
+        log("Invariant 2 PASS: Subdued motion dial preserved and passed --verify-spec.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-def run_scenario_3_existing_design_system_preservation():
+def run_invariant_3_existing_design_system_preservation():
     """
-    Scenario 3: Existing Design System Project
-    Requirement: Existing motion tokens and library conventions must be preserved across adapter runs.
-    Pass Criteria: Custom tokens in motion.json survive idempotency checks without being overwritten by presets.
+    Invariant 3: Existing Design System Preservation Invariant
+    Verifies that custom motion tokens added to motion.json are preserved across adapter executions.
     """
-    log("Running Scenario 3: Existing design system project (custom motion token preservation)...", "TEST")
+    log("Running Invariant 3: Preservation of existing motion tokens across adapter runs...", "TEST")
     temp_dir = tempfile.mkdtemp(prefix="scenario_3_")
     try:
         adapter_path = os.path.join(REPO_ROOT, "scripts", "adapter.py")
@@ -123,7 +109,7 @@ def run_scenario_3_existing_design_system_preservation():
         # 1. Initial scaffold
         subprocess.run([sys.executable, adapter_path, target_design], check=True, capture_output=True, cwd=temp_dir)
 
-        # 2. Simulate project team defining custom brand spring and duration
+        # 2. Add custom brand motion tokens
         motion_json_path = os.path.join(target_design, "tokens", "motion.json")
         with open(motion_json_path, "r", encoding="utf-8") as f:
             motion_data = json.load(f)
@@ -133,128 +119,155 @@ def run_scenario_3_existing_design_system_preservation():
         with open(motion_json_path, "w", encoding="utf-8") as f:
             json.dump(motion_data, f, indent=2)
 
-        # 3. Re-run adapter without --force: must preserve custom brand tokens
+        # 3. Re-run adapter without --force
         res_rerun = subprocess.run([sys.executable, adapter_path, target_design, "--preset", "b2b-dense"], capture_output=True, text=True, cwd=temp_dir)
         if res_rerun.returncode != 0:
-            log("Scenario 3 failed: adapter second run failed", "FAIL")
+            log("Invariant 3 failed: adapter second run failed", "FAIL")
             return False
 
         with open(motion_json_path, "r", encoding="utf-8") as f:
             verified_motion = json.load(f)
 
         if "brand-swift" not in verified_motion.get("duration", {}) or "brand-gentle" not in verified_motion.get("springs", {}):
-            log("Scenario 3 failed: custom brand motion tokens were overwritten by preset re-run!", "FAIL")
+            log("Invariant 3 failed: custom brand motion tokens were overwritten by preset re-run!", "FAIL")
             return False
 
-        log("Scenario 3 PASS: Existing design system custom motion tokens completely preserved.", "PASS")
+        log("Invariant 3 PASS: Custom motion tokens preserved through idempotent adapter runs.", "PASS")
         return True
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
-def run_scenario_4_reduced_motion_interactive():
+def run_invariant_4_browser_scaffold_output_interactive():
     """
-    Scenario 4: Reduced-Motion Environment & Interactive State Verification
-    Requirement: In prefers-reduced-motion: reduce, functional states (open/close, active toggles)
-    must operate deterministically, while transitions/animations are suppressed.
-    Pass Criteria: Headless browser loads test page, triggers interaction with both standard and
-    reduced-motion media emulation, and validates DOM state toggle and computed style reduction.
+    Invariant 4: Headless Browser Interactive Verification of Scaffold Output
+    Builds a test page using scaffolded tokens.css and template component markup
+    (TactileButton and Sheet from micro-interactions.md), then validates interaction
+    and reduced-motion suppression in Playwright Chromium.
+    MANDATORY: Fails if Playwright is missing or browser launch fails.
     """
-    log("Running Scenario 4: Reduced-motion environment & browser interactive verification...", "TEST")
+    log("Running Invariant 4: Headless browser interactive verification of scaffold output...", "TEST")
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        log("Playwright not installed, skipping browser interaction check", "WARN")
-        return True
+        log("Invariant 4 FAIL: Playwright is mandatory for browser interaction verification.", "FAIL")
+        return False
 
     temp_dir = tempfile.mkdtemp(prefix="scenario_4_")
     server = None
     try:
-        # Create an interactive HTML test harness demonstrating:
-        # 1. An expandable disclosure
-        # 2. A modal dialog
-        # 3. An alert feedback toast
-        # with standard transition vs prefers-reduced-motion media query
-        html_content = """<!DOCTYPE html>
+        # 1. Generate real tokens.css using adapter in temp workspace
+        adapter_path = os.path.join(REPO_ROOT, "scripts", "adapter.py")
+        target_design = os.path.join(temp_dir, ".design")
+        subprocess.run([sys.executable, adapter_path, target_design], check=True, capture_output=True, cwd=temp_dir)
+
+        tokens_css_path = os.path.join(target_design, "tokens", "tokens.css")
+        if not os.path.exists(tokens_css_path):
+            log("Invariant 4 failed: scaffolded tokens.css does not exist", "FAIL")
+            return False
+
+        # Read scaffolded tokens.css
+        with open(tokens_css_path, "r", encoding="utf-8") as f:
+            tokens_css_content = f.read()
+
+        # 2. Build test HTML referencing scaffolded tokens.css and micro-interactions.md patterns
+        html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Motion Verification Harness</title>
+  <title>Scaffold Output Motion Verification</title>
   <style>
-    :root {
-      --duration-fast: 150ms;
-      --duration-normal: 250ms;
-    }
-    body { font-family: sans-serif; padding: 20px; }
-    .panel {
-      opacity: 0;
-      transform: translateY(-8px);
-      transition: opacity var(--duration-normal) ease-out, transform var(--duration-normal) ease-out;
-      display: none;
-    }
-    .panel.open {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .modal-backdrop {
+    /* Injected scaffold tokens.css */
+    {tokens_css_content}
+
+    body {{
+      background: var(--background);
+      color: var(--foreground);
+      font-family: sans-serif;
+      padding: 24px;
+    }}
+
+    /* TactileButton pattern from micro-interactions.md */
+    .tactile-btn {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: var(--radius-btn, 6px);
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      user-select: none;
+      transition-property: transform, background-color, box-shadow;
+      transition-duration: var(--duration-fast);
+      transition-timing-function: var(--ease-apple-snappy);
+    }}
+    .tactile-btn:active {{
+      transform: scale(0.98);
+    }}
+
+    /* Sheet pattern from micro-interactions.md */
+    .sheet-backdrop {{
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
       opacity: 0;
       transition: opacity var(--duration-fast) ease-out;
-    }
-    .modal-backdrop.active {
+      z-index: 50;
+    }}
+    .sheet-backdrop.active {{
       display: flex;
-      align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
       opacity: 1;
-    }
-    .modal-box {
-      background: white;
-      padding: 24px;
-      transform: scale(0.95);
-      transition: transform var(--duration-fast) ease-out;
-    }
-    .modal-backdrop.active .modal-box {
-      transform: scale(1);
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, ::before, ::after {
+    }}
+    .sheet-surface {{
+      width: 100%;
+      max-width: 400px;
+      height: 100%;
+      background: var(--surface);
+      border-left: 1px solid var(--border-default);
+      box-shadow: var(--shadow-elevation-4, 0 10px 15px rgba(0,0,0,0.3));
+      transform: translateX(100%);
+      transition: transform var(--duration-normal) var(--ease-apple-spring);
+      padding: 20px;
+      box-sizing: border-box;
+    }}
+    .sheet-backdrop.active .sheet-surface {{
+      transform: translateX(0);
+    }}
+
+    /* Global reduced motion override from interaction.md */
+    @media (prefers-reduced-motion: reduce) {{
+      *, ::before, ::after {{
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
-      }
-    }
+      }}
+    }}
   </style>
 </head>
 <body>
-  <h1>Interactive Motion Harness</h1>
-  <button id="toggle-btn" aria-expanded="false" onclick="togglePanel()">Toggle Disclosure</button>
-  <div id="target-panel" class="panel">Disclosed Content Available</div>
+  <h1>Scaffold Output Motion Verification</h1>
+  <button id="open-sheet-btn" class="tactile-btn" onclick="openSheet()">Open Drawer Sheet</button>
 
-  <button id="open-modal-btn" onclick="openModal()">Open Modal</button>
-  <div id="target-modal" class="modal-backdrop">
-    <div class="modal-box">
-      <h2>Modal Dialog</h2>
-      <button id="close-modal-btn" onclick="closeModal()">Close</button>
+  <div id="sheet-backdrop" class="sheet-backdrop" role="dialog" aria-modal="true" aria-label="Settings Sheet">
+    <div class="sheet-surface">
+      <h2>Drawer Sheet Surface</h2>
+      <p>Testing scaffold pattern behavior.</p>
+      <button id="close-sheet-btn" class="tactile-btn" onclick="closeSheet()">Close</button>
     </div>
   </div>
 
   <script>
-    function togglePanel() {
-      const p = document.getElementById('target-panel');
-      const b = document.getElementById('toggle-btn');
-      const isOpen = p.classList.toggle('open');
-      b.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    }
-    function openModal() {
-      document.getElementById('target-modal').classList.add('active');
-    }
-    function closeModal() {
-      document.getElementById('target-modal').classList.remove('active');
-    }
+    function openSheet() {{
+      document.getElementById('sheet-backdrop').classList.add('active');
+    }}
+    function closeSheet() {{
+      document.getElementById('sheet-backdrop').classList.remove('active');
+    }}
   </script>
 </body>
 </html>
@@ -263,7 +276,7 @@ def run_scenario_4_reduced_motion_interactive():
         with open(html_file, "w", encoding="utf-8") as f:
             f.write(html_content)
 
-        # Serve test page on ephemeral localhost port
+        # Serve on ephemeral localhost port
         class QuietHandler(SimpleHTTPRequestHandler):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, directory=temp_dir, **kwargs)
@@ -280,88 +293,75 @@ def run_scenario_4_reduced_motion_interactive():
         with sync_playwright() as p:
             browser = p.chromium.launch()
 
-            # 4-A: Standard Motion Context
-            context_std = browser.new_context()
-            page_std = context_std.new_page()
+            # 4-A: Standard Browser Context
+            ctx_std = browser.new_context()
+            page_std = ctx_std.new_page()
             page_std.goto(target_url)
 
-            # Test disclosure toggle
-            btn = page_std.locator("#toggle-btn")
-            panel = page_std.locator("#target-panel")
-            btn.click()
-            page_std.wait_for_timeout(50)
-            if not panel.is_visible() or btn.get_attribute("aria-expanded") != "true":
-                log("Scenario 4 standard context: disclosure open failed", "FAIL")
+            # Test TactileButton presence & styling
+            btn = page_std.locator("#open-sheet-btn")
+            if not btn.is_visible():
+                log("Invariant 4 failed: TactileButton not visible", "FAIL")
                 browser.close()
                 return False
 
-            # Test modal dialog open and close
-            modal_btn = page_std.locator("#open-modal-btn")
-            modal = page_std.locator("#target-modal")
-            close_btn = page_std.locator("#close-modal-btn")
+            # Test Sheet open and close
+            sheet = page_std.locator("#sheet-backdrop")
+            close_btn = page_std.locator("#close-sheet-btn")
 
-            modal_btn.click()
+            btn.click()
             page_std.wait_for_timeout(50)
-            if not modal.is_visible():
-                log("Scenario 4 standard context: modal open failed", "FAIL")
+            if not sheet.is_visible():
+                log("Invariant 4 failed: Sheet did not open in standard context", "FAIL")
                 browser.close()
                 return False
 
             close_btn.click()
             page_std.wait_for_timeout(50)
-            if modal.is_visible():
-                log("Scenario 4 standard context: modal close failed", "FAIL")
+            if sheet.is_visible():
+                log("Invariant 4 failed: Sheet did not close in standard context", "FAIL")
                 browser.close()
                 return False
 
-            context_std.close()
+            ctx_std.close()
 
-            # 4-B: Reduced-Motion Context (Emulate prefers-reduced-motion: reduce)
-            context_rm = browser.new_context(reduced_motion="reduce")
-            page_rm = context_rm.new_page()
+            # 4-B: Reduced-Motion Context (prefers-reduced-motion: reduce)
+            ctx_rm = browser.new_context(reduced_motion="reduce")
+            page_rm = ctx_rm.new_page()
             page_rm.goto(target_url)
 
-            # Validate CSS transition duration was suppressed by reduced-motion media query
-            panel_rm = page_rm.locator("#target-panel")
+            # Validate that transition duration on Sheet is suppressed to ~0
             computed_duration = page_rm.evaluate("""() => {
-              const el = document.getElementById('target-panel');
+              const el = document.getElementById('sheet-backdrop');
               return window.getComputedStyle(el).getPropertyValue('transition-duration');
             }""")
 
-            # 0.01ms resolves to 0s or 0.00001s in computed style
             if "0s" not in computed_duration and "0.00001s" not in computed_duration and "1e-05s" not in computed_duration:
-                log(f"Scenario 4 reduced-motion: transition-duration not suppressed (got {computed_duration})", "FAIL")
+                log(f"Invariant 4 failed: transition-duration not suppressed under reduced-motion (got {computed_duration})", "FAIL")
                 browser.close()
                 return False
 
             # Validate functional interaction still functions seamlessly under reduced motion
-            btn_rm = page_rm.locator("#toggle-btn")
+            btn_rm = page_rm.locator("#open-sheet-btn")
+            sheet_rm = page_rm.locator("#sheet-backdrop")
+            close_btn_rm = page_rm.locator("#close-sheet-btn")
+
             btn_rm.click()
-            if not panel_rm.is_visible() or btn_rm.get_attribute("aria-expanded") != "true":
-                log("Scenario 4 reduced-motion: functional state failed to toggle under reduced-motion!", "FAIL")
-                browser.close()
-                return False
-
-            modal_btn_rm = page_rm.locator("#open-modal-btn")
-            modal_rm = page_rm.locator("#target-modal")
-            close_btn_rm = page_rm.locator("#close-modal-btn")
-
-            modal_btn_rm.click()
-            if not modal_rm.is_visible():
-                log("Scenario 4 reduced-motion: modal failed to open under reduced-motion!", "FAIL")
+            if not sheet_rm.is_visible():
+                log("Invariant 4 failed: Sheet failed to open under reduced-motion", "FAIL")
                 browser.close()
                 return False
 
             close_btn_rm.click()
-            if modal_rm.is_visible():
-                log("Scenario 4 reduced-motion: modal failed to close under reduced-motion!", "FAIL")
+            if sheet_rm.is_visible():
+                log("Invariant 4 failed: Sheet failed to close under reduced-motion", "FAIL")
                 browser.close()
                 return False
 
-            context_rm.close()
+            ctx_rm.close()
             browser.close()
 
-        log("Scenario 4 PASS: Real interactive state changes and reduced-motion suppression verified in browser.", "PASS")
+        log("Invariant 4 PASS: Scaffolded tokens & component patterns verified in Playwright browser with reduced-motion suppression.", "PASS")
         return True
     finally:
         if server:
@@ -370,28 +370,28 @@ def run_scenario_4_reduced_motion_interactive():
 
 def main():
     print("=" * 60)
-    print("init-design-reference: Finite Motion Scenarios Verification")
+    print("init-design-reference: Tooling Motion Invariants & Browser Test")
     print("=" * 60)
 
-    scenarios = [
-        run_scenario_1_short_new_request,
-        run_scenario_2_subdued_direction_request,
-        run_scenario_3_existing_design_system_preservation,
-        run_scenario_4_reduced_motion_interactive,
+    invariants = [
+        run_invariant_1_short_new_request,
+        run_invariant_2_subdued_direction_request,
+        run_invariant_3_existing_design_system_preservation,
+        run_invariant_4_browser_scaffold_output_interactive,
     ]
 
     all_passed = True
-    for s in scenarios:
-        if not s():
+    for inv in invariants:
+        if not inv():
             all_passed = False
             break
 
     print("=" * 60)
     if all_passed:
-        print("[SUMMARY] ALL 4 MOTION SCENARIOS PASSED.")
+        print("[SUMMARY] ALL MECHANICAL MOTION INVARIANTS PASSED.")
         sys.exit(0)
     else:
-        print("[SUMMARY] MOTION SCENARIOS VERIFICATION FAILED.")
+        print("[SUMMARY] MOTION INVARIANTS VERIFICATION FAILED.")
         sys.exit(1)
 
 if __name__ == "__main__":

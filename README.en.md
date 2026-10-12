@@ -35,7 +35,7 @@ $ python scripts/lint_ui.py app/components/MetricCard.tsx
 [ERROR] app/components/MetricCard.tsx:102 (hardcoded-hex)
        Hardcoded hex color detected (#1e293b). Use semantic tokens from colors.json.
 [WARN]  app/components/MetricCard.tsx:102 (layout-thrashing-animation)
-       Layout thrashing animation detected (transition-all). Animate ONLY transform and opacity.
+       Layout thrashing animation detected (transition-all). Animate spatial (transform, opacity) or state feedback (color, shadow) properties.
 [ERROR] app/components/MetricCard.tsx:105 (a11y-missing-alt)
        <img> tag missing alt attribute (WCAG 1.1.1).
 [WARN]  app/components/MetricCard.tsx:107 (cliche-tracking-uppercase)

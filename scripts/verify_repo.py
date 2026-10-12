@@ -676,13 +676,13 @@ def check_workspace_framework_and_css_resolution():
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 def check_motion_scenarios_behavior():
-    log("Verifying finite motion scenarios suite (scripts/verify_motion_scenarios.py)...", "TEST")
+    log("Verifying mechanical motion invariants & browser test (scripts/verify_motion_scenarios.py)...", "TEST")
     scenario_script = os.path.join(REPO_ROOT, "scripts", "verify_motion_scenarios.py")
     res = subprocess.run([sys.executable, scenario_script], capture_output=True, text=True)
     if res.returncode != 0:
-        log(f"Motion scenarios test failed:\n{res.stdout}\n{res.stderr}", "FAIL")
+        log(f"Motion invariants test failed:\n{res.stdout}\n{res.stderr}", "FAIL")
         return False
-    log("Motion scenarios suite passed cleanly.", "PASS")
+    log("Mechanical motion invariants & browser suite passed cleanly.", "PASS")
     return True
 
 def main():

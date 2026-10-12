@@ -17,7 +17,7 @@ Complete this checklist prior to submitting or committing UI code changes.
   - [ ] Visible focus rings on all interactive elements via `:focus-visible`.
   - [ ] Screen-reader accessible labels on icon-only buttons.
 - [ ] **Hobson 4-State Completeness**: Verified `Loading`, `Empty`, `Error`, and `Populated` states on all dynamic components.
-- [ ] **Performance & Motion**: Spatial transitions restricted to GPU-accelerated properties (`transform`, `opacity`); state transitions restricted to targeted paint properties (`color`, `background-color`, `border-color`, `box-shadow`); micro-interaction duration <= 350ms; strict `prefers-reduced-motion` compliance.
+- [ ] **Performance & Motion**: Spatial transitions restricted to GPU-accelerated properties (`transform`, `opacity`, `filter`); state transitions restricted to targeted paint properties (`color`, `background-color`, `border-color`, `box-shadow`); micro-interaction duration <= 350ms; strict `prefers-reduced-motion` compliance.
 - [ ] **Critical Data Integrity & Functional Visibility (High-Density / Enterprise)**:
   - [ ] Zero truncation on critical domain identities (ID, Code, Key, Host/IP, Account fully visible).
   - [ ] Functional indicator/gauge bar height >= 6px (`h-1.5`) with high-contrast alert states.
