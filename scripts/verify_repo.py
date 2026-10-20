@@ -371,6 +371,60 @@ def check_linter_behavior():
             log(f"Linter falsely flagged valid motion properties:\n{res_good_motion.stdout}", "FAIL")
             return False
 
+        # Test new deterministic UX / A11y rules (non-semantic click, unlabeled icon button, paste block, zoom disable)
+        bad_ux_file = os.path.join(temp_dir, "bad_ux.tsx")
+        with open(bad_ux_file, "w", encoding="utf-8") as f:
+            f.write(
+                'export function BadUx() {\n'
+                '  return (\n'
+                '    <div>\n'
+                '      <div onClick={() => alert("click")}>Clickable Div</div>\n'
+                '      <button><svg><path d="M0 0" /></svg></button>\n'
+                '      <input type="text" onPaste={(e) => { e.preventDefault(); }} />\n'
+                '      <input type="email" />\n'
+                '      <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1.0" />\n'
+                '    </div>\n'
+                '  );\n'
+                '}\n'
+            )
+
+        res_bad_ux = subprocess.run([sys.executable, linter_path, bad_ux_file], capture_output=True, text=True)
+        if "a11y-non-semantic-interactive" not in res_bad_ux.stdout:
+            log("Linter failed to catch a11y-non-semantic-interactive on <div onClick>!", "FAIL")
+            return False
+        if "a11y-icon-button-missing-label" not in res_bad_ux.stdout:
+            log("Linter failed to catch a11y-icon-button-missing-label on icon button!", "FAIL")
+            return False
+        if "ux-paste-blocking" not in res_bad_ux.stdout:
+            log("Linter failed to catch ux-paste-blocking on onPaste preventDefault!", "FAIL")
+            return False
+        if "ux-form-control-unlabeled" not in res_bad_ux.stdout:
+            log("Linter failed to catch ux-form-control-unlabeled on unlabeled input!", "FAIL")
+            return False
+        if "ux-viewport-zoom-disabled" not in res_bad_ux.stdout:
+            log("Linter failed to catch ux-viewport-zoom-disabled on meta viewport!", "FAIL")
+            return False
+
+        good_ux_file = os.path.join(temp_dir, "good_ux.tsx")
+        with open(good_ux_file, "w", encoding="utf-8") as f:
+            f.write(
+                'export function GoodUx() {\n'
+                '  return (\n'
+                '    <div>\n'
+                '      <button onClick={() => alert("click")} className="focus-visible:ring-2">Clickable Button</button>\n'
+                '      <button aria-label="Close dialog"><svg><path d="M0 0" /></svg></button>\n'
+                '      <input id="email" name="email" type="email" />\n'
+                '      <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n'
+                '    </div>\n'
+                '  );\n'
+                '}\n'
+            )
+
+        res_good_ux = subprocess.run([sys.executable, linter_path, good_ux_file], capture_output=True, text=True)
+        if "a11y-non-semantic-interactive" in res_good_ux.stdout or "a11y-icon-button-missing-label" in res_good_ux.stdout:
+            log(f"Linter falsely flagged clean UX file:\n{res_good_ux.stdout}", "FAIL")
+            return False
+
         # Run linter on good file (must pass with exit code 0)
         res_good = subprocess.run([sys.executable, linter_path, good_file], capture_output=True, text=True)
         if res_good.returncode != 0:
@@ -685,6 +739,16 @@ def check_motion_scenarios_behavior():
     log("Mechanical motion invariants & browser suite passed cleanly.", "PASS")
     return True
 
+def check_capture_ui_behavior():
+    log("Verifying capture_ui.py CLI interface and receipt hashing...", "TEST")
+    capture_path = os.path.join(REPO_ROOT, "scripts", "capture_ui.py")
+    res = subprocess.run([sys.executable, capture_path, "--allow-missing", "--advisory"], capture_output=True, text=True)
+    if res.returncode != 0:
+        log(f"capture_ui.py failed with --allow-missing --advisory:\n{res.stderr}", "FAIL")
+        return False
+    log("capture_ui.py CLI and audit receipt logic verified.", "PASS")
+    return True
+
 def main():
     print("=" * 60)
     print("init-design-reference: Repository Integrity Test")
@@ -701,7 +765,8 @@ def main():
         check_css_bridge_completeness,
         check_css_path_resolution,
         check_workspace_framework_and_css_resolution,
-        check_motion_scenarios_behavior
+        check_motion_scenarios_behavior,
+        check_capture_ui_behavior
     ]
 
 

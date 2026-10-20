@@ -51,6 +51,16 @@ def get_available_color_tokens() -> List[str]:
     return _CACHED_AVAILABLE_TOKENS
 
 def get_rule_suggestion(rule_id: str) -> str:
+    if rule_id == "a11y-non-semantic-interactive":
+        return "Use semantic <button> or <a>, or add role='button' tabIndex={0} and keyboard handler"
+    if rule_id == "a11y-icon-button-missing-label":
+        return "Add aria-label='...' or <span className='sr-only'>...</span> to describe icon button action"
+    if rule_id == "ux-paste-blocking":
+        return "Remove preventDefault() from onPaste handler to allow user copy-paste"
+    if rule_id == "ux-form-control-unlabeled":
+        return "Add id/name matching a <label>, or add aria-label for assistive technology"
+    if rule_id == "ux-viewport-zoom-disabled":
+        return "Remove user-scalable=no and maximum-scale=1 to allow user zooming (WCAG 1.4.4)"
     if rule_id == "a11y-naked-outline-none":
         return "Add 'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'"
     if rule_id == "hardcoded-hex":
@@ -295,6 +305,95 @@ def scan_file(file_path: str) -> List[Dict]:
                     "snippet": full_tag.strip().splitlines()[0]
                 })
 
+        # Rule 12: a11y-non-semantic-interactive (Vercel / Impeccable)
+        if tag_name.lower() in {"div", "span"}:
+            if re.search(r"\b(?:onClick|@click|on:click)\b", full_tag):
+                if not re.search(r'\b(?:role=["\'](?:button|link|tab|menuitem|switch|checkbox)["\']|tabIndex=|@keydown|onKeyDown|onKeyUp)\b', full_tag):
+                    violations.append({
+                        "file": file_path,
+                        "line": line_num,
+                        "rule_id": "a11y-non-semantic-interactive",
+                        "severity": "ERROR",
+                        "message": f"<{tag_name}> with click handler lacks semantic role, tabIndex, or keyboard handler. Use <button> or add role and keyboard navigation.",
+                        "suggestion": get_rule_suggestion("a11y-non-semantic-interactive"),
+                        "snippet": full_tag.strip().splitlines()[0]
+                    })
+
+        # Rule 13: ux-form-control-unlabeled (WCAG 3.3.2 / Vercel)
+        if tag_name.lower() in {"input", "select", "textarea"}:
+            is_hidden = bool(re.search(r'\btype=["\'](?:hidden|submit|button|reset)["\']', full_tag, re.I))
+            if not is_hidden:
+                has_identifier = bool(re.search(r"\b(?:id=|name=|aria-label=|aria-labelledby=)", full_tag))
+                if not has_identifier:
+                    violations.append({
+                        "file": file_path,
+                        "line": line_num,
+                        "rule_id": "ux-form-control-unlabeled",
+                        "severity": "WARN",
+                        "message": f"<{tag_name}> lacks id, name, or aria-label. Form controls must have associated label or accessible name.",
+                        "suggestion": get_rule_suggestion("ux-form-control-unlabeled"),
+                        "snippet": full_tag.strip().splitlines()[0]
+                    })
+
+        # Rule 14: ux-viewport-zoom-disabled (WCAG 1.4.4 / Vercel)
+        if tag_name.lower() == "meta" and re.search(r'\bname=["\']viewport["\']', full_tag, re.I):
+            if re.search(r"\b(?:user-scalable\s*=\s*(?:no|0)|maximum-scale\s*=\s*1(?:\.0)?\b)", full_tag, re.I):
+                violations.append({
+                    "file": file_path,
+                    "line": line_num,
+                    "rule_id": "ux-viewport-zoom-disabled",
+                    "severity": "ERROR",
+                    "message": "Viewport meta tag disables zoom (user-scalable=no or maximum-scale=1). This violates WCAG 1.4.4 Resize Text.",
+                    "suggestion": get_rule_suggestion("ux-viewport-zoom-disabled"),
+                    "snippet": full_tag.strip().splitlines()[0]
+                })
+
+
+    # 3-B. Whole-file / Block Scoped Checks (Icon button label & paste blocking)
+    # Check button tags that wrap only icons/svg without text or accessible name
+    button_pattern = re.compile(r"<button\b([^>]*)>([\s\S]*?)</button>", re.IGNORECASE)
+    for m in button_pattern.finditer(clean_content):
+        attrs = m.group(1)
+        inner = m.group(2).strip()
+        start_pos = m.start()
+        line_num = clean_content[:start_pos].count("\n") + 1
+        full_button = m.group(0).strip().splitlines()[0]
+        if is_line_ignored(full_button):
+            continue
+
+        has_accessible_name = bool(re.search(r"\b(?:aria-label=|aria-labelledby=|title=)", attrs))
+        has_sr_text = bool(re.search(r"sr-only|visually-hidden", inner, re.I))
+        has_visible_text = bool(re.sub(r"<[^>]+>", "", inner).strip())
+
+        if not (has_accessible_name or has_sr_text or has_visible_text):
+            # Inner has no visible text and button has no aria-label
+            if re.search(r"<svg|<[A-Z]\w*Icon\b|<i\b|lucide", inner, re.I):
+                violations.append({
+                    "file": file_path,
+                    "line": line_num,
+                    "rule_id": "a11y-icon-button-missing-label",
+                    "severity": "ERROR",
+                    "message": "Icon-only button missing aria-label, title, or sr-only text. Screen readers cannot announce this button action.",
+                    "suggestion": get_rule_suggestion("a11y-icon-button-missing-label"),
+                    "snippet": full_button
+                })
+
+    # Check paste-blocking (onPaste + preventDefault)
+    paste_block_pattern = re.compile(r"onPaste\s*=\s*\{?[^}]*preventDefault\s*\(", re.IGNORECASE)
+    for line_num, line in enumerate(clean_lines, start=1):
+        if is_line_ignored(line):
+            continue
+        if paste_block_pattern.search(line) or ("onPaste" in line and "preventDefault" in line):
+            violations.append({
+                "file": file_path,
+                "line": line_num,
+                "rule_id": "ux-paste-blocking",
+                "severity": "ERROR",
+                "message": "onPaste handler blocks user paste (preventDefault). Do not prevent pasting in input controls.",
+                "suggestion": get_rule_suggestion("ux-paste-blocking"),
+                "snippet": line.strip()
+            })
+
     # 4. High-Density Views Specialized Checks
     # High-density rules apply when explicit high-density profile is active in DESIGN.md (Density >= 8)
     # or when explicitly marked in file header/name for specialized telemetry views.
@@ -476,13 +575,13 @@ def run_linter(targets: List[str], excludes: List[str] = None) -> int:
                 print(f"       Suggestion: {v['suggestion']}")
             print(f"       Code: {v['snippet']}\n")
 
-    print(f"Scan complete: {len(files_to_scan)} files inspected. Findings: {error_count} errors, {warn_count} warnings.")
+    print(f"Scan complete: {len(files_to_scan)} files inspected. Findings: {error_count} errors (hard constraints), {warn_count} warnings (contextual defaults).")
 
     if error_count > 0:
-        print("Lint FAILED. Rectify errors or align with reference/ tokens and patterns.", file=sys.stderr)
+        print("Lint FAILED. Rectify hard-constraint errors (a11y / hardcoded tokens).", file=sys.stderr)
         return 1
 
-    print("Lint PASSED.")
+    print("Lint PASSED (Mechanical checks only — verify visual hierarchy, repetition, and context via rendered capture).")
     return 0
 
 if __name__ == "__main__":
