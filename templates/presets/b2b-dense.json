@@ -2,7 +2,7 @@
   "variance": 3,
   "density": 9,
   "motion": 2,
-  "desc": "High-density data cockpit & telemetry (Carbon & Phosphor Emerald)",
+  "desc": "High-density data cockpit & telemetry (Carbon & Slate Blue)",
   "colors": {
     "background": {
       "primary": "#08090c",
@@ -15,8 +15,8 @@
       "muted": "#5d6575"
     },
     "accent": {
-      "primary": "#10b981",
-      "hover": "#059669"
+      "primary": "#3b82f6",
+      "hover": "#2563eb"
     },
     "border": {
       "subtle": "#151821",
@@ -36,9 +36,25 @@
       "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     ],
     "families": {
-      "display": ["JetBrains Mono", "Pretendard", "sans-serif"],
-      "body": ["Pretendard", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
-      "mono": ["JetBrains Mono", "D2Coding", "Pretendard", "monospace"]
+      "display": [
+        "Pretendard",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "sans-serif"
+      ],
+      "body": [
+        "Pretendard",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "system-ui",
+        "sans-serif"
+      ],
+      "mono": [
+        "JetBrains Mono",
+        "D2Coding",
+        "Pretendard",
+        "monospace"
+      ]
     }
   }
 }

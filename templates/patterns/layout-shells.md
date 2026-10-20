@@ -79,7 +79,7 @@ export function EditorialHero({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Editorial Text: 7 Columns */}
         <div className="lg:col-span-7 flex flex-col space-y-6">
-          <span className="text-xs font-mono font-medium text-muted tracking-tight">
+          <span className="text-xs font-medium text-muted tracking-tight">
             {tagline}
           </span>
           <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground leading-tight tracking-tight">
