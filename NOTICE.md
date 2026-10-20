@@ -9,7 +9,7 @@ This project incorporates, adapts, and builds upon ideas, architectures, specifi
 - **Repository**: [https://github.com/pbakaus/impeccable](https://github.com/pbakaus/impeccable)
 - **License**: Apache License, Version 2.0
 - **Usage in this project**:
-  - Deterministic rule concepts, anti-cliché detector logic, micro-interaction craft standards, and command lifecycle architecture incorporated into `scripts/lint_ui.py`, `templates/patterns/micro-interactions.md`, and `SKILL.md`.
+  - Deterministic rule concepts, anti-cliché detector logic, micro-interaction craft standards, command lifecycle architecture, UX critique personas (Jordan, Alex, Sam, Riley, Casey), and cognitive load evaluation rubrics incorporated into `scripts/lint_ui.py`, `templates/patterns/micro-interactions.md`, `templates/root/REVIEW_CHECKLIST.md`, and `SKILL.md`.
 - **Notice**:
   ```
   Copyright 2025 Paul Bakaus
@@ -280,6 +280,56 @@ This project incorporates, adapts, and builds upon ideas, architectures, specifi
   MIT License
 
   Copyright (c) 2025 ppower-dev
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 15. plugin87/ux-ui-agent-skills (Objective Gates & Design QA)
+- **Author**: plugin87
+- **Repository**: [https://github.com/plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills)
+- **License**: MIT License
+- **Usage in this project**:
+  - Rendered DOM target size measurement (WCAG 2.2 SC 2.5.8), computed alpha-composited contrast calculation, cryptographic audit receipt architecture (`ux_audit_receipt.json`), and 6-dimension weighted review rubric incorporated into `scripts/capture_ui.py`, `templates/root/REVIEW_CHECKLIST.md`, and `SKILL.md`.
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2026 plugin87
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```
+
+---
+
+## 16. vercel-labs/web-interface-guidelines
+- **Author**: Vercel Inc.
+- **Repository**: [https://github.com/vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines)
+- **License**: MIT License
+- **Usage in this project**:
+  - Deterministic web interface and UX anti-pattern linting rules (non-semantic interactive elements, unlabeled icon buttons, paste blocking prevention, unlabeled inputs, zoom disable prohibition) incorporated into `scripts/lint_ui.py`, `scripts/capture_ui.py`, and `templates/root/REVIEW_CHECKLIST.md`.
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2025 Vercel, Inc.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
