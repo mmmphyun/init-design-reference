@@ -267,4 +267,27 @@ This project incorporates, adapts, and builds upon ideas, architectures, specifi
 - **Usage in this project**:
   - Conceptual inspiration for interaction trigger taxonomy and motion scenario boundaries (anchored overlays, dialogs, disclosures, feedback) reflected in `templates/notes/interaction.md`.
   - **License & Non-Distribution Note**: No code, CSS/JS implementations, recipes, animations, tokens, scales, CSS variables, `_root.css`, or descriptive text from transitions.dev are copied, bundled, distributed, or licensed under MIT in this project. All guidelines, constraints, and tokens are independently authored using this repository's native token schemas (`templates/tokens/motion.json`) and existing design system conventions.
+---
 
+## 14. color-palette-mcp (Integration Reference)
+- **Author**: ppower-dev
+- **Repository**: [https://github.com/ppower-dev/color-palette-mcp](https://github.com/ppower-dev/color-palette-mcp)
+- **License**: MIT License
+- **Usage in this project**:
+  - Model Context Protocol (MCP) integration guidelines and dynamic 50~900 color scale to semantic design token mapping protocol incorporated into `SKILL.md` and `templates/notes/visual-direction.md`.
+- **Notice**:
+  ```
+  MIT License
+
+  Copyright (c) 2025 ppower-dev
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  ```

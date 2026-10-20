@@ -59,13 +59,29 @@ Mathematical color spaces (like OKLCH) guarantee contrast ratios, but cannot com
 
 ## 3. External MCP & Tool Integration Guidelines
 
-When external Color or Palette MCPs (e.g., Coolors MCP, Color Hunt MCP) are available in the agent harness:
-1. Extract the primary 4-6 hex codes.
-2. Verify contrast against WCAG 2.1 AA (4.5:1 for body text) using `reference/REVIEW_CHECKLIST.md` (or global checklist).
-3. Directly populate `.design/tokens/colors.json` following the token schema:
-   - `background.primary`, `background.surface`
-   - `text.primary`, `text.secondary`, `text.muted`
-   - `accent.primary`, `accent.hover`
-   - `border.subtle`, `border.default`
-4. Run `python scripts/adapter.py --verify-spec` to confirm required tokens and valid hex values.
+When external Color or Palette MCPs (e.g., `color-palette-mcp`, Coolors MCP, Color Hunt MCP) are available in the agent harness:
+
+### A. Recommended Tooling: `color-palette-mcp` (ppower-dev)
+When the user specifies an explicit brand color (e.g. `#0A84FF`), domain-specific aesthetic (e.g. `ecommerce`, `dashboard`, `webrtc`), or natural language visual intent, invoke `color-palette-mcp` to generate dynamic 50~900 scales rather than falling back to static preset defaults:
+- `generate_palette`: Generates base 50~900 scales and semantic colors from a single hex input.
+- `extend_palette_for_project`: Tailors complementary palettes for domain types (`ecommerce`, `dashboard`, `webrtc`, `blog`).
+- `generate_dynamic_colors`: Synthesizes project-tailored color tokens from natural language descriptions.
+- `validate_accessibility`: Verifies WCAG AA/AAA contrast ratios between text and surface pairs.
+
+### B. Deterministic Semantic Token Mapping
+Map the 50~900 numeric palette output into `.design/tokens/colors.json` semantic slots:
+- **Dark Mode Standard** (Default for SaaS cockpits & technical portals):
+  - Canvas & Surfaces: `background.primary` = 950 (Canvas), `background.surface` = 900 (Surface Plate), `background.secondary` = 850 (Card Elevated).
+  - Typography: `text.primary` = 50 (High contrast), `text.secondary` = 400 (Readable metadata), `text.muted` = 500 (Subtle hints).
+  - Accent Affordance: `accent.primary` = 500 (Brand focal), `accent.hover` = 600 (Interactive active).
+  - Structural Borders: `border.subtle` = 850, `border.default` = 800, `border.strong` = 700.
+  - Status Indicators: Preserve standard semantic signals (`status.success`, `warning`, `error`, `info`).
+- **Light Mode Standard** (Inverted luminance):
+  - Canvas & Surfaces: `background.primary` = 50, `background.surface` = 100, `background.secondary` = 200.
+  - Typography: `text.primary` = 900, `text.secondary` = 700, `text.muted` = 500.
+
+### C. Validation & Hard-Guard Check
+1. Verify body text contrast meets WCAG 2.1 AA (>= 4.5:1 against adjacent surface).
+2. Directly populate `.design/tokens/colors.json`.
+3. Run `python scripts/adapter.py --verify-spec` to ensure all required core token slots and hex formats pass validation.
 

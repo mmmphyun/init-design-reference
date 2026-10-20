@@ -135,6 +135,15 @@ The development lifecycle enforces a strict **Golden Boundary**:
 
 3. **Dynamic Theme Synthesis (동적 테마 합성)**:
    - 기성 프리셋은 출발 베이스라인으로만 활용하며, 사용자와 합의된 3대 Taste 다이얼(`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`)을 1~10 범위로 동적 합성한다.
+   - **동적 색상 팔레트 생성 (Color Palette MCP 활용 권장)**:
+     - 고정 테마 프리셋의 하드코딩된 색상으로 수렴하는 현상을 방지하기 위해, 사용자가 특정 브랜드 키 컬러(Hex)나 프로젝트 도메인을 제시한 경우 `color-palette-mcp`(`generate_palette`, `generate_dynamic_colors`, `extend_palette_for_project`)를 호출하여 시맨틱 색상 체계를 동적 생성한다.
+     - **시맨틱 토큰 매핑 규약**: MCP 출력 스케일(50~900)을 `.design/tokens/colors.json` 시맨틱 슬롯에 정밀 매핑한다:
+       - 서피스 계층: `background.primary`(950/Canvas), `background.surface`(900/Surface), `background.secondary`(850/Card) [다크 모드 기준; 라이트는 역순]
+       - 텍스트 위계: `text.primary`(50/High-contrast), `text.secondary`(400/Medium), `text.muted`(500/Dim)
+       - 브랜드 액센트: `accent.primary`(500/Core Brand), `accent.hover`(600)
+       - 테두리: `border.subtle`(850), `border.default`(800), `border.strong`(700)
+       - 상태 피드백: `status.success`, `warning`, `error`, `info`
+     - **접근성 검증**: `validate_accessibility` 도구 또는 자체 명도 계산을 통해 본문 텍스트 대 표면 간 최소 4.5:1 (WCAG 2.1 AA) 대비율을 충족하도록 보정한다.
    - 인터뷰를 통해 합의된 고유 브랜드 컬러, 폰트 스택, 인터랙션 원칙을 명세화한다.
 
 4. **Synthesis Briefing & User Approval Gate**:

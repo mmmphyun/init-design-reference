@@ -160,7 +160,7 @@ python "scripts/adapter.py" --preset apple-fluid
 1. **Gate 0: Smart Alignment (High-Touch Dialog & Hard-Guard)**:
    - 기존 프로젝트 정체성 파악 및 7-Decision Matrix 추적 (확인 / 프로젝트 추출 / 미정 / 가정).
    - 다중 앱 모노레포 및 다중 CSS 진입점 후보의 모호성을 선제 확인하고 해소.
-   - Adaptive Deep Probe를 통해 합의된 Taste 3-다이얼(1~10) 및 브랜드 토큰 동적 합성.
+   - Adaptive Deep Probe를 통해 합의된 Taste 3-다이얼(1~10) 및 브랜드 토큰 동적 합성 (고정 테마 프리셋 편향 방지를 위해 `color-palette-mcp`를 활용한 50~900 스케일의 시맨틱 매핑 및 접근성 검증 연동).
    - **사용자 승인 락(Strict Lock)**: 사용자 명시 승인 전까지 파일 작성 및 `adapter.py` 실행 금지.
    - `python scripts/adapter.py --verify-spec` 하드가드 통과 검증 (다이얼 범위 1~10 및 필수 토큰 유효성).
 2. **Phase 1: Semantic Skeleton (Craft)**: 색상이나 장식 없이 시맨틱 DOM 트리, 접근성(ARIA) 구조, 반응형 그리드 구축 (React, Vue, Svelte, HTML 공통).

@@ -160,7 +160,7 @@ Agents strictly adhere to the 5-Gate Golden Boundary:
 1. **Gate 0: Smart Alignment (High-Touch Dialog & Hard-Guard)**:
    - Identify existing project identity & track the 7-Decision Matrix (confirmed / existing project / undefined / assumption).
    - Detect workspace monorepos and clarify ambiguous CSS entrypoints.
-   - Adaptive Deep Probe dynamically synthesizes 3 Taste dials (1~10) and brand tokens.
+   - Adaptive Deep Probe dynamically synthesizes 3 Taste dials (1~10) and brand tokens (integrating color-palette-mcp for dynamic 50~900 scale semantic mapping and accessibility verification to avoid static preset bias).
    - **User Approval Gate (Strict Lock)**: Execution of `adapter.py` and file generation is strictly blocked until explicit user confirmation.
    - Run `python scripts/adapter.py --verify-spec` to enforce specification validity (dials 1~10 and required tokens).
 2. **Phase 1: Semantic Skeleton (Craft)**: Structural hierarchy and pure ARIA roles without decorative styling (React, Vue, Svelte, HTML common).
