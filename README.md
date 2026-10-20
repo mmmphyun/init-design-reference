@@ -16,6 +16,8 @@ AI 코딩 에이전트(Google Antigravity, Claude Code, Cursor 등)의 UI 스타
 | ![Baseline](assets/baseline.png) | ![Updated](assets/updated.png) |
 | `--surface`: `#12151c` (Cockpit Carbon)<br>`--accent`: `#10b981` (Phosphor Emerald) | `--surface`: `#171717` (Terminal Panel)<br>`--accent`: `#f59e0b` (Amber Phosphor CRT) |
 
+> **안내**: 위 예시의 색상 명칭과 조합은 TSX 0-diff 토큰 교체 메커니즘을 시각적으로 입증하기 위한 기술적 테스트 목업 데이터입니다. 특정 도메인의 추천 미감이나 권장 기본값이 아닙니다.
+
 ```console
 $ git diff --stat app/components/MetricCard.tsx
 # 0 files changed, 0 insertions(+), 0 deletions(-) -> 완전한 0-diff 달성
@@ -70,10 +72,10 @@ $ python scripts/adapter.py --verify-spec
 LLM에게 프론트엔드 코딩을 맡기면 보라색·인디고 그라디언트, 둥근 SaaS 카드 나열, 습관적인 `tracking-widest uppercase` 라벨로 수렴합니다. 정성적 지시("예쁘게 해줘", "모던하게")는 대화가 길어질수록 Attention 가중치가 희석되어 사전 학습 데이터의 통계적 기본값(Slop)으로 회귀하기 때문입니다.
 
 `init-design-reference`는 이 문제를 **4대 핵심 엔지니어링 레이어**로 원천 차단합니다:
-1. **토큰 & 3대 Taste 다이얼 (`DESIGN.md`, `.design/tokens/*.json`)**: `leonxlnx/taste-skill`의 3대 정량 다이얼(`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`)을 수치(1~10)로 통제.
+1. **토큰 & 3대 요구사항 기록 다이얼 (`DESIGN.md`, `.design/tokens/*.json`)**: `leonxlnx/taste-skill` 체계를 기반으로 한 3대 보조 기록 다이얼(`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`, 1-10)과 시맨틱 토큰 분리 (기계적 스타일 매핑 금지, 콘텐츠 맥락·위계 우선).
 2. **검증된 컴포넌트 레시피 (`.design/patterns/*.md`)**: React/TSX + Tailwind 기반의 표준 레이아웃, 데이터 테이블, 폼, 스프링 마이크로 인터랙션 제공.
-3. **결정론적 정적 린터 (`scripts/lint_ui.py`)**: `pbakaus/impeccable`의 패턴 검출 철학을 정규식 기반으로 구현하여 접근성 결함(WCAG)과 하드코딩된 토큰을 `[ERROR]`로 기계적 차단하고, 일반 AI 클리셰 및 모션 결함은 논블로킹 `[WARN]`으로 감지.
-4. **시각 피드백 폐루프 (`scripts/capture_ui.py`)**: Playwright 기반으로 뷰포트 캡처 및 콘솔 런타임 에러를 수집하여 모델이 시각적으로 자가 교정하도록 유도.
+3. **결정론적 정적 린터 (`scripts/lint_ui.py`)**: `pbakaus/impeccable` 및 `vercel-labs/web-interface-guidelines`의 패턴 검출 철학을 구현하여 접근성 결함(WCAG), 비시맨틱 인터랙션(`<div onClick>`), 붙여넣기 차단, 하드코딩 토큰을 `[ERROR]`로 기계적 차단하고, 일반 AI 클리셰 및 모션 결함은 논블로킹 `[WARN]`으로 감지.
+4. **시각 및 렌더링 UX 실측 폐루프 (`scripts/capture_ui.py`)**: Playwright 기반 뷰포트 캡처와 함께 `plugin87/ux-ui-agent-skills`의 실측 기법을 결합하여 실제 렌더링된 타겟 크기(WCAG 2.2), 알파 합성 명도 대비, 가로 오버플로우를 측정하고 감사 영수증(`ux_audit_receipt.json`)을 발행하여 자가 치유를 강제.
 
 ---
 
@@ -170,13 +172,15 @@ python "scripts/adapter.py" --preset apple-fluid
    python scripts/lint_ui.py src/
    ```
    객관적 오류(`[ERROR]`, A11y 및 토큰 누락) 발생 시 에이전트가 코드를 스스로 수정하여 3회 이내 `0 errors` 달성.
-5. **Phase 4: Completeness & Vision Verification (Harden)**:
+5. **Phase 4: Completeness, DOM UX Audit & Vision Verification (Harden)**:
    - 비동기 데이터 뷰에 한하여 빈 데이터(Empty), 로딩(Skeleton), 에러(Error), 정상(Populated) 4-State 구현.
-   - Playwright 기반 시각 검증 실행 및 캡처:
+   - Playwright 기반 시각 캡처 및 결정론적 DOM UX 실측 실행:
      ```powershell
      python scripts/capture_ui.py
      ```
-   - 사용자 피드백 시 스타일(색상·간격·폰트)은 `tokens/*.json`으로 역추적하고, 컴포넌트 구조 변경은 프레임워크 컴포넌트 코드(TSX / Vue / Svelte / HTML)를 수정하여 정밀 반영.
+   - `ux_audit_receipt.json` 검증(타겟 크기 24px/44px, 실제 명도 대비 4.5:1, 가로 오버플로우) 실패 시 즉시 자가 교정 후 재캡처.
+   - 영수증 통과 후 `REVIEW_CHECKLIST.md` 기반 UX 휴리스틱 및 페르소나 Red Flag 자가진단 수행.
+   - 피드백 시 스타일(색상·간격·폰트)은 `tokens/*.json`으로 역추적하고, 컴포넌트 구조 변경은 프레임워크 컴포넌트 코드(TSX / Vue / Svelte / HTML)를 수정하여 정밀 반영.
 
 ---
 
@@ -187,6 +191,8 @@ python "scripts/adapter.py" --preset apple-fluid
   - **Emil Kowalski** ([emilkowalski/skills](https://github.com/emilkowalski/skills), MIT) - 마이크로 모션 & 스프링 물리
   - **Paul Bakaus** ([pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache 2.0) - 결정론적 안티패턴 룰셋 & 라이프사이클
   - **Leon Linz** ([leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), MIT) - 3대 Taste 다이얼 체계
+  - **plugin87** ([plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills), MIT) - 렌더링 DOM 타겟 크기/대비 실측 및 감사 영수증 아키텍처
+  - **Vercel** ([vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines), MIT) - 웹 인터페이스 및 UX 안티패턴 규약
   - **Addy Osmani** - 접근성 및 시맨틱 웹 표준 규약
 
 각 저작물의 원본 라이선스 전문 및 고지 사항은 [NOTICE.md](NOTICE.md)에서 확인하실 수 있습니다.

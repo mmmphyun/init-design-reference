@@ -7,7 +7,7 @@ description: Scaffolds a production-grade UI design reference, pattern architect
 
 Scaffolds a `.design/` directory structure within the project root to enforce deterministic design constraints, anti-cliché standards, pattern recipes, and closed-loop visual verification.
 
-Integrates proven design engineering standards from the open-source ecosystem (`shadcn/ui`, `emilkowalski/apple-design`, `MengTo/beautiful-shadows`, `addyosmani/accessibility`, `Superfuture/design-review`, `pbakaus/impeccable`, `jakubkrehel/skills`, `wshobson/interaction-design`). See `NOTICE.md` for license notices.
+Integrates proven design engineering standards from the open-source ecosystem (`shadcn/ui`, `emilkowalski/apple-design`, `MengTo/beautiful-shadows`, `addyosmani/accessibility`, `Superfuture/design-review`, `pbakaus/impeccable`, `plugin87/ux-ui-agent-skills`, `vercel-labs/web-interface-guidelines`, `jakubkrehel/skills`, `wshobson/interaction-design`). See `NOTICE.md` for license notices.
 
 ### Framework Support & Architecture Neutrality
 - **Tier 1 Supported Stacks**: React / Next.js, Vue / Nuxt, Svelte / SvelteKit, Vanilla CSS.
@@ -96,8 +96,8 @@ The development lifecycle enforces a strict **Golden Boundary**:
 【Phase 1~4: Autonomous Self-Driving Orchestration Loop】 (Zero-Touch)
   - Phase 1 (Craft)     : Semantic DOM skeleton (0 styling, pure ARIA)
   - Phase 2 (Bind)      : Token & Surface hierarchy binding (Level 0/1)
-  - Phase 3 (Critique)  : lint_ui.py self-healing loop (Max 3 retries, a11y & token errors only)
-  - Phase 4 (Harden)    : 4-State completeness, dev server mount & capture_ui.py
+  - Phase 3 (Critique)  : lint_ui.py self-healing loop (Max 3 retries, a11y, UX contracts & token errors)
+  - Phase 4 (Harden)    : 4-State, capture_ui.py (Target size, contrast, overflow receipt) & Heuristic Critique
      │
      ▼ (Rendered Viewport Capture Delivered)
 [User Visual Feedback] ──(Token & Structure Separation)──► Style -> tokens/*.json / Structure -> Component TSX
@@ -124,30 +124,25 @@ The development lifecycle enforces a strict **Golden Boundary**:
      - **토큰 전사 및 SSOT 동기화**: 스캐폴딩 후 임의의 프리셋 기본값으로 덮어쓰지 않고, 식별된 기존 값을 대응하는 토큰 파일(`.design/tokens/colors.json`, `typography.json`, `spacing.json`, `radii.json`, `shadows.json`, `motion.json`)에 전사 주입한다. 기존에 미정의된 영역에 한해서만 프리셋 기본값을 보완재로 채택한다.
      - **브리지 동기화**: 수동 매핑 완료 후 `python scripts/adapter.py --bridge-only`를 실행하여 런타임 CSS 브리지(`theme.css`, `tokens.css`)를 재생성한다.
 
-2. **Adaptive Deep Probe (설문지형 일괄 질문 엄격 금지)**:
-   - 턴당 **최대 1~2개의 핵심 질문**만 제시하며, 결과를 실질적으로 바꿀 **[미정]** 항목에 대해서만 질문한다.
-   - 최초 요청이나 기존 프로젝트에서 이미 확인된 항목은 질문하지 않고 요약하여 확인한다.
-   - 기본 권장 대화 예산은 **2~3턴**이며, 핵심 결정 사항에 [미정]이 남아 있다면 사용자의 선택권을 위해 필요한 만큼 확인을 지속할 수 있다(단일 주제 꼬리질문은 최대 1회).
-   - 중립적 감각 표현을 사용한다:
-     - 시각 스타일/톤: "절제되고 차분한 고대비 다크 테마 vs 편안한 종이 질감의 웜톤 라이트 테마 vs 선명한 원색 포인트의 미니멀 테마"
-     - 상호작용 피드백: "지체 없이 절제된 즉각 반응 vs 부드럽고 탄성 있는 유기적 반응"
-     - 정보 밀도: "보조 수치와 지표가 한눈에 모이는 고밀도 구성 vs 여백과 타이포그래피 리듬 중심의 여유로운 구성"
+2. **Reference-First & Observable Deep Probe (설문지형 일괄 질문 엄격 금지)**:
+   - **레퍼런스 우선 분석**: 사용자가 레퍼런스 화면, 기존 제품, 브랜드 가이드, 싫어하는 사례를 제공하면 질문보다 분석을 우선하여 시각 규칙을 추출한다.
+   - **레퍼런스 부재 시 맥락 기반 제안**: 레퍼런스가 없으면 도메인별 고정 공식을 자동 적용하지 말고, 제품 목적과 콘텐츠에 맞는 시각 방향과 그 이유를 먼저 제안한다.
+   - 턴당 **최대 1-2개의 핵심 질문**만 제시하며, 결과를 실질적으로 바꿀 **[미정]** 항목에 대해서만 질문한다(권장 2-3턴, 단일 주제 꼬리질문 최대 1회).
+   - **관찰 가능한 선택(Observable Choices)으로 질문**: "차분한", "유기적인", "미니멀한" 같은 추상적 형용사에 의존하지 말고 화면에서 관찰 가능한 차이로 합의한다:
+     - 표면과 구분 방식: 배경-카드 명도 대비 중심 vs 밝은 단일 배경과 1px 구분선 중심
+     - 콘텐츠 폭과 밀도: 전폭(`w-full`) 다중 지표 노출 vs 고정 폭(`max-w-*`) 핵심 작업 집중
+     - 강조색 역할: 주요 CTA 버튼에만 제한 vs 상태 지표·경보 중심 활용
 
-3. **Dynamic Theme Synthesis (동적 테마 합성)**:
-   - 기성 프리셋은 출발 베이스라인으로만 활용하며, 사용자와 합의된 3대 Taste 다이얼(`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`)을 1~10 범위로 동적 합성한다.
+3. **Context-Driven Theme Synthesis & Dial Recording**:
+   - **다이얼의 역할 한정**: 3대 다이얼(`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`)은 요구사항을 요약 기록하는 보조값이다. 다이얼 숫자를 색·모서리·비대칭·애니메이션에 기계적으로 대응시키거나 화면을 숫자에 억지로 맞추지 않는다.
+   - **분야 이름 기반 자동 팔레트 선택 금지**: 도메인 이름만 보고 프리셋 팔레트를 정답처럼 적용하지 않는다. 기존 브랜드나 사용자 방향이 항상 우선한다.
    - **동적 색상 팔레트 생성 (Color Palette MCP 활용 권장)**:
-     - 고정 테마 프리셋의 하드코딩된 색상으로 수렴하는 현상을 방지하기 위해, 사용자가 특정 브랜드 키 컬러(Hex)나 프로젝트 도메인을 제시한 경우 `color-palette-mcp`(`generate_palette`, `generate_dynamic_colors`, `extend_palette_for_project`)를 호출하여 시맨틱 색상 체계를 동적 생성한다.
-     - **시맨틱 토큰 매핑 규약**: MCP 출력 스케일(50~900)을 `.design/tokens/colors.json` 시맨틱 슬롯에 정밀 매핑한다:
-       - 서피스 계층: `background.primary`(950/Canvas), `background.surface`(900/Surface), `background.secondary`(850/Card) [다크 모드 기준; 라이트는 역순]
-       - 텍스트 위계: `text.primary`(50/High-contrast), `text.secondary`(400/Medium), `text.muted`(500/Dim)
-       - 브랜드 액센트: `accent.primary`(500/Core Brand), `accent.hover`(600)
-       - 테두리: `border.subtle`(850), `border.default`(800), `border.strong`(700)
-       - 상태 피드백: `status.success`, `warning`, `error`, `info`
-     - **접근성 검증**: `validate_accessibility` 도구 또는 자체 명도 계산을 통해 본문 텍스트 대 표면 간 최소 4.5:1 (WCAG 2.1 AA) 대비율을 충족하도록 보정한다.
-   - 인터뷰를 통해 합의된 고유 브랜드 컬러, 폰트 스택, 인터랙션 원칙을 명세화한다.
+     - 사용자가 브랜드 키 컬러(Hex)나 구체적 시각 근거를 제시한 경우 `color-palette-mcp`(`generate_palette`, `generate_dynamic_colors`, `extend_palette_for_project`)를 호출하여 시맨틱 색상 체계를 생성한다.
+     - **시맨틱 토큰 매핑 규약**: MCP 출력 스케일(50-900)을 `.design/tokens/colors.json` 시맨틱 슬롯(`background.primary`, `background.surface`, `text.primary`, `accent.primary`, `border.default`, `status.*`)에 매핑한다.
+     - **접근성 검증**: 본문 텍스트 대 표면 간 최소 4.5:1 (WCAG 2.1 AA) 대비율을 충족하도록 보정한다.
 
 4. **Synthesis Briefing & User Approval Gate**:
-   - 도출된 다이얼 수치, 합의된 시그니처 색상/폰트, 그리고 미처 논의되지 않아 채운 **[에이전트 가정]** 사항을 브리핑하고 최종 확인을 구한다.
+   - 합의된 시각 선택(표면 대비, 위계, 색상 근거), 보조 다이얼 기록값(짧은 의미 설명 포함), 그리고 **[에이전트 가정]** 사항을 브리핑하고 최종 확인을 구한다.
    - **MANDATORY**: 사용자 승인(Approval) 이전에는 `adapter.py` 실행이나 파일 생성을 하지 않는다.
 
 5. **Deterministic Hard-Guard & Token Injection**:
@@ -178,31 +173,40 @@ Gate 0 승인 즉시 Phase 1부터 Phase 4까지 중간 질문 없이 한 호흡
 - 시맨틱 CSS 토큰(`bg-surface`, `text-foreground`, `border-border-default` 등)으로 스타일 바인딩 (프레임워크 템플릿 문법에 맞춤 바인딩).
 - **Surface 계층 구조**: Level 0 Canvas(`bg-background`)와 Level 1 Surface(`bg-surface`) 간의 대비를 보장한다.
 - **Font & CSS Bridge Rule**: 토큰 브리지 import(`@import "../.design/tokens/theme.css";` 또는 해당 CSS 파일 위치 기준 상대 경로)가 전역 CSS 최상단(Line 1)에 위치하도록 보장한다. Monospace 폰트 스택에는 한글 폴백(`Pretendard`, `D2Coding`)을 필수로 포함한다.
-- **데이터 정렬 및 인디케이터 표준**: 다중 행 수치 비교가 필요한 데이터 표(Table)의 수치 열은 우측 정렬(`text-right`)을 적용한다.
+- **조건부 디자인 기본값 적용**:
+  - **수치 우측 정렬**: 다중 행에서 열 단위로 자릿수·크기를 비교해야 하는 테이블 수치 열에 `text-right`를 적용한다(단일 요약값이나 문장 결합형 수치는 맥락에 맞게 정렬).
+  - **카드 사용 절제**: 서로 다른 정보 그룹을 분리하는 데 실제로 도움이 될 때만 카드를 사용하며, 단순 목록을 관성적으로 동일한 카드로 쪼개지 않는다.
 - **모션 및 상호작용 바인딩 (Motion Contract)**:
-  - 컴포넌트 상호작용 설계 시 `templates/notes/interaction.md`를 JIT 참조하여 모션 경계(메뉴, 대화상자, 아코디언, 피드백)와 사용자 의도(`MOTION_INTENSITY`)를 준수한다.
+  - 컴포넌트 상호작용 설계 시 `templates/notes/interaction.md`를 JIT 참조한다.
   - 공간 이동은 GPU 가속 속성(`transform`, `opacity`, `filter`), 상태 피드백은 페인트 속성(`color`, `background-color`, `border-color`, `box-shadow`)으로 한정하며 `prefers-reduced-motion` 대등성을 보장한다.
-- **Strict Rule**: 하드코딩된 hex 코드(`#6366f1`) 또는 임의의 Tailwind 기본 색상(`bg-slate-900`) 직접 사용 금지.
+- **Strict Rule (하드 제약)**: 하드코딩된 hex 코드(`#6366f1`) 또는 임의의 Tailwind 기본 색상(`bg-slate-900`) 직접 사용 금지.
 
 #### Phase 3: Deterministic Lint & Self-Healing Loop (Critique)
 - 정적 린터 실행:
    ```powershell
    python scripts/lint_ui.py src/
    ```
-- **Self-Healing Loop**: 접근성(a11y) 결함 및 하드코딩된 토큰 등 객관적 `[ERROR]` 발생 시 라인 번호를 파싱하여 자동 교정 후 재검사(최대 3회). 디자인 권고사항(`[WARN]`)은 임의로 레이아웃을 깨뜨리지 않고 존중한다.
+- **린트 범위 및 Self-Healing**: 하드코딩 색상, 레이아웃 스래싱뿐 아니라 비시맨틱 인터랙션(`<div onClick>`), 아이콘 버튼의 접근성 이름 누락, 붙여넣기 차단(`onPaste + preventDefault`), 라벨 없는 폼 컨트롤, 화면 확대 차단 메타 태그를 기계적으로 탐지한다. `[ERROR]` 발생 시 자동 교정 후 재검사(최대 3회)하되, **린트 통과(0 errors)를 좋은 디자인이나 작업 완성으로 간주하지 않는다.**
 
-#### Phase 4: Completeness & Vision Verification (Harden)
+#### Phase 4: Completeness, DOM UX Audit & Visual Feedback Loop (Harden)
 1. **조건부 4-State 커버리지**: 원격 비동기 데이터 패칭이나 컬렉션 조회가 발생하는 비동기 데이터 뷰에 한하여 `Loading`(스켈레톤), `Empty`(CTA), `Error`(재시도), `Populated` 4상태를 구현한다. 순수 정적/레이아웃 컴포넌트는 해당되지 않는다.
-2. **Mount & Headless Capture**:
-   - 로컬 개발 서버 확인 및 컴포넌트 마운트.
-   - 헤드리스 감사 실행:
+2. **Mount, Headless Capture & Deterministic DOM UX Audit**:
+   - 로컬 개발 서버 확인, 헤드리스 캡처 및 결정론적 DOM UX 감사 실행:
      ```powershell
      python scripts/capture_ui.py
      ```
-3. **폐루프 시각 피드백 원칙 (Token & Structure Separation)**:
-   - 캡처된 뷰포트 스크린샷을 사용자에게 제시한다.
-   - **스타일 피드백 (색상, 간격, 폰트)**: 컴포넌트 코드를 건드리지 않고 `.design/tokens/*.json`을 수정한 뒤 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)하여 전역 일관성을 유지한다.
-   - **구조적 피드백 (컴포넌트 배치, 정보 구조, DOM 변경)**: 프레임워크 컴포넌트 코드(TSX / Vue / Svelte / HTML)를 직접 수정하여 사용자 요구를 충실히 반영한다.
+   - **결정론적 영수증(`ux_audit_receipt.json`) 검증**:
+     - 타겟 크기: 모든 클릭/터치 타겟 >= 24x24 CSS px (WCAG 2.2 SC 2.5.8), 모바일 >= 44x44 CSS px 권장.
+     - 실제 렌더링 명도 대비: 알파 합성 계산 대비율 >= 4.5:1 (일반 텍스트) 및 >= 3.0:1 (대형 텍스트).
+     - 가로 오버플로우: 데스크톱/모바일 뷰포트에서 불필요한 가로 스크롤 없음(`scrollWidth <= clientWidth`).
+     - **자가 치유(Self-Healing)**: `ERROR` 발생 시 완료 보고를 중단하고, 토큰(`.design/tokens/colors.json`) 또는 패딩/레이아웃 코드를 즉시 교정하여 재캡처(최대 3회)한다.
+3. **UX 휴리스틱 & 시각 자가진단 (Heuristic & Persona Critique)**:
+   - 영수증 검증 통과 후, `templates/root/REVIEW_CHECKLIST.md` 섹션 2의 5대 시각 질문과 UX 휴리스틱(인지 부하, 오류 복구, 사용자 제어) 및 도메인 매핑 페르소나(Alex, Sam, Jordan, Riley, Casey) Red Flag를 스스로 점검한다.
+4. **진단 기반 피드백 반영 원칙 (Diagnose Before Prescribing)**:
+   - 사용자가 "AI스럽다", "어색하다" 등의 피드백을 주면 다이얼 숫자를 바꾸거나 비대칭·장식 요소를 바로 추가하지 않는다.
+   - 먼저 화면에서 어색함의 원인(평평한 위계, 반복된 카드·배지, 무의미한 강조색, 균일한 간격 등)을 구체적으로 진단하고 가장 적은 수정으로 해결한다.
+   - **스타일 조정 (색상, 간격, 폰트)**: `.design/tokens/*.json`을 수정한 뒤 CSS 브리지를 재생성(`python scripts/adapter.py --bridge-only`)한다.
+   - **구조/위계 조정 (불필요한 카드/배지 제거, 영역 비율 조정, DOM 변경)**: 프레임워크 컴포넌트 코드를 직접 수정한다.
 
 ---
 
@@ -210,6 +214,6 @@ Gate 0 승인 즉시 Phase 1부터 Phase 4까지 중간 질문 없이 한 호흡
 
 - `scripts/adapter.py`: Scaffolds `.design/` architecture, generates CSS/Tailwind bridges, and runs `--verify-spec` hard-guard.
 - `scripts/lint_ui.py`: Fast offline anti-pattern & accessibility detector with dynamic token recommendation.
-- `scripts/capture_ui.py`: Playwright headless screenshot & console error auditor with automatic port discovery.
+- `scripts/capture_ui.py`: Playwright headless screenshot, deterministic DOM UX auditor (WCAG 2.2 target size, computed contrast, overflow), and receipt issuer (`ux_audit_receipt.json`).
 - `scripts/sync_figma.py`: Synchronizes remote Figma Variables directly into `.design/tokens/*.json`.
 - `scripts/verify_repo.py`: Repository self-integrity, architecture decoupling, and hard-guard test suite.

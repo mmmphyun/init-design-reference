@@ -16,6 +16,8 @@ Demonstrated 0-diff component modification: Updating only `.design/tokens/colors
 | ![Baseline](assets/baseline.png) | ![Updated](assets/updated.png) |
 | `--surface`: `#12151c` (Cockpit Carbon)<br>`--accent`: `#10b981` (Phosphor Emerald) | `--surface`: `#171717` (Terminal Panel)<br>`--accent`: `#f59e0b` (Amber Phosphor CRT) |
 
+> **Note**: The color names and combinations above are mock test fixtures used solely to demonstrate the zero-diff CSS variable token-switching mechanism. They do not constitute an aesthetic recommendation or a genre default.
+
 ```console
 $ git diff --stat app/components/MetricCard.tsx
 # 0 files changed, 0 insertions(+), 0 deletions(-) -> Perfect 0-diff achieved
@@ -70,10 +72,10 @@ $ python scripts/adapter.py --verify-spec
 When tasked with frontend code, LLMs routinely converge toward generic purple/indigo gradients, rounded SaaS card soup, and habit-driven `tracking-widest uppercase` labels. As conversations grow, prompt instructions suffer attention drift, regressing to the statistical median (Slop) of training data.
 
 `init-design-reference` eliminates this across **4 Engineering Pillars**:
-1. **Tokens & 3-Dial Taste Knobs (`DESIGN.md`, `.design/tokens/*.json`)**: Adopts `leonxlnx/taste-skill` numeric dials (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`, scaled 1–10).
+1. **Tokens & 3-Dial Requirement Dials (`DESIGN.md`, `.design/tokens/*.json`)**: Adopts `leonxlnx/taste-skill` requirement recording dials (`DESIGN_VARIANCE`, `VISUAL_DENSITY`, `MOTION_INTENSITY`, scaled 1-10) separated from semantic tokens (context and hierarchy first, avoiding mechanical style mapping).
 2. **Proven Component Recipes (`.design/patterns/*.md`)**: Production React/TSX + Tailwind blocks for dense data tables, shells, forms, and spring physics.
-3. **Deterministic Linter (`scripts/lint_ui.py`)**: Regex-based static analysis inspired by `pbakaus/impeccable` patterns, mechanically blocking key accessibility defects (WCAG) and hardcoded tokens with `[ERROR]`, while flagging generic AI clichés and layout-thrashing risks as non-blocking `[WARN]`.
-4. **Closed-Loop Vision Feedback (`scripts/capture_ui.py`)**: Uses Playwright to capture desktop/mobile viewports and collect console errors for vision-model self-correction.
+3. **Deterministic Linter (`scripts/lint_ui.py`)**: Static analysis inspired by `pbakaus/impeccable` and `vercel-labs/web-interface-guidelines`, mechanically blocking key accessibility defects (WCAG), non-semantic clickables (`<div onClick>`), paste-blocking, and hardcoded tokens with `[ERROR]`, while flagging AI clichés and motion risks as non-blocking `[WARN]`.
+4. **Closed-Loop Vision & DOM UX Audit (`scripts/capture_ui.py`)**: Uses Playwright to capture desktop/mobile viewports, measures rendered target sizes (WCAG 2.2), alpha-composited contrast, and overflow inspired by `plugin87/ux-ui-agent-skills`, issuing a cryptographic audit receipt (`ux_audit_receipt.json`) to enforce self-healing.
 
 ---
 
@@ -170,12 +172,14 @@ Agents strictly adhere to the 5-Gate Golden Boundary:
    python scripts/lint_ui.py src/
    ```
    Autonomously patches objective `[ERROR]` violations (a11y and missing tokens) within 3 retries until 0 errors are achieved.
-5. **Phase 4: Completeness & Vision Verification (Harden)**:
+5. **Phase 4: Completeness, DOM UX Audit & Vision Verification (Harden)**:
    - Implement Loading (skeleton), Empty, Error, and Populated states for asynchronous data views.
-   - Execute Playwright headless audit:
+   - Execute Playwright headless audit and deterministic DOM UX measurement:
      ```powershell
      python scripts/capture_ui.py
      ```
+   - If `ux_audit_receipt.json` fails (target sizes < 24px, contrast < 4.5:1, horizontal overflow), autonomously patch tokens or markup and re-capture.
+   - Perform UX heuristic and persona Red-Flag self-diagnosis per `REVIEW_CHECKLIST.md`.
    - On styling feedback (colors, spacing, fonts), update tokens in `tokens/*.json`. On layout/structural feedback, modify framework component code (TSX / Vue / Svelte / HTML).
 
 ---
@@ -187,6 +191,8 @@ Agents strictly adhere to the 5-Gate Golden Boundary:
   - **Emil Kowalski** ([emilkowalski/skills](https://github.com/emilkowalski/skills), MIT) - Micro-interactions & spring physics
   - **Paul Bakaus** ([pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache 2.0) - Deterministic anti-pattern rules & lifecycle
   - **Leon Linz** ([leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill), MIT) - 3-Dial Taste framework
+  - **plugin87** ([plugin87/ux-ui-agent-skills](https://github.com/plugin87/ux-ui-agent-skills), MIT) - Rendered DOM target size/contrast measurement & audit receipt architecture
+  - **Vercel** ([vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines), MIT) - Web interface guidelines & UX anti-pattern contracts
   - **Addy Osmani** - Accessibility & semantic web contracts
 
 See [NOTICE.md](NOTICE.md) for full license texts and attributions.
