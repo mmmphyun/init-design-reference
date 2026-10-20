@@ -1,6 +1,8 @@
 # Layout Guidelines
 
-## 1. General Grid & Breakpoints (Consumer / Editorial)
+> **원칙**: 아래 수치는 레이아웃 설계를 위한 **디자인 기본값(Contextual Defaults)**이다. 기존 제품의 레이아웃 체계나 사용자 레퍼런스가 있으면 그것을 우선하며, 콘텐츠의 실제 길이와 구조에 따라 간격과 폭을 조정한다.
+
+## 1. General Grid & Breakpoints (Consumer / Content Views)
 - **Mobile First**: Design starts from mobile viewport (`375px`).
 - **Breakpoints**:
   - `sm`: `640px` (Tablets / Large phones)
@@ -19,9 +21,9 @@
 - **Full-Bleed Viewport Utilization (`w-full`)**:
   - `max-w-1200px`, `max-w-7xl`, `max-w-6xl` 등 인위적 가로폭 제한을 지양한다.
   - 가로폭을 `w-full px-4` 또는 `px-6`로 100% 확장하여 좌우 불필요한 공백 방치를 차단한다.
-- **Zero Dead-Space Mandate (수직 뷰포트 완전 흡수 및 Adaptive Budgeting)**:
-  - 1440x900 등 단일 고정 뷰포트 기준, 하단에 100px 이상의 빈 공간(Dead Space)을 방치하지 않는다.
-  - 스크롤 0px을 달성하더라도 콘텐츠가 조기에 끊겨 대량의 빈 공간이 생기면, 테이블 행 높이(60~72px)와 패딩, 폰트 크기로 수직 공간을 비례 환원하여 가독성과 공간 활용을 극대화한다.
+- **Viewport Utilization & Vertical Balance (수직 공간 균형 — 조건부 기본값)**:
+  - 고정 뷰포트 대시보드에서 상단 요약과 하단 테이블이 배치될 때, 테이블 영역이 지나치게 좁아지거나 불필요한 이중 스크롤이 생기지 않도록 수직 비율을 배분한다.
+  - **적용 예외 조건**: 데이터 행 수가 적거나(예: 1-3건) 단일 설정·조회 화면인 경우, 빈 공간을 메우기 위해 행 높이나 패딩을 인위적으로 늘리지 않는다.
 - **Compact Vertical Rhythm**:
   - 글로벌/섹션 헤더: `py-2.5 px-4` (높이 70px 이내)
   - 요약/필터 바: `py-1.5 px-3` (높이 35px 이내)

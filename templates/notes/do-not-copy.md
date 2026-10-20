@@ -2,14 +2,15 @@
 
 Source: Derived from Anthropic frontend-design guidelines & Production Standards.
 
-## 1. AI Cliché Aesthetics
-- **No SaaS Card Kit**: Do NOT chop content into identical rounded cards with uniform border-radius and soft grey drop-shadows (`rgba(0, 0, 0, 0.1)`).
-- **No Warm-Clay Defaults**: Do NOT use warm cream (`#F4F1EA`) paired with high-contrast serif display and terracotta/warm-clay accents (`#D97757`) unless explicitly requested.
-- **No Neon Monotones**: Do NOT use near-black backgrounds accented solely by a single bright acid-green or vermilion element.
-- **No Broadsheet Mimicry**: Do NOT use dense hairline newspaper layouts with zero border-radius unless fitting the editorial brief.
-- **No Tinted Near-Black**: Do NOT substitute pure black with tinted near-black (`#0B0B0B`, `#111`) as a generic default.
-- **No Decorative Gradient Washes**: Gradients must encode state or depth, never purely arbitrary background fills.
-- **No Hero Stats Default**: Do NOT default to a big number + small label + supporting stats + gradient accent layout unless justified by the brief.
+## 1. Unjustified Default Clichés (맥락 근거 없는 기본값 금지)
+- **Precedence Rule**: 사용자가 지정한 브랜드 가이드, 레퍼런스 화면, 기존 디자인 시스템 토큰은 아래 모든 금지 규칙보다 항상 우선한다.
+- **No Reflexive Genre Formulas**: 도메인 이름(핀테크, 에디토리얼, 개발 도구 등)만 보고 아래의 흔한 AI 장르 공식을 자동 선택하지 마라:
+  - 어두운 배경에 단일 네온(초록·버밀리언·시안) 포인트만 결합한 구성
+  - 따뜻한 종이색(`#F4F1EA`류) 배경, 고대비 세리프 제목, 테라코타/버밀리언 포인트를 결합한 구성
+  - 모든 콘텐츠를 동일한 둥근 모서리와 회색 그림자(`rgba(0, 0, 0, 0.1)`) 카드로 쪼개는 SaaS 카드 키트 구성
+  - 콘텐츠 구조와 무관하게 큰 통계 숫자와 그라디언트를 앞세우는 랜딩 히어로 구성
+  - 일반 웹 앱에 이유 없이 적용하는 0px 모서리 신문 지면(Broadsheet) 레이아웃
+- **No Decorative Gradient Washes**: 그라디언트는 상태 변화나 표면 깊이를 전달할 때만 사용하며, 단순 배경 장식용으로 채우지 마라.
 
 ## 2. Template Chrome & Typography Tells
 - **No Tracked-Out Eyebrows**: Do NOT place small uppercase labels with wide letter-spacing (`ALL-CAPS`) directly above every single heading.
